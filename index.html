@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sophie — Portfolio</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --bg-card: #ffffff;
+    --border: #e5e5e5;
+    --text: #1a1a1a;
+    --text-dim: #767676;
+    --accent: #2f2f2f;
+    --switch-track: #dddddd;
+    --switch-thumb: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111111;
+      --bg-card: #111111;
+      --border: #2a2a2a;
+      --text: #ededed;
+      --text-dim: #8a8a8a;
+      --accent: #ededed;
+      --switch-track: #3a3a3a;
+      --switch-thumb: #ededed;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111111;
+    --bg-card: #111111;
+    --border: #2a2a2a;
+    --text: #ededed;
+    --text-dim: #8a8a8a;
+    --accent: #ededed;
+    --switch-track: #3a3a3a;
+    --switch-thumb: #ededed;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Malgun Gothic", sans-serif;
+    line-height: 1.5;
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 80px 24px 120px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 64px;
+  }
+  header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  header p {
+    color: var(--text-dim);
+    margin: 0;
+    font-size: 0.98rem;
+  }
+
+  .theme-switch {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 0;
+    margin-top: 4px;
+  }
+  .theme-switch .track {
+    width: 36px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--switch-track);
+    position: relative;
+    transition: background 0.15s ease;
+  }
+  .theme-switch .thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--switch-thumb);
+    transition: transform 0.15s ease;
+  }
+  .theme-switch[aria-pressed="true"] .thumb {
+    transform: translateX(16px);
+  }
+  .theme-switch .label {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+
+  h2.section-title {
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 500;
+    margin: 0 0 18px;
+  }
+  .projects {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .card {
+    display: block;
+    background: var(--bg-card);
+    padding: 20px 22px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.12s ease;
+  }
+  .card:not(.disabled):hover {
+    background: var(--bg);
+  }
+  .card-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .card h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .card .tag {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 2px 9px;
+    white-space: nowrap;
+  }
+  .card p {
+    margin: 8px 0 0;
+    color: var(--text-dim);
+    font-size: 0.88rem;
+  }
+  .stack {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .stack span {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    padding: 0;
+  }
+  .stack span:not(:last-child)::after {
+    content: "·";
+    margin-left: 6px;
+    color: var(--border);
+  }
+  .card.disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  footer {
+    margin-top: 64px;
+    color: var(--text-dim);
+    font-size: 0.82rem;
+  }
+  footer a {
+    color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Sophie</h1>
+        <p>실무에서 다루는 문제를 풀어보며 정리하는 백엔드 중심 풀스택 포트폴리오입니다.</p>
+      </div>
+      <button class="theme-switch" id="themeToggle" type="button" aria-pressed="false">
+        <span class="label">Dark</span>
+        <span class="track"><span class="thumb"></span></span>
+      </button>
+    </header>
+
+    <section>
+      <h2 class="section-title">Projects</h2>
+      <div class="projects">
+        <a class="card" href="/tablelink/">
+          <div class="card-top">
+            <h3>TableLink</h3>
+            <span class="tag">Live</span>
+          </div>
+          <p>여러 테이블을 자동으로 탐지하고 조인 경로를 스스로 찾아, 조건만으로 고객 세그먼트를 뽑아내는 도구입니다. 실무에서 반정규화 테이블·데이터마트를 다루며 마주쳤던 문제에서 착안했습니다.</p>
+          <div class="stack">
+            <span>Spring Boot</span>
+            <span>PostgreSQL</span>
+            <span>React</span>
+            <span>JDBC</span>
+          </div>
+        </a>
+
+        <div class="card disabled">
+          <div class="card-top">
+            <h3>다음 프로젝트</h3>
+            <span class="tag">준비 중</span>
+          </div>
+          <p>새 프로젝트가 준비되면 이 자리에 추가됩니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <a href="https://github.com/LetsBeLikeSophie" target="_blank" rel="noopener">github.com/LetsBeLikeSophie</a>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btn = document.getElementById('themeToggle');
+      var label = btn.querySelector('.label');
+      var stored = localStorage.getItem('theme');
+
+      function systemPrefersDark() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+      function currentIsDark() {
+        var t = root.getAttribute('data-theme');
+        if (t === 'dark') return true;
+        if (t === 'light') return false;
+        return systemPrefersDark();
+      }
+      function sync() {
+        var dark = currentIsDark();
+        btn.setAttribute('aria-pressed', String(dark));
+        label.textContent = dark ? 'Light' : 'Dark';
+      }
+      if (stored === 'light' || stored === 'dark') {
+        root.setAttribute('data-theme', stored);
+      }
+      sync();
+
+      btn.addEventListener('click', function () {
+        var next = currentIsDark() ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        sync();
+      });
+    })();
+  </script>
+</body>
+</html>
