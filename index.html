@@ -219,6 +219,14 @@
           </div>
         </a>
 
+        <a class="card" href="https://api.issue-pop.com/app/" id="issuePopCard">
+          <div class="card-top">
+            <h3>issue-pop</h3>
+            <span class="tag">🔒 준비 중</span>
+          </div>
+          <p>아직 다듬는 중인 프로젝트라 비밀번호를 입력해야 볼 수 있어요.</p>
+        </a>
+
         <div class="card disabled">
           <div class="card-top">
             <h3>다음 프로젝트</h3>
@@ -267,6 +275,17 @@
         sync();
       });
     })();
+
+    document.getElementById('issuePopCard').addEventListener('click', function (e) {
+      e.preventDefault();
+      var pw = prompt('비밀번호를 입력하세요');
+      if (pw === null) return;
+      if (pw === '910826') {
+        window.location.href = this.href;
+      } else {
+        alert('비밀번호가 올바르지 않습니다.');
+      }
+    });
   </script>
 </body>
 </html>
