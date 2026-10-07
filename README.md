@@ -17,6 +17,34 @@
 nginx가 `itssophie.dev` 루트(`/`)에서 이 파일을 서빙하고, `/tablelink/` 경로는 별도로
 [TableLink](https://github.com/LetsBeLikeSophie/TableLink) 앱으로 라우팅합니다.
 
+GitHub에 푸시해도 사이트에는 자동으로 반영되지 않으므로, 푸시한 뒤 아래 순서로 서버 파일을 교체합니다.
+
+1. `index.html`을 서버의 임시 경로로 복사합니다.
+
+   ```bash
+   scp -i <SSH 키 파일> index.html ubuntu@<서버 IP>:/tmp/portfolio-index.html
+   ```
+
+2. 기존 파일을 백업한 뒤 새 파일로 교체합니다. 파일 소유자는 nginx가 읽을 수 있도록 `www-data`로 맞춥니다.
+
+   ```bash
+   ssh -i <SSH 키 파일> ubuntu@<서버 IP> "cd /var/www/portfolio && sudo cp index.html index.html.bak-\$(date +%Y%m%d%H%M%S) && sudo install -o www-data -g www-data -m 644 /tmp/portfolio-index.html index.html && rm /tmp/portfolio-index.html"
+   ```
+
+3. 사이트에 반영됐는지 확인합니다. nginx는 정적 파일을 바로 읽으므로 재시작할 필요가 없습니다.
+
+   ```bash
+   curl -s https://itssophie.dev/ | grep "<새로 추가한 프로젝트 이름>"
+   ```
+
+### 되돌리기
+
+백업은 같은 폴더에 `index.html.bak-<날짜시간>` 이름으로 쌓입니다. 이전 버전으로 돌아가려면 원하는 백업을 다시 `index.html`로 복사합니다.
+
+```bash
+ssh -i <SSH 키 파일> ubuntu@<서버 IP> "cd /var/www/portfolio && ls index.html.bak-* && sudo install -o www-data -g www-data -m 644 index.html.bak-<날짜시간> index.html"
+```
+
 ## 프로젝트 추가하기
 
 `index.html`의 `.projects` 안에 `.card` 하나를 추가하면 됩니다. 아직 배포 전인 프로젝트는
