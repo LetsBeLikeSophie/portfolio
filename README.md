@@ -8,7 +8,7 @@
 
 - `src/template.html` — 페이지 디자인 (마크업 + 스타일 + 스크립트)
 - `src/projects.json` — 프로젝트 목록. 모든 페이지가 이 파일 하나를 공유함
-- `src/pages/*.json` — 페이지별 설정 (소개 문장, 프로젝트 순서, 회사별 강조 문구)
+- `src/pages/*.json` — 페이지별 설정 (소개 문장, 프로젝트 순서, 회사별 강조 문구). `main.json`은 루트 주소에 어떤 페이지를 보여줄지만 정함
 - `build.py` — 위 파일로 페이지를 만드는 스크립트 (외부 패키지 없음)
 - `index.html`, `<회사>/index.html` — `build.py`가 만든 결과물. 직접 고치지 말고 `src`를 고친 뒤 다시 빌드
 
@@ -32,11 +32,16 @@ python3 build.py
    - `focus_stack`: 공고에 나온 기술. 그래프와 태그에 초록색으로 표시됩니다.
 2. `python3 build.py`를 실행하면 `<회사>/index.html`이 생깁니다.
 
-### 메인 주소에 회사 페이지를 잠시 띄우기
+### 루트 주소(itssophie.dev/)에 무엇을 보여줄지
 
-이미 제출한 이력서에 메인 주소만 적혀 있을 때는, `src/pages/main.json`에 `"extends": "<회사>"` 한 줄을
-넣고 빌드합니다. 메인 주소가 그 회사 페이지 내용으로 바뀌고, 검색 차단(noindex)도 회사 페이지 설정을 따라가서 링크로 들어온 사람만 보게 됩니다.
-공고가 끝나면 그 줄을 지우고 다시 빌드·배포하면 `main.json`에 적힌 원래 내용으로 돌아갑니다.
+일반 포트폴리오는 `src/pages/home.json` → `itssophie.dev/home/`에 있습니다.
+루트 주소는 `src/pages/main.json`의 `extends` 값에 적힌 페이지를 그대로 보여줍니다.
+
+- 평소: `"extends": "home"` → 루트에 일반 포트폴리오 (검색 허용)
+- 이미 제출한 이력서에 루트 주소만 적혀 있을 때: `"extends": "<회사>"` → 루트에 그 회사 페이지.
+  검색 차단도 회사 페이지 설정을 따라가서 링크로 들어온 사람만 보게 됩니다.
+
+값을 바꾼 뒤 `python3 build.py`를 실행하고 루트 `index.html`을 다시 배포하면 됩니다.
 
 회사 페이지는 메인에서 링크하지 않고, `robots.txt`에도 적지 않습니다. 적어두면 그 자체로 경로가
 공개되기 때문입니다. 지원서에 주소를 직접 넣어서 전달합니다.
@@ -69,9 +74,9 @@ GitHub에 푸시해도 사이트에는 자동으로 반영되지 않으므로, �
    curl -s https://itssophie.dev/ | grep "<새로 추가한 프로젝트 이름>"
    ```
 
-### 회사별 페이지
+### 회사별 페이지와 /home
 
-`<회사>`를 `slug` 값으로 바꿔서 실행합니다. 폴더가 없으면 새로 만들어집니다.
+`<회사>`를 `slug` 값(`home`, `hybe` 등)으로 바꿔서 실행합니다. 폴더가 없으면 새로 만들어집니다.
 
 ```bash
 scp -i <SSH 키 파일> <회사>/index.html ubuntu@<서버 IP>:/tmp/portfolio-<회사>.html
@@ -79,7 +84,7 @@ ssh -i <SSH 키 파일> ubuntu@<서버 IP> "sudo install -d -o www-data -g www-d
 curl -s https://itssophie.dev/<회사>/ | grep noindex
 ```
 
-마지막 줄에서 `noindex`가 보이면 검색 차단 태그까지 정상으로 올라간 것입니다.
+회사 페이지는 마지막 줄에서 `noindex`가 보이면 검색 차단 태그까지 정상으로 올라간 것입니다. (`home`은 검색 허용이라 아무것도 안 나오는 게 정상입니다.)
 
 ### 되돌리기
 

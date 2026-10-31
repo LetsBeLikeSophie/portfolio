@@ -3,8 +3,9 @@
 src/template.html 하나와 src/projects.json(프로젝트 목록)을 바탕으로
 src/pages/*.json 설정마다 페이지를 하나씩 만든다.
 
-  - slug가 ""인 설정 → 저장소 루트의 index.html (메인 페이지)
+  - slug가 "home"인 설정 → home/index.html (itssophie.dev/home/, 일반 포트폴리오)
   - slug가 "hybe"인 설정 → hybe/index.html (itssophie.dev/hybe/)
+  - slug가 ""인 설정(main.json) → 루트 index.html. "extends"에 적힌 페이지를 그대로 보여줌
 
 외부 패키지 없이 `python3 build.py`로 실행한다.
 """
@@ -76,10 +77,8 @@ def render(template, data, page):
     if page.get("context"):
         context = f'        <p class="context">{escape(page["context"])}</p>\n'
 
-    if page.get("slug"):
-        footer_link = '<a href="/">itssophie.dev</a>'
-    else:
-        footer_link = '<a href="https://github.com/LetsBeLikeSophie" target="_blank" rel="noopener">github.com/LetsBeLikeSophie</a>'
+    # 루트(/)가 어떤 페이지를 보여줄지는 바뀔 수 있으므로, 모든 페이지의 하단 링크는 GitHub로 통일
+    footer_link = '<a href="https://github.com/LetsBeLikeSophie" target="_blank" rel="noopener">github.com/LetsBeLikeSophie</a>'
 
     robots = "" if page.get("index", True) else '<meta name="robots" content="noindex, nofollow, noarchive" />\n'
 
