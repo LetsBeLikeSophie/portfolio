@@ -144,6 +144,23 @@
     font-weight: 450;
   }
   .hero .intro span { color: var(--dim); }
+  .hero .resume {
+    display: inline-block;
+    margin-top: 20px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding-bottom: 2px;
+    border-bottom: 1.5px solid var(--ink);
+    background-image: linear-gradient(var(--mark), var(--mark));
+    background-size: 100% 0%;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.25s ease;
+  }
+  .hero .resume:hover,
+  .hero .resume:focus-visible { background-size: 100% 100%; }
+  .bar .links { display: flex; gap: 20px; }
 
   .map h2 {
     margin: 0 0 8px;
@@ -440,7 +457,10 @@
 <body>
   <div class="wrap">
     <div class="bar">
-      <a href="https://github.com/LetsBeLikeSophie" target="_blank" rel="noopener">GitHub</a>
+      <nav class="links">
+        <a href="https://exciting-wedge-212.notion.site/Portfolio-20ce9b5a3218807392beee2c3394a961" target="_blank" rel="noopener">이력서</a>
+        <a href="https://github.com/LetsBeLikeSophie" target="_blank" rel="noopener">GitHub</a>
+      </nav>
       <button class="theme-switch" id="themeToggle" type="button" aria-pressed="false">
         <span class="label">다크 모드</span>
         <span class="track" aria-hidden="true"><span class="thumb"></span></span>
@@ -450,7 +470,8 @@
     <header class="hero">
       <div>
         <h1>Sophie</h1>
-        <p class="intro">백엔드 중심 풀스택 개발자입니다. <span>실무에서 데이터를 다루며 마주친 문제를 직접 만들어 풀어보고, 그 결과를 여기에 정리합니다.</span></p>
+        <p class="intro">데이터를 다루는 일을 하고, 필요한 건 직접 만듭니다. <span>여기는 업무 밖에서 취미로 만든 개인 프로젝트를 모아둔 곳이에요.</span></p>
+        <a class="resume" href="https://exciting-wedge-212.notion.site/Portfolio-20ce9b5a3218807392beee2c3394a961" target="_blank" rel="noopener">실무 경력은 이력서에서 볼 수 있어요</a>
       </div>
       <section class="map" aria-labelledby="mapTitle">
         <h2 id="mapTitle">기술로 보기</h2>
