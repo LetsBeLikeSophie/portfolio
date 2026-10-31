@@ -1,0 +1,74 @@
+{
+  "groups": [
+    { "id": "public", "title": "공개 중", "desc": "지금 바로 써보거나 내려받을 수 있어요" },
+    { "id": "building", "title": "만드는 중", "desc": "개발하거나 오픈을 준비하고 있어요" }
+  ],
+  "projects": [
+    {
+      "id": "tablelink",
+      "group": "public",
+      "name": "TableLink",
+      "href": "/tablelink/",
+      "external": false,
+      "state": "live",
+      "state_label": "운영 중",
+      "stack": ["Spring Boot", "PostgreSQL", "React", "JDBC"],
+      "desc": "여러 테이블을 자동으로 탐지하고 조인 경로를 스스로 찾아, 조건만으로 고객 세그먼트를 뽑아내는 도구입니다. 실무에서 반정규화 테이블·데이터마트를 다루며 마주쳤던 문제에서 착안했습니다."
+    },
+    {
+      "id": "issue-pop",
+      "group": "public",
+      "name": "Issue Pop",
+      "href": "https://api.issue-pop.com/app/",
+      "external": true,
+      "state": "live",
+      "state_label": "운영 중",
+      "stack": ["FastAPI", "scikit-learn", "SQLModel", "Flutter"],
+      "desc": "여러 매체의 RSS를 모아 오늘 어떤 이슈가 많이 보도됐는지 자동으로 클러스터링해서 보여주는 뉴스 트렌드 앱입니다. 문장 임베딩 기반 유사도로 서로 다른 매체의 같은 사건을 하나로 묶습니다."
+    },
+    {
+      "id": "my-little-sessions",
+      "group": "public",
+      "name": "My Little Sessions",
+      "href": "https://github.com/LetsBeLikeSophie/My-Little-Sessions",
+      "external": true,
+      "state": "released",
+      "state_label": "배포됨 v0.3.1",
+      "stack": ["Electron", "Node.js", "Claude Code Hooks"],
+      "desc": "Claude Code 세션 하나하나를 픽셀아트 사무실의 직원으로 보여주는 윈도우 데스크톱 앱입니다. 훅으로 세션 이벤트를 받아 작업 중·대기·승인 요청 상태를 캐릭터로 표시하고, 말풍선에서 바로 승인하거나 거절할 수 있습니다."
+    },
+    {
+      "id": "cortex",
+      "group": "building",
+      "name": "Cortex",
+      "href": "https://github.com/LetsBeLikeSophie/Cortex",
+      "external": true,
+      "state": "building",
+      "state_label": "개발 중",
+      "stack": ["React Native", "Expo", "Fastify", "Supabase", "Claude API"],
+      "desc": "인스타/카카오톡/브라우저 등 어디서든 공유 버튼 하나로 저장하고, 검색 한 번으로 다시 찾는 개인 아카이브 앱입니다. 링크는 오픈그래프/oEmbed로, 캡처 이미지는 비전 모델로 읽어 자동 분류합니다."
+    },
+    {
+      "id": "dailycut",
+      "group": "building",
+      "name": "Dailycut",
+      "href": "/dailycut/",
+      "external": true,
+      "state": "building",
+      "state_label": "개발 중",
+      "stack": ["FastAPI", "Flutter"],
+      "desc": "농산물 시세·날씨·박스오피스·환율 같은 공공 데이터를 매일 모아 카드로 보여주는 큐레이션 앱입니다. 직접 글을 쓰는 대신 공식 API로 채우고, AI가 짧은 해설을 붙입니다."
+    },
+    {
+      "id": "office-hours",
+      "group": "building",
+      "name": "Sophie's Office Hours",
+      "href": "/office-hours/",
+      "external": true,
+      "state": "building",
+      "state_label": "오픈 준비 중",
+      "stack": ["HTML", "CSS", "JavaScript", "Google Forms"],
+      "desc": "AI로 앱을 만들다 막힌 비전공자를 위한 디버깅 상담소입니다. 에러 메시지와 막힌 단계만 받아 원인을 같이 짚고, 다음에 AI에게 바로 쓸 질문까지 정리해 드립니다. 빌드 없는 정적 사이트로, 상담 접수는 구글폼으로 받습니다."
+    }
+  ]
+}
