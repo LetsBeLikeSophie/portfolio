@@ -17,6 +17,7 @@
 <style>
   :root {
     --paper: #f3f5f2;
+    --paper-2: #e9eee9;
     --ink: #17201c;
     --dim: #5b6862;
     --line: #cfd8d2;
@@ -28,9 +29,10 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --paper: #121815;
+      --paper-2: #18201c;
       --ink: #e4ece7;
       --dim: #8d9b94;
-      --line: #2a3530;
+      --line: #2c3833;
       --green: #6cc79a;
       --mark: #2b5a40;
       --mark-ink: #eaf7ef;
@@ -39,9 +41,10 @@
   }
   :root[data-theme="dark"] {
     --paper: #121815;
+    --paper-2: #18201c;
     --ink: #e4ece7;
     --dim: #8d9b94;
-    --line: #2a3530;
+    --line: #2c3833;
     --green: #6cc79a;
     --mark: #2b5a40;
     --mark-ink: #eaf7ef;
@@ -49,7 +52,7 @@
   }
 
   * { box-sizing: border-box; }
-  html { background: var(--paper); }
+  html { background: var(--paper); scroll-behavior: smooth; }
   body {
     margin: 0;
     background: var(--paper);
@@ -68,9 +71,9 @@
   }
 
   .wrap {
-    max-width: 1040px;
+    max-width: 1240px;
     margin: 0 auto;
-    padding: 28px 32px 96px;
+    padding: 24px 40px 80px;
   }
 
   /* 상단 바 */
@@ -116,54 +119,117 @@
   }
   .theme-switch[aria-pressed="true"] .thumb { transform: translateX(13px); }
 
-  /* 히어로 */
+  /* 히어로: 이름 + 기술 그래프 */
   .hero {
-    padding: 9vh 0 72px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: 48px;
+    align-items: center;
+    padding: 40px 0 48px;
     border-bottom: 1.5px solid var(--ink);
   }
   .hero h1 {
     margin: 0;
-    font-size: clamp(5rem, 21vw, 15.5rem);
+    font-size: clamp(4.5rem, 11.5vw, 9.5rem);
     font-weight: 820;
-    line-height: 0.82;
+    line-height: 0.85;
     letter-spacing: -0.065em;
     margin-left: -0.05em;
   }
   .hero .intro {
-    margin: 40px 0 0;
-    max-width: 34em;
-    font-size: clamp(1.125rem, 2.1vw, 1.375rem);
-    line-height: 1.55;
+    margin: 32px 0 0;
+    max-width: 28em;
+    font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
+    line-height: 1.6;
     font-weight: 450;
   }
   .hero .intro span { color: var(--dim); }
 
-  /* 기술로 보기 */
-  .filter {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 24px;
-    padding: 28px 0 0;
-    align-items: start;
-  }
-  .filter h2 {
-    margin: 4px 0 0;
+  .map h2 {
+    margin: 0 0 8px;
     font-size: 0.9375rem;
     font-weight: 650;
   }
-  .filter h2 small {
-    display: block;
-    margin-top: 2px;
-    font-size: 0.8125rem;
-    font-weight: 400;
-    color: var(--dim);
+  .map-frame {
+    background-color: var(--paper-2);
+    background-image: radial-gradient(color-mix(in srgb, var(--dim) 28%, transparent) 1px, transparent 1.2px);
+    background-size: 18px 18px;
+    background-position: 9px 9px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px 10px;
   }
+  .map svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .map .link {
+    fill: none;
+    stroke: var(--line);
+    stroke-width: 1.25;
+    transition: stroke 0.15s ease, stroke-width 0.15s ease, opacity 0.15s ease;
+  }
+  .map .node { cursor: pointer; }
+  .map .node text {
+    fill: var(--ink);
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+  }
+  .map .node.project text { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  .map .node.tech text { font-size: 12.5px; font-weight: 500; }
+  .map .node circle {
+    fill: var(--paper-2);
+    stroke: var(--ink);
+    stroke-width: 1.5;
+    transition: fill 0.15s ease, opacity 0.15s ease;
+  }
+  .map .node .hl {
+    fill: var(--mark);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .map .node:focus { outline: none; }
+  .map .node:focus-visible .hl { opacity: 1; }
+  .map .node:focus-visible text { text-decoration: underline; }
+
+  .map svg.lit .link { opacity: 0.35; }
+  .map svg.lit .link.on {
+    stroke: var(--green);
+    stroke-width: 2.25;
+    opacity: 1;
+    stroke-dasharray: 7 5;
+    animation: flow 0.9s linear infinite;
+  }
+  @keyframes flow { to { stroke-dashoffset: -24; } }
+  .map .node .count {
+    font-size: 10.5px;
+    font-weight: 700;
+    fill: var(--green);
+  }
+  .map svg.intro .link {
+    stroke-dasharray: var(--len);
+    stroke-dashoffset: var(--len);
+    animation: draw 0.9s cubic-bezier(.3,.6,.2,1) forwards;
+    animation-delay: var(--delay);
+  }
+  .map svg.intro .node { opacity: 0; animation: appear 0.5s ease forwards; animation-delay: var(--delay); }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes appear { to { opacity: 1; } }
+  .map svg.lit .node:not(.on) text,
+  .map svg.lit .node:not(.on) circle { opacity: 0.3; }
+  .map svg.lit .node.on circle { fill: var(--green); stroke: var(--green); }
+  .map svg.lit .node.on .hl { opacity: 1; }
+  .map svg.lit .node.on text { fill: var(--mark-ink); }
+
+  /* 모바일용 기술 버튼 목록 */
+  .tech-index { display: none; }
   .techs {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
   }
-
   .tech {
     font: inherit;
     font-size: 0.8125rem;
@@ -174,7 +240,7 @@
     background: transparent;
     color: var(--ink);
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
   .tech:hover { border-color: var(--dim); }
   .tech.on {
@@ -183,113 +249,152 @@
     color: var(--mark-ink);
     font-weight: 600;
   }
-  .tech.clear {
-    border-style: dashed;
-    color: var(--dim);
-  }
-  .tech.clear[hidden] { display: none; }
 
   /* 프로젝트 그룹 */
-  .group {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 24px;
-    padding-top: 40px;
+  .group { padding-top: 56px; }
+  .group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1.5px solid var(--ink);
+    transition: opacity 0.2s ease;
   }
-  .group > h2 {
+  .group-head h2 {
     margin: 0;
-    padding-top: 22px;
-    font-size: 0.9375rem;
-    font-weight: 650;
-    position: sticky;
-    top: 16px;
-    align-self: start;
+    font-size: 1.375rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
   }
-  .group > h2 small {
-    display: block;
-    margin-top: 2px;
+  .group-head small { color: var(--dim); font-size: 0.875rem; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .project {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 26px 28px 30px;
+    border-right: 1px solid var(--line);
+    transition: opacity 0.2s ease, background 0.25s ease;
+    scroll-margin-top: 24px;
+  }
+  .project:first-child { padding-left: 0; }
+  .project:last-child { border-right: none; padding-right: 0; }
+  .project::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: -1.5px;
+    height: 3px;
+    background: var(--green);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s cubic-bezier(.2,.7,.2,1);
+  }
+  .project:first-child::before { left: 0; }
+  .project:hover::before,
+  .project:focus-within::before,
+  .project.flash::before { transform: scaleX(1); }
+
+  .state {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     font-size: 0.8125rem;
-    font-weight: 400;
     color: var(--dim);
   }
-  .group > h2 .dot {
-    display: inline-block;
+  .state::before {
+    content: "";
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    margin-right: 8px;
-    vertical-align: 1px;
     background: var(--green);
   }
-  .group.building > h2 .dot {
-    background: transparent;
-    border: 1.5px solid var(--green);
-  }
-  .group.released > h2 .dot {
-    border-radius: 2px;
+  .state.live::before { box-shadow: 0 0 0 0 var(--green); animation: beat 2.4s ease-out infinite; }
+  .state.released::before { border-radius: 2px; }
+  .state.building::before { background: transparent; border: 1.5px solid var(--green); width: 7px; height: 7px; }
+  @keyframes beat {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--green) 55%, transparent); }
+    70%, 100% { box-shadow: 0 0 0 7px transparent; }
   }
 
-  .list { border-top: 1px solid var(--line); }
-
-  .project {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 6px 24px;
-    padding: 22px 0 24px;
-    border-bottom: 1px solid var(--line);
-    transition: opacity 0.2s ease;
-  }
   .project h3 {
-    margin: 0;
-    font-size: clamp(1.375rem, 2.6vw, 1.75rem);
-    font-weight: 720;
-    letter-spacing: -0.025em;
+    margin: 10px 0 0;
+    font-size: 1.625rem;
+    font-weight: 750;
+    letter-spacing: -0.03em;
     line-height: 1.2;
   }
   .project h3 a {
     text-decoration: none;
     background-image: linear-gradient(var(--mark), var(--mark));
-    background-size: 0% 38%;
-    background-position: 0 88%;
+    background-size: 0% 40%;
+    background-position: 0 90%;
     background-repeat: no-repeat;
-    transition: background-size 0.25s ease;
+    transition: background-size 0.3s cubic-bezier(.2,.7,.2,1);
   }
-  .project h3 a:hover,
-  .project h3 a:focus-visible { background-size: 100% 38%; }
-  .project h3 a::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-  }
-  .project { position: relative; }
-  .project .where {
-    font-size: 0.8125rem;
-    color: var(--dim);
-    white-space: nowrap;
-    padding-top: 8px;
-  }
+  .project h3 a::after { content: ""; position: absolute; inset: 0; }
+  .project:hover h3 a,
+  .project h3 a:focus-visible,
+  .project.flash h3 a { background-size: 100% 40%; }
   .project p {
-    grid-column: 1 / -1;
-    margin: 4px 0 0;
-    max-width: 40em;
+    margin: 12px 0 0;
     color: var(--dim);
-    font-size: 0.96875rem;
-    line-height: 1.7;
+    font-size: 0.9375rem;
+    line-height: 1.72;
+    flex: 1;
   }
   .project .techs {
-    grid-column: 1 / -1;
-    margin-top: 12px;
+    margin-top: 18px;
     position: relative;
     z-index: 1;
   }
 
-  /* 필터가 켜졌을 때 */
-  body.filtering .project:not(.match) { opacity: 0.32; }
-  body.filtering .group:not(.has-match) > h2 { opacity: 0.4; }
+  body.filtering .project:not(.match) { opacity: 0.28; }
+  body.filtering .group:not(.has-match) .group-head { opacity: 0.4; }
+
+  /* 선택 상태 알림 */
+  .status {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 10px 10px 18px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.875rem;
+    box-shadow: 0 6px 24px rgba(23, 32, 28, 0.18);
+    transform: translate(-50%, 140%);
+    visibility: hidden;
+    transition: transform 0.25s ease, visibility 0s linear 0.25s;
+  }
+  .status.show {
+    transform: translate(-50%, 0);
+    visibility: visible;
+    transition: transform 0.25s ease, visibility 0s;
+  }
+  .status b { font-weight: 700; }
+  .status button {
+    font: inherit;
+    font-size: 0.8125rem;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: none;
+    background: var(--mark);
+    color: var(--mark-ink);
+    cursor: pointer;
+  }
 
   footer {
-    margin-top: 88px;
-    padding-top: 24px;
+    margin-top: 72px;
+    padding-top: 20px;
     border-top: 1.5px solid var(--ink);
     display: flex;
     justify-content: space-between;
@@ -300,18 +405,35 @@
   }
   footer a { color: var(--ink); text-underline-offset: 3px; }
 
-  @media (max-width: 760px) {
-    .wrap { padding: 20px 16px 72px; }
-    .hero { padding: 64px 0 48px; }
-    .hero .intro { margin-top: 28px; }
-    .filter, .group { grid-template-columns: 1fr; gap: 12px; }
-    .group { padding-top: 32px; }
-    .group > h2 { position: static; padding-top: 0; }
-    .project .where { padding-top: 6px; }
+  @media (max-width: 1040px) {
+    .grid { grid-template-columns: 1fr; }
+    .project, .project:first-child, .project:last-child {
+      padding: 24px 0 26px;
+      border-right: none;
+      border-bottom: 1px solid var(--line);
+    }
+    .project:last-child { border-bottom: none; }
+    .project p { max-width: 44em; }
+  }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; gap: 0; }
+    .map { display: none; }
+    .tech-index { display: block; padding-top: 28px; }
+    .tech-index h2 { margin: 0 0 10px; font-size: 0.9375rem; font-weight: 650; }
+  }
+  @media (max-width: 640px) {
+    .wrap { padding: 20px 16px 88px; }
+    .hero { padding: 48px 0 36px; }
+    .hero h1 { font-size: clamp(4.5rem, 24vw, 7rem); }
+    .group { padding-top: 40px; }
+    .status { width: calc(100% - 32px); justify-content: space-between; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { transition: none !important; }
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .map svg.intro .link { stroke-dashoffset: 0; }
+    .map svg.intro .node { opacity: 1; }
   }
 </style>
 </head>
@@ -326,62 +448,63 @@
     </div>
 
     <header class="hero">
-      <h1>Sophie</h1>
-      <p class="intro">백엔드 중심 풀스택 개발자입니다. <span>실무에서 데이터를 다루며 마주친 문제를 직접 만들어 풀어보고, 그 결과를 여기에 정리합니다.</span></p>
+      <div>
+        <h1>Sophie</h1>
+        <p class="intro">백엔드 중심 풀스택 개발자입니다. <span>실무에서 데이터를 다루며 마주친 문제를 직접 만들어 풀어보고, 그 결과를 여기에 정리합니다.</span></p>
+      </div>
+      <section class="map" aria-labelledby="mapTitle">
+        <h2 id="mapTitle">기술로 보기</h2>
+        <div class="map-frame"><svg id="map" role="group" aria-labelledby="mapTitle"></svg></div>
+      </section>
     </header>
 
-    <section class="filter" aria-labelledby="filterTitle">
-      <h2 id="filterTitle">기술로 보기<small>누르면 같은 기술을 쓴 프로젝트가 표시돼요</small></h2>
+    <section class="tech-index" aria-labelledby="indexTitle">
+      <h2 id="indexTitle">기술로 보기</h2>
       <div class="techs" id="techIndex"></div>
     </section>
 
     <main>
-      <section class="group live">
-        <h2><span class="dot" aria-hidden="true"></span>운영 중<small>지금 바로 써볼 수 있어요</small></h2>
-        <div class="list">
-          <article class="project" data-stack="Spring Boot,PostgreSQL,React,JDBC">
+      <section class="group">
+        <div class="group-head"><h2>공개 중</h2><small>지금 바로 써보거나 내려받을 수 있어요</small></div>
+        <div class="grid">
+          <article class="project" id="tablelink" data-stack="Spring Boot,PostgreSQL,React,JDBC">
+            <span class="state live">운영 중</span>
             <h3><a href="/tablelink/">TableLink</a></h3>
-            <span class="where">itssophie.dev/tablelink</span>
             <p>여러 테이블을 자동으로 탐지하고 조인 경로를 스스로 찾아, 조건만으로 고객 세그먼트를 뽑아내는 도구입니다. 실무에서 반정규화 테이블·데이터마트를 다루며 마주쳤던 문제에서 착안했습니다.</p>
           </article>
 
-          <article class="project" data-stack="FastAPI,scikit-learn,SQLModel,Flutter">
+          <article class="project" id="issue-pop" data-stack="FastAPI,scikit-learn,SQLModel,Flutter">
+            <span class="state live">운영 중</span>
             <h3><a href="https://api.issue-pop.com/app/" target="_blank" rel="noopener">Issue Pop</a></h3>
-            <span class="where">api.issue-pop.com</span>
             <p>여러 매체의 RSS를 모아 오늘 어떤 이슈가 많이 보도됐는지 자동으로 클러스터링해서 보여주는 뉴스 트렌드 앱입니다. 문장 임베딩 기반 유사도로 서로 다른 매체의 같은 사건을 하나로 묶습니다.</p>
           </article>
-        </div>
-      </section>
 
-      <section class="group released">
-        <h2><span class="dot" aria-hidden="true"></span>배포됨<small>내려받아 설치하는 앱</small></h2>
-        <div class="list">
-          <article class="project" data-stack="Electron,Node.js,Claude Code Hooks">
+          <article class="project" id="my-little-sessions" data-stack="Electron,Node.js,Claude Code Hooks">
+            <span class="state released">배포됨 v0.3.1</span>
             <h3><a href="https://github.com/LetsBeLikeSophie/My-Little-Sessions" target="_blank" rel="noopener">My Little Sessions</a></h3>
-            <span class="where">v0.3.1 · GitHub</span>
             <p>Claude Code 세션 하나하나를 픽셀아트 사무실의 직원으로 보여주는 윈도우 데스크톱 앱입니다. 훅으로 세션 이벤트를 받아 작업 중·대기·승인 요청 상태를 캐릭터로 표시하고, 말풍선에서 바로 승인하거나 거절할 수 있습니다.</p>
           </article>
         </div>
       </section>
 
-      <section class="group building">
-        <h2><span class="dot" aria-hidden="true"></span>만드는 중<small>개발하거나 오픈을 준비하고 있어요</small></h2>
-        <div class="list">
-          <article class="project" data-stack="React Native,Expo,Fastify,Supabase,Claude API">
+      <section class="group">
+        <div class="group-head"><h2>만드는 중</h2><small>개발하거나 오픈을 준비하고 있어요</small></div>
+        <div class="grid">
+          <article class="project" id="cortex" data-stack="React Native,Expo,Fastify,Supabase,Claude API">
+            <span class="state building">개발 중</span>
             <h3><a href="https://github.com/LetsBeLikeSophie/Cortex" target="_blank" rel="noopener">Cortex</a></h3>
-            <span class="where">GitHub</span>
             <p>인스타/카카오톡/브라우저 등 어디서든 공유 버튼 하나로 저장하고, 검색 한 번으로 다시 찾는 개인 아카이브 앱입니다. 링크는 오픈그래프/oEmbed로, 캡처 이미지는 비전 모델로 읽어 자동 분류합니다.</p>
           </article>
 
-          <article class="project" data-stack="FastAPI,Flutter">
+          <article class="project" id="dailycut" data-stack="FastAPI,Flutter">
+            <span class="state building">개발 중</span>
             <h3><a href="/dailycut/" target="_blank" rel="noopener">Dailycut</a></h3>
-            <span class="where">itssophie.dev/dailycut</span>
             <p>농산물 시세·날씨·박스오피스·환율 같은 공공 데이터를 매일 모아 카드로 보여주는 큐레이션 앱입니다. 직접 글을 쓰는 대신 공식 API로 채우고, AI가 짧은 해설을 붙입니다.</p>
           </article>
 
-          <article class="project" data-stack="HTML,CSS,JavaScript,Google Forms">
+          <article class="project" id="office-hours" data-stack="HTML,CSS,JavaScript,Google Forms">
+            <span class="state building">오픈 준비 중</span>
             <h3><a href="/office-hours/" target="_blank" rel="noopener">Sophie's Office Hours</a></h3>
-            <span class="where">오픈 준비 중</span>
             <p>AI로 앱을 만들다 막힌 비전공자를 위한 디버깅 상담소입니다. 에러 메시지와 막힌 단계만 받아 원인을 같이 짚고, 다음에 AI에게 바로 쓸 질문까지 정리해 드립니다. 빌드 없는 정적 사이트로, 상담 접수는 구글폼으로 받습니다.</p>
           </article>
         </div>
@@ -394,65 +517,248 @@
     </footer>
   </div>
 
+  <div class="status" id="status" role="status" aria-live="polite">
+    <span id="statusText"></span>
+    <button type="button" id="statusClear">선택 해제</button>
+  </div>
+
   <script>
     (function () {
-      /* 테마 */
+      /* ---------- 테마 ---------- */
       var root = document.documentElement;
-      var btn = document.getElementById('themeToggle');
-      var label = btn.querySelector('.label');
+      var themeBtn = document.getElementById('themeToggle');
+      var themeLabel = themeBtn.querySelector('.label');
       var mq = window.matchMedia('(prefers-color-scheme: dark)');
-
       function isDark() {
         var t = root.getAttribute('data-theme');
         if (t === 'dark') return true;
         if (t === 'light') return false;
         return mq.matches;
       }
-      function sync() {
+      function syncTheme() {
         var dark = isDark();
-        btn.setAttribute('aria-pressed', String(dark));
-        label.textContent = dark ? '라이트 모드' : '다크 모드';
+        themeBtn.setAttribute('aria-pressed', String(dark));
+        themeLabel.textContent = dark ? '라이트 모드' : '다크 모드';
       }
-      sync();
-      if (mq.addEventListener) mq.addEventListener('change', sync);
-      btn.addEventListener('click', function () {
+      syncTheme();
+      if (mq.addEventListener) mq.addEventListener('change', syncTheme);
+      themeBtn.addEventListener('click', function () {
         var next = isDark() ? 'light' : 'dark';
         root.setAttribute('data-theme', next);
         try { localStorage.setItem('theme', next); } catch (e) {}
-        sync();
+        syncTheme();
       });
 
-      /* 기술로 보기 */
-      var projects = Array.prototype.slice.call(document.querySelectorAll('.project'));
-      var index = document.getElementById('techIndex');
-      var counts = {};
-      var order = [];
-      var active = null;
+      /* ---------- 데이터 ---------- */
+      var cards = Array.prototype.slice.call(document.querySelectorAll('.project'));
+      var projects = cards.map(function (el, i) {
+        return {
+          i: i,
+          el: el,
+          id: el.id,
+          name: el.querySelector('h3').textContent.trim(),
+          stack: el.getAttribute('data-stack').split(',')
+        };
+      });
+      var techMap = {};
+      projects.forEach(function (p) {
+        p.stack.forEach(function (t) {
+          if (!techMap[t]) techMap[t] = { name: t, projects: [] };
+          techMap[t].projects.push(p.i);
+        });
+      });
+      // 연결된 프로젝트 위치의 평균으로 정렬해서 선이 덜 엉키게
+      var techs = Object.keys(techMap).map(function (k) {
+        var t = techMap[k];
+        t.center = t.projects.reduce(function (a, b) { return a + b; }, 0) / t.projects.length;
+        return t;
+      }).sort(function (a, b) {
+        return a.center - b.center || b.projects.length - a.projects.length;
+      });
+
+      /* ---------- 그래프 ---------- */
+      var NS = 'http://www.w3.org/2000/svg';
+      var svg = document.getElementById('map');
+      var W = 560, ROW = 21, PAD = 14;
+      var H = techs.length * ROW + PAD * 2;
+      var PX = 196, TX = 360;
+      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+
+      var span = H - PAD * 2;
+      projects.forEach(function (p, i) { p.y = PAD + span * (i + 0.5) / projects.length; });
+      techs.forEach(function (t, i) { t.y = PAD + ROW * (i + 0.5); });
+
+      function el(tag, attrs, parent) {
+        var n = document.createElementNS(NS, tag);
+        for (var k in attrs) n.setAttribute(k, attrs[k]);
+        if (parent) parent.appendChild(n);
+        return n;
+      }
+
+      var gLinks = el('g', {}, svg);
+      var gNodes = el('g', {}, svg);
+      var links = [];
+      techs.forEach(function (t) {
+        t.projects.forEach(function (pi) {
+          var p = projects[pi];
+          var mx = (PX + TX) / 2;
+          var path = el('path', {
+            'class': 'link',
+            d: 'M' + PX + ',' + p.y + ' C' + mx + ',' + p.y + ' ' + mx + ',' + t.y + ' ' + TX + ',' + t.y
+          }, gLinks);
+          links.push({ el: path, p: pi, t: t.name });
+        });
+      });
+
+      function makeNode(kind, label, x, y, anchor) {
+        var g = el('g', { 'class': 'node ' + kind, tabindex: '0', role: 'button' }, gNodes);
+        var hl = el('rect', { 'class': 'hl', rx: 4 }, g);
+        var text = el('text', {
+          x: anchor === 'end' ? x - 12 : x + 12,
+          y: y,
+          'text-anchor': anchor,
+          'dominant-baseline': 'central'
+        }, g);
+        text.textContent = label;
+        el('circle', { cx: x, cy: y, r: kind === 'project' ? 5 : 3.5 }, g);
+        g._hl = hl; g._text = text;
+        return g;
+      }
+      function addCount(node, n) {
+        var t = node._text;
+        var c = el('tspan', { 'class': 'count', dx: 5, dy: -4 }, t);
+        c.textContent = '\u00d7' + n;
+      }
 
       projects.forEach(function (p) {
-        var stack = p.getAttribute('data-stack').split(',');
-        var row = document.createElement('div');
-        row.className = 'techs';
-        stack.forEach(function (name) {
-          if (!counts[name]) { counts[name] = 0; order.push(name); }
-          counts[name]++;
-          row.appendChild(makeTech(name));
-        });
-        p.appendChild(row);
+        p.node = makeNode('project', p.name, PX, p.y, 'end');
+        p.node.setAttribute('aria-label', p.name + ' 프로젝트로 이동');
+      });
+      techs.forEach(function (t) {
+        t.node = makeNode('tech', t.name, TX, t.y, 'start');
+        t.node.setAttribute('aria-label', t.name + ' 기술을 쓴 프로젝트 보기');
+        if (t.projects.length > 1) addCount(t.node, t.projects.length);
       });
 
-      // 여러 프로젝트에 공통으로 쓰인 기술을 앞에
-      order.sort(function (a, b) { return counts[b] - counts[a]; });
-      order.forEach(function (name) { index.appendChild(makeTech(name)); });
+      /* 처음 들어왔을 때 한 번: 프로젝트에서 기술로 선이 그려짐 */
+      (function intro() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        links.forEach(function (l) {
+          var len = Math.ceil(l.el.getTotalLength());
+          l.el.style.setProperty('--len', len);
+          l.el.style.setProperty('--delay', (0.15 + l.p * 0.09) + 's');
+        });
+        projects.forEach(function (p) { p.node.style.setProperty('--delay', (0.05 + p.i * 0.09) + 's'); });
+        techs.forEach(function (t) {
+          var first = Math.min.apply(null, t.projects);
+          t.node.style.setProperty('--delay', (0.75 + first * 0.09) + 's');
+        });
+        svg.classList.add('intro');
+        setTimeout(function () {
+          svg.classList.remove('intro');
+          links.forEach(function (l) { l.el.style.removeProperty('--len'); });
+        }, 2200);
+      })();
 
-      var clear = document.createElement('button');
-      clear.type = 'button';
-      clear.className = 'tech clear';
-      clear.textContent = '선택 해제';
-      clear.hidden = true;
-      clear.addEventListener('click', function () { select(null); });
-      index.appendChild(clear);
+      function sizeHighlights() {
+        projects.concat(techs).forEach(function (n) {
+          var b = n.node._text.getBBox();
+          n.node._hl.setAttribute('x', b.x - 5);
+          n.node._hl.setAttribute('y', b.y - 1);
+          n.node._hl.setAttribute('width', b.width + 10);
+          n.node._hl.setAttribute('height', b.height + 2);
+        });
+      }
+      sizeHighlights();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeHighlights);
 
+      /* ---------- 강조 (마우스 올림 = 미리보기, 클릭 = 고정) ---------- */
+      var active = null; // 고정된 기술 이름
+
+      function light(focus) {
+        // focus: {tech: name} | {project: index} | null
+        svg.classList.toggle('lit', !!focus);
+        var onTechs = {}, onProjects = {};
+        if (focus && focus.tech) {
+          onTechs[focus.tech] = true;
+          techMap[focus.tech].projects.forEach(function (pi) { onProjects[pi] = true; });
+        } else if (focus && focus.project !== undefined) {
+          onProjects[focus.project] = true;
+          projects[focus.project].stack.forEach(function (t) { onTechs[t] = true; });
+        }
+        links.forEach(function (l) {
+          var on = focus && (focus.tech ? l.t === focus.tech : l.p === focus.project);
+          l.el.classList.toggle('on', !!on);
+          if (on) gLinks.appendChild(l.el);
+        });
+        projects.forEach(function (p) { p.node.classList.toggle('on', !!onProjects[p.i]); });
+        techs.forEach(function (t) { t.node.classList.toggle('on', !!onTechs[t.name]); });
+      }
+
+      var statusBox = document.getElementById('status');
+      var statusText = document.getElementById('statusText');
+      document.getElementById('statusClear').addEventListener('click', function () { select(null); });
+
+      function select(name) {
+        active = name;
+        document.body.classList.toggle('filtering', !!name);
+        light(name ? { tech: name } : null);
+        document.querySelectorAll('.tech[data-tech]').forEach(function (b) {
+          var on = b.getAttribute('data-tech') === name;
+          b.classList.toggle('on', on);
+          b.setAttribute('aria-pressed', String(on));
+        });
+        projects.forEach(function (p) {
+          p.el.classList.toggle('match', !!name && p.stack.indexOf(name) !== -1);
+        });
+        document.querySelectorAll('.group').forEach(function (g) {
+          g.classList.toggle('has-match', !!g.querySelector('.project.match'));
+        });
+        if (name) {
+          statusText.innerHTML = '<b></b>을(를) 쓴 프로젝트 ' + techMap[name].projects.length + '개';
+          statusText.querySelector('b').textContent = name;
+        }
+        statusBox.classList.toggle('show', !!name);
+      }
+
+      function restore() { light(active ? { tech: active } : null); }
+
+      techs.forEach(function (t) {
+        var n = t.node;
+        n.addEventListener('mouseenter', function () { light({ tech: t.name }); });
+        n.addEventListener('mouseleave', restore);
+        n.addEventListener('focus', function () { light({ tech: t.name }); });
+        n.addEventListener('blur', restore);
+        function go() { select(active === t.name ? null : t.name); }
+        n.addEventListener('click', go);
+        n.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+        });
+      });
+
+      projects.forEach(function (p) {
+        var n = p.node;
+        n.addEventListener('mouseenter', function () { light({ project: p.i }); });
+        n.addEventListener('mouseleave', restore);
+        n.addEventListener('focus', function () { light({ project: p.i }); });
+        n.addEventListener('blur', restore);
+        function go() {
+          p.el.scrollIntoView({ block: 'center' });
+          p.el.classList.add('flash');
+          setTimeout(function () { p.el.classList.remove('flash'); }, 1400);
+        }
+        n.addEventListener('click', go);
+        n.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+        });
+      });
+
+      projects.forEach(function (p) {
+        p.el.addEventListener('mouseenter', function () { if (!active) light({ project: p.i }); });
+        p.el.addEventListener('mouseleave', restore);
+      });
+
+      /* ---------- 태그 버튼 (카드 안 + 모바일 목록) ---------- */
       function makeTech(name) {
         var b = document.createElement('button');
         b.type = 'button';
@@ -463,24 +769,19 @@
         b.addEventListener('click', function () { select(active === name ? null : name); });
         return b;
       }
+      projects.forEach(function (p) {
+        var row = document.createElement('div');
+        row.className = 'techs';
+        p.stack.forEach(function (t) { row.appendChild(makeTech(t)); });
+        p.el.appendChild(row);
+      });
+      var index = document.getElementById('techIndex');
+      techs.slice().sort(function (a, b) { return b.projects.length - a.projects.length; })
+        .forEach(function (t) { index.appendChild(makeTech(t.name)); });
 
-      function select(name) {
-        active = name;
-        document.body.classList.toggle('filtering', !!name);
-        clear.hidden = !name;
-        document.querySelectorAll('.tech[data-tech]').forEach(function (b) {
-          var on = b.getAttribute('data-tech') === name;
-          b.classList.toggle('on', on);
-          b.setAttribute('aria-pressed', String(on));
-        });
-        projects.forEach(function (p) {
-          var match = !!name && p.getAttribute('data-stack').split(',').indexOf(name) !== -1;
-          p.classList.toggle('match', match);
-        });
-        document.querySelectorAll('.group').forEach(function (g) {
-          g.classList.toggle('has-match', !!g.querySelector('.project.match'));
-        });
-      }
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && active) select(null);
+      });
     })();
   </script>
 </body>
