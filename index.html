@@ -4,346 +4,483 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sophie — Portfolio</title>
+<meta name="description" content="실무에서 다루는 데이터 문제를 직접 만들어 풀어보는 백엔드 중심 풀스택 개발자 Sophie의 포트폴리오입니다." />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
 <style>
   :root {
-    --bg: #fafafa;
-    --bg-card: #ffffff;
-    --border: #e5e5e5;
-    --text: #1a1a1a;
-    --text-dim: #767676;
-    --accent: #2f2f2f;
-    --switch-track: #dddddd;
-    --switch-thumb: #ffffff;
+    --paper: #f3f5f2;
+    --ink: #17201c;
+    --dim: #5b6862;
+    --line: #cfd8d2;
+    --green: #1e6b4f;
+    --mark: #cdeeb6;
+    --mark-ink: #17201c;
+    color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #111111;
-      --bg-card: #111111;
-      --border: #2a2a2a;
-      --text: #ededed;
-      --text-dim: #8a8a8a;
-      --accent: #ededed;
-      --switch-track: #3a3a3a;
-      --switch-thumb: #ededed;
+      --paper: #121815;
+      --ink: #e4ece7;
+      --dim: #8d9b94;
+      --line: #2a3530;
+      --green: #6cc79a;
+      --mark: #2b5a40;
+      --mark-ink: #eaf7ef;
+      color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #111111;
-    --bg-card: #111111;
-    --border: #2a2a2a;
-    --text: #ededed;
-    --text-dim: #8a8a8a;
-    --accent: #ededed;
-    --switch-track: #3a3a3a;
-    --switch-thumb: #ededed;
-  }
-  * { box-sizing: border-box; }
-  html { background: var(--bg); }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Malgun Gothic", sans-serif;
-    line-height: 1.5;
-  }
-  .wrap {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 80px 24px 120px;
-  }
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 64px;
-  }
-  header h1 {
-    font-size: 1.75rem;
-    font-weight: 600;
-    margin: 0 0 8px;
-    letter-spacing: -0.01em;
-  }
-  header p {
-    color: var(--text-dim);
-    margin: 0;
-    font-size: 0.98rem;
+    --paper: #121815;
+    --ink: #e4ece7;
+    --dim: #8d9b94;
+    --line: #2a3530;
+    --green: #6cc79a;
+    --mark: #2b5a40;
+    --mark-ink: #eaf7ef;
+    color-scheme: dark;
   }
 
+  * { box-sizing: border-box; }
+  html { background: var(--paper); }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+  }
+  a { color: inherit; }
+  :focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 28px 32px 96px;
+  }
+
+  /* 상단 바 */
+  .bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.875rem;
+    color: var(--dim);
+  }
+  .bar a { text-decoration: none; }
+  .bar a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
   .theme-switch {
-    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     gap: 8px;
     background: none;
     border: none;
-    cursor: pointer;
     padding: 4px 0;
-    margin-top: 4px;
+    font: inherit;
+    color: var(--dim);
+    cursor: pointer;
   }
+  .theme-switch:hover { color: var(--ink); }
   .theme-switch .track {
-    width: 36px;
+    width: 34px;
     height: 20px;
     border-radius: 999px;
-    background: var(--switch-track);
+    border: 1.5px solid currentColor;
     position: relative;
-    transition: background 0.15s ease;
   }
   .theme-switch .thumb {
     position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 16px;
-    height: 16px;
+    top: 2.5px;
+    left: 3px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    background: var(--switch-thumb);
-    transition: transform 0.15s ease;
+    background: currentColor;
+    transition: transform 0.18s ease;
   }
-  .theme-switch[aria-pressed="true"] .thumb {
-    transform: translateX(16px);
-  }
-  .theme-switch .label {
-    font-size: 0.78rem;
-    color: var(--text-dim);
-  }
+  .theme-switch[aria-pressed="true"] .thumb { transform: translateX(13px); }
 
-  h2.section-title {
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    font-weight: 500;
-    margin: 0 0 18px;
+  /* 히어로 */
+  .hero {
+    padding: 9vh 0 72px;
+    border-bottom: 1.5px solid var(--ink);
   }
-  .projects {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .card {
-    display: block;
-    width: 100%;
-    background: var(--bg-card);
-    padding: 20px 22px;
-    text-decoration: none;
-    color: inherit;
-    border: none;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    transition: background 0.12s ease;
-  }
-  .card:not(.disabled):hover {
-    background: var(--bg);
-  }
-  .card-top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .card h3 {
+  .hero h1 {
     margin: 0;
-    font-size: 1.05rem;
-    font-weight: 600;
+    font-size: clamp(5rem, 21vw, 15.5rem);
+    font-weight: 820;
+    line-height: 0.82;
+    letter-spacing: -0.065em;
+    margin-left: -0.05em;
   }
-  .card .tag {
-    font-size: 0.7rem;
-    color: var(--text-dim);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 2px 9px;
-    white-space: nowrap;
+  .hero .intro {
+    margin: 40px 0 0;
+    max-width: 34em;
+    font-size: clamp(1.125rem, 2.1vw, 1.375rem);
+    line-height: 1.55;
+    font-weight: 450;
   }
-  .card p {
-    margin: 8px 0 0;
-    color: var(--text-dim);
-    font-size: 0.88rem;
+  .hero .intro span { color: var(--dim); }
+
+  /* 기술로 보기 */
+  .filter {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    padding: 28px 0 0;
+    align-items: start;
   }
-  .stack {
-    margin-top: 12px;
+  .filter h2 {
+    margin: 4px 0 0;
+    font-size: 0.9375rem;
+    font-weight: 650;
+  }
+  .filter h2 small {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--dim);
+  }
+  .techs {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
   }
-  .stack span {
-    font-size: 0.7rem;
-    color: var(--text-dim);
-    padding: 0;
+
+  .tech {
+    font: inherit;
+    font-size: 0.8125rem;
+    line-height: 1;
+    padding: 7px 11px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
-  .stack span:not(:last-child)::after {
-    content: "·";
-    margin-left: 6px;
-    color: var(--border);
+  .tech:hover { border-color: var(--dim); }
+  .tech.on {
+    background: var(--mark);
+    border-color: var(--mark);
+    color: var(--mark-ink);
+    font-weight: 600;
   }
-  .card.disabled {
-    opacity: 0.45;
-    cursor: default;
+  .tech.clear {
+    border-style: dashed;
+    color: var(--dim);
   }
+  .tech.clear[hidden] { display: none; }
+
+  /* 프로젝트 그룹 */
+  .group {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    padding-top: 40px;
+  }
+  .group > h2 {
+    margin: 0;
+    padding-top: 22px;
+    font-size: 0.9375rem;
+    font-weight: 650;
+    position: sticky;
+    top: 16px;
+    align-self: start;
+  }
+  .group > h2 small {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--dim);
+  }
+  .group > h2 .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: 1px;
+    background: var(--green);
+  }
+  .group.building > h2 .dot {
+    background: transparent;
+    border: 1.5px solid var(--green);
+  }
+  .group.released > h2 .dot {
+    border-radius: 2px;
+  }
+
+  .list { border-top: 1px solid var(--line); }
+
+  .project {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 24px;
+    padding: 22px 0 24px;
+    border-bottom: 1px solid var(--line);
+    transition: opacity 0.2s ease;
+  }
+  .project h3 {
+    margin: 0;
+    font-size: clamp(1.375rem, 2.6vw, 1.75rem);
+    font-weight: 720;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+  }
+  .project h3 a {
+    text-decoration: none;
+    background-image: linear-gradient(var(--mark), var(--mark));
+    background-size: 0% 38%;
+    background-position: 0 88%;
+    background-repeat: no-repeat;
+    transition: background-size 0.25s ease;
+  }
+  .project h3 a:hover,
+  .project h3 a:focus-visible { background-size: 100% 38%; }
+  .project h3 a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  .project { position: relative; }
+  .project .where {
+    font-size: 0.8125rem;
+    color: var(--dim);
+    white-space: nowrap;
+    padding-top: 8px;
+  }
+  .project p {
+    grid-column: 1 / -1;
+    margin: 4px 0 0;
+    max-width: 40em;
+    color: var(--dim);
+    font-size: 0.96875rem;
+    line-height: 1.7;
+  }
+  .project .techs {
+    grid-column: 1 / -1;
+    margin-top: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 필터가 켜졌을 때 */
+  body.filtering .project:not(.match) { opacity: 0.32; }
+  body.filtering .group:not(.has-match) > h2 { opacity: 0.4; }
+
   footer {
-    margin-top: 64px;
-    color: var(--text-dim);
-    font-size: 0.82rem;
+    margin-top: 88px;
+    padding-top: 24px;
+    border-top: 1.5px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.875rem;
+    color: var(--dim);
   }
-  footer a {
-    color: var(--text-dim);
+  footer a { color: var(--ink); text-underline-offset: 3px; }
+
+  @media (max-width: 760px) {
+    .wrap { padding: 20px 16px 72px; }
+    .hero { padding: 64px 0 48px; }
+    .hero .intro { margin-top: 28px; }
+    .filter, .group { grid-template-columns: 1fr; gap: 12px; }
+    .group { padding-top: 32px; }
+    .group > h2 { position: static; padding-top: 0; }
+    .project .where { padding-top: 6px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
   }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <div>
-        <h1>Sophie</h1>
-        <p>실무에서 다루는 문제를 풀어보며 정리하는 백엔드 중심 풀스택 포트폴리오입니다. 지금 보고 계신 현재 웹페이지도 포함되어 있습니다.</p>
-        <div class="stack">
-          <span>HTML</span>
-          <span>CSS</span>
-          <span>JavaScript</span>
-        </div>
-      </div>
+    <div class="bar">
+      <a href="https://github.com/LetsBeLikeSophie" target="_blank" rel="noopener">GitHub</a>
       <button class="theme-switch" id="themeToggle" type="button" aria-pressed="false">
-        <span class="label">Dark</span>
-        <span class="track"><span class="thumb"></span></span>
+        <span class="label">다크 모드</span>
+        <span class="track" aria-hidden="true"><span class="thumb"></span></span>
       </button>
+    </div>
+
+    <header class="hero">
+      <h1>Sophie</h1>
+      <p class="intro">백엔드 중심 풀스택 개발자입니다. <span>실무에서 데이터를 다루며 마주친 문제를 직접 만들어 풀어보고, 그 결과를 여기에 정리합니다.</span></p>
     </header>
 
-    <section>
-      <h2 class="section-title">Projects</h2>
-      <div class="projects">
-        <a class="card" href="/tablelink/">
-          <div class="card-top">
-            <h3>TableLink</h3>
-            <span class="tag">Live</span>
-          </div>
-          <p>여러 테이블을 자동으로 탐지하고 조인 경로를 스스로 찾아, 조건만으로 고객 세그먼트를 뽑아내는 도구입니다. 실무에서 반정규화 테이블·데이터마트를 다루며 마주쳤던 문제에서 착안했습니다.</p>
-          <div class="stack">
-            <span>Spring Boot</span>
-            <span>PostgreSQL</span>
-            <span>React</span>
-            <span>JDBC</span>
-          </div>
-        </a>
-
-        <a class="card" href="https://api.issue-pop.com/app/" target="_blank" rel="noopener">
-          <div class="card-top">
-            <h3>Issue Pop</h3>
-            <span class="tag">Live</span>
-          </div>
-          <p>여러 매체의 RSS를 모아 오늘 어떤 이슈가 많이 보도됐는지 자동으로 클러스터링해서 보여주는 뉴스 트렌드 앱입니다. 문장 임베딩 기반 유사도로 서로 다른 매체의 같은 사건을 하나로 묶습니다.</p>
-          <div class="stack">
-            <span>FastAPI</span>
-            <span>scikit-learn</span>
-            <span>SQLModel</span>
-            <span>Flutter</span>
-          </div>
-        </a>
-
-        <a class="card" href="https://github.com/LetsBeLikeSophie/Cortex" target="_blank" rel="noopener">
-          <div class="card-top">
-            <h3>Cortex</h3>
-            <span class="tag">🚧 개발 중</span>
-          </div>
-          <p>인스타/카카오톡/브라우저 등 어디서든 공유 버튼 하나로 저장하고, 검색 한 번으로 다시 찾는 개인 아카이브 앱입니다. 링크는 오픈그래프/oEmbed로, 캡처 이미지는 비전 모델로 읽어 자동 분류합니다.</p>
-          <div class="stack">
-            <span>React Native</span>
-            <span>Expo</span>
-            <span>Fastify</span>
-            <span>Supabase</span>
-            <span>Claude API</span>
-          </div>
-        </a>
-
-        <a class="card" href="/dailycut/" target="_blank" rel="noopener">
-          <div class="card-top">
-            <h3>Dailycut</h3>
-            <span class="tag">🚧 개발 중</span>
-          </div>
-          <p>농산물 시세·날씨·박스오피스·환율 같은 공공 데이터를 매일 모아 카드로 보여주는 큐레이션 앱입니다. 직접 글을 쓰는 대신 공식 API로 채우고, AI가 짧은 해설을 붙입니다.</p>
-          <div class="stack">
-            <span>FastAPI</span>
-            <span>Flutter</span>
-          </div>
-        </a>
-
-        <a class="card" href="https://github.com/LetsBeLikeSophie/My-Little-Sessions" target="_blank" rel="noopener">
-          <div class="card-top">
-            <h3>My Little Sessions</h3>
-            <span class="tag">v0.3.1</span>
-          </div>
-          <p>Claude Code 세션 하나하나를 픽셀아트 사무실의 직원으로 보여주는 윈도우 데스크톱 앱입니다. 훅으로 세션 이벤트를 받아 작업 중·대기·승인 요청 상태를 캐릭터로 표시하고, 말풍선에서 바로 승인하거나 거절할 수 있습니다.</p>
-          <div class="stack">
-            <span>Electron</span>
-            <span>Node.js</span>
-            <span>Claude Code Hooks</span>
-          </div>
-        </a>
-
-        <a class="card" href="/office-hours/" target="_blank" rel="noopener">
-          <div class="card-top">
-            <h3>Sophie's Office Hours</h3>
-            <span class="tag">🚧 오픈 준비 중</span>
-          </div>
-          <p>AI로 앱을 만들다 막힌 비전공자를 위한 디버깅 상담소입니다. 에러 메시지와 막힌 단계만 받아 원인을 같이 짚고, 다음에 AI에게 바로 쓸 질문까지 정리해 드립니다. 빌드 없는 정적 사이트로, 상담 접수는 구글폼으로 받습니다.</p>
-          <div class="stack">
-            <span>HTML</span>
-            <span>CSS</span>
-            <span>JavaScript</span>
-            <span>Google Forms</span>
-          </div>
-        </a>
-
-        <div class="card disabled">
-          <div class="card-top">
-            <h3>다음 프로젝트</h3>
-            <span class="tag">준비 중</span>
-          </div>
-          <p>새 프로젝트가 준비되면 이 자리에 추가됩니다.</p>
-        </div>
-      </div>
+    <section class="filter" aria-labelledby="filterTitle">
+      <h2 id="filterTitle">기술로 보기<small>누르면 같은 기술을 쓴 프로젝트가 표시돼요</small></h2>
+      <div class="techs" id="techIndex"></div>
     </section>
 
+    <main>
+      <section class="group live">
+        <h2><span class="dot" aria-hidden="true"></span>운영 중<small>지금 바로 써볼 수 있어요</small></h2>
+        <div class="list">
+          <article class="project" data-stack="Spring Boot,PostgreSQL,React,JDBC">
+            <h3><a href="/tablelink/">TableLink</a></h3>
+            <span class="where">itssophie.dev/tablelink</span>
+            <p>여러 테이블을 자동으로 탐지하고 조인 경로를 스스로 찾아, 조건만으로 고객 세그먼트를 뽑아내는 도구입니다. 실무에서 반정규화 테이블·데이터마트를 다루며 마주쳤던 문제에서 착안했습니다.</p>
+          </article>
+
+          <article class="project" data-stack="FastAPI,scikit-learn,SQLModel,Flutter">
+            <h3><a href="https://api.issue-pop.com/app/" target="_blank" rel="noopener">Issue Pop</a></h3>
+            <span class="where">api.issue-pop.com</span>
+            <p>여러 매체의 RSS를 모아 오늘 어떤 이슈가 많이 보도됐는지 자동으로 클러스터링해서 보여주는 뉴스 트렌드 앱입니다. 문장 임베딩 기반 유사도로 서로 다른 매체의 같은 사건을 하나로 묶습니다.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="group released">
+        <h2><span class="dot" aria-hidden="true"></span>배포됨<small>내려받아 설치하는 앱</small></h2>
+        <div class="list">
+          <article class="project" data-stack="Electron,Node.js,Claude Code Hooks">
+            <h3><a href="https://github.com/LetsBeLikeSophie/My-Little-Sessions" target="_blank" rel="noopener">My Little Sessions</a></h3>
+            <span class="where">v0.3.1 · GitHub</span>
+            <p>Claude Code 세션 하나하나를 픽셀아트 사무실의 직원으로 보여주는 윈도우 데스크톱 앱입니다. 훅으로 세션 이벤트를 받아 작업 중·대기·승인 요청 상태를 캐릭터로 표시하고, 말풍선에서 바로 승인하거나 거절할 수 있습니다.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="group building">
+        <h2><span class="dot" aria-hidden="true"></span>만드는 중<small>개발하거나 오픈을 준비하고 있어요</small></h2>
+        <div class="list">
+          <article class="project" data-stack="React Native,Expo,Fastify,Supabase,Claude API">
+            <h3><a href="https://github.com/LetsBeLikeSophie/Cortex" target="_blank" rel="noopener">Cortex</a></h3>
+            <span class="where">GitHub</span>
+            <p>인스타/카카오톡/브라우저 등 어디서든 공유 버튼 하나로 저장하고, 검색 한 번으로 다시 찾는 개인 아카이브 앱입니다. 링크는 오픈그래프/oEmbed로, 캡처 이미지는 비전 모델로 읽어 자동 분류합니다.</p>
+          </article>
+
+          <article class="project" data-stack="FastAPI,Flutter">
+            <h3><a href="/dailycut/" target="_blank" rel="noopener">Dailycut</a></h3>
+            <span class="where">itssophie.dev/dailycut</span>
+            <p>농산물 시세·날씨·박스오피스·환율 같은 공공 데이터를 매일 모아 카드로 보여주는 큐레이션 앱입니다. 직접 글을 쓰는 대신 공식 API로 채우고, AI가 짧은 해설을 붙입니다.</p>
+          </article>
+
+          <article class="project" data-stack="HTML,CSS,JavaScript,Google Forms">
+            <h3><a href="/office-hours/" target="_blank" rel="noopener">Sophie's Office Hours</a></h3>
+            <span class="where">오픈 준비 중</span>
+            <p>AI로 앱을 만들다 막힌 비전공자를 위한 디버깅 상담소입니다. 에러 메시지와 막힌 단계만 받아 원인을 같이 짚고, 다음에 AI에게 바로 쓸 질문까지 정리해 드립니다. 빌드 없는 정적 사이트로, 상담 접수는 구글폼으로 받습니다.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
     <footer>
+      <span>이 페이지도 HTML, CSS, JavaScript만으로 만든 정적 사이트예요.</span>
       <a href="https://github.com/LetsBeLikeSophie" target="_blank" rel="noopener">github.com/LetsBeLikeSophie</a>
     </footer>
   </div>
 
   <script>
     (function () {
+      /* 테마 */
       var root = document.documentElement;
       var btn = document.getElementById('themeToggle');
       var label = btn.querySelector('.label');
-      var stored = localStorage.getItem('theme');
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
 
-      function systemPrefersDark() {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches;
-      }
-      function currentIsDark() {
+      function isDark() {
         var t = root.getAttribute('data-theme');
         if (t === 'dark') return true;
         if (t === 'light') return false;
-        return systemPrefersDark();
+        return mq.matches;
       }
       function sync() {
-        var dark = currentIsDark();
+        var dark = isDark();
         btn.setAttribute('aria-pressed', String(dark));
-        label.textContent = dark ? 'Light' : 'Dark';
-      }
-      if (stored === 'light' || stored === 'dark') {
-        root.setAttribute('data-theme', stored);
+        label.textContent = dark ? '라이트 모드' : '다크 모드';
       }
       sync();
-
+      if (mq.addEventListener) mq.addEventListener('change', sync);
       btn.addEventListener('click', function () {
-        var next = currentIsDark() ? 'light' : 'dark';
+        var next = isDark() ? 'light' : 'dark';
         root.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
+        try { localStorage.setItem('theme', next); } catch (e) {}
         sync();
       });
+
+      /* 기술로 보기 */
+      var projects = Array.prototype.slice.call(document.querySelectorAll('.project'));
+      var index = document.getElementById('techIndex');
+      var counts = {};
+      var order = [];
+      var active = null;
+
+      projects.forEach(function (p) {
+        var stack = p.getAttribute('data-stack').split(',');
+        var row = document.createElement('div');
+        row.className = 'techs';
+        stack.forEach(function (name) {
+          if (!counts[name]) { counts[name] = 0; order.push(name); }
+          counts[name]++;
+          row.appendChild(makeTech(name));
+        });
+        p.appendChild(row);
+      });
+
+      // 여러 프로젝트에 공통으로 쓰인 기술을 앞에
+      order.sort(function (a, b) { return counts[b] - counts[a]; });
+      order.forEach(function (name) { index.appendChild(makeTech(name)); });
+
+      var clear = document.createElement('button');
+      clear.type = 'button';
+      clear.className = 'tech clear';
+      clear.textContent = '선택 해제';
+      clear.hidden = true;
+      clear.addEventListener('click', function () { select(null); });
+      index.appendChild(clear);
+
+      function makeTech(name) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'tech';
+        b.textContent = name;
+        b.setAttribute('data-tech', name);
+        b.setAttribute('aria-pressed', 'false');
+        b.addEventListener('click', function () { select(active === name ? null : name); });
+        return b;
+      }
+
+      function select(name) {
+        active = name;
+        document.body.classList.toggle('filtering', !!name);
+        clear.hidden = !name;
+        document.querySelectorAll('.tech[data-tech]').forEach(function (b) {
+          var on = b.getAttribute('data-tech') === name;
+          b.classList.toggle('on', on);
+          b.setAttribute('aria-pressed', String(on));
+        });
+        projects.forEach(function (p) {
+          var match = !!name && p.getAttribute('data-stack').split(',').indexOf(name) !== -1;
+          p.classList.toggle('match', match);
+        });
+        document.querySelectorAll('.group').forEach(function (g) {
+          g.classList.toggle('has-match', !!g.querySelector('.project.match'));
+        });
+      }
     })();
   </script>
 </body>
