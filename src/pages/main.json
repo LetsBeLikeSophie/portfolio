@@ -1,4 +1,5 @@
 {
+  "extends": "hybe",
   "slug": "",
   "title": "Sophie — Portfolio",
   "index": true,

@@ -108,6 +108,12 @@ def main():
     built = []
     for cfg in sorted((SRC / "pages").glob("*.json")):
         page = load(cfg)
+        # "extends": "hybe" → 이 주소에서 그 회사 페이지 내용을 그대로 보여줌.
+        # 주소(slug)와 검색 허용(index)만 이 파일 값을 유지하고, 나머지 내용은 회사 설정을 따름.
+        # "extends" 줄을 지우면 이 파일에 적힌 원래 내용으로 돌아감.
+        if page.get("extends"):
+            base = load(SRC / "pages" / f'{page["extends"]}.json')
+            page = {**page, **base, "slug": page.get("slug", ""), "index": page.get("index", True)}
         slug = page.get("slug", "")
         dest = ROOT / slug / "index.html" if slug else ROOT / "index.html"
         dest.parent.mkdir(parents=True, exist_ok=True)
