@@ -25,9 +25,13 @@ def load(path):
 
 def project_card(p, note, note_label):
     target = ' target="_blank" rel="noopener"' if p["external"] else ""
+    state = f'<span class="state {escape(p["state"])}">{escape(p["state_label"])}</span>'
+    if p.get("badge"):
+        state = f'<div class="state-row">{state}<span class="badge">{escape(p["badge"])}</span></div>'
+    state = "            " + state
     lines = [
         f'          <article class="project" id="{escape(p["id"])}" data-stack="{escape(",".join(p["stack"]))}">',
-        f'            <span class="state {escape(p["state"])}">{escape(p["state_label"])}</span>',
+        state,
         f'            <h3><a href="{escape(p["href"])}"{target}>{escape(p["name"])}</a></h3>',
         f'            <p>{escape(p["desc"])}</p>',
     ]

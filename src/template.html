@@ -379,6 +379,16 @@
   .state.live::before { box-shadow: 0 0 0 0 var(--green); animation: beat 2.4s ease-out infinite; }
   .state.released::before { border-radius: 2px; }
   .state.building::before { background: transparent; border: 1.5px solid var(--green); width: 7px; height: 7px; }
+  .state-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  .badge {
+    padding: 1px 8px;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--green);
+    border: 1px solid var(--green);
+    border-radius: 999px;
+    white-space: nowrap;
+  }
   @keyframes beat {
     0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--green) 55%, transparent); }
     70%, 100% { box-shadow: 0 0 0 7px transparent; }

@@ -98,4 +98,5 @@ ssh -i <SSH 키 파일> ubuntu@<서버 IP> "cd /var/www/portfolio && ls index.ht
 
 `src/projects.json`의 `projects`에 항목 하나를 추가하고 `python3 build.py`를 실행합니다.
 `group`은 `public`(공개 중) 또는 `building`(만드는 중), `state`는 `live`·`released`·`building` 중 하나입니다.
+`state`와 별개로 표시할 상태가 있으면 `badge`에 적습니다 (예: `"badge": "앱 심사 중"`). 빼면 표시되지 않습니다.
 모든 페이지에 한 번에 반영되고, 회사별 페이지에서는 `order`에 없으면 뒤에 붙습니다.
