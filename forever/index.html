@@ -6,6 +6,8 @@
 <title>포에버 채팅</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script>const whTooltips = { colorLinks: true, iconizeLinks: true, renameLinks: true };</script>
+<script src="https://wow.zamimg.com/js/tooltips.js" async></script>
 <style>
   :root{
     --bg:#0d0b09; --panel:#17130f; --panel2:#1f1a14; --line:#3a2f22;
@@ -109,6 +111,7 @@
   .msg.emote .etext{color:#ff9f45}
   .emotes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;max-height:34vh;overflow-y:auto}
   .emotes button{border:1px solid #5a3a1a;background:#2a1a0c;color:#ffb46b;border-radius:999px;padding:6px 11px;font-size:13px;cursor:pointer}
+  a.whl{color:#7fb6ff;text-decoration:none;border-bottom:1px dotted currentColor;word-break:break-all}
   .tag{display:inline-block;font-size:11px;font-weight:700;padding:0 6px;border-radius:5px;margin-right:5px;vertical-align:1px}
   .tag.question{background:#183a4a;color:#8fd6f5}
   .tag.trade{background:#3d3412;color:#f0d36b}
@@ -488,7 +491,8 @@ function renderMsg(m, inThread){
   el.appendChild(document.createTextNode(": "));
   if (m.tag && m.tag!=="chat"){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag; el.appendChild(g); }
   if (m.foreign_lang){ const l=document.createElement("span"); l.className="lang"; l.textContent=`[${LANG[m.sender_faction]}]`; el.appendChild(l); }
-  const tx=document.createElement("span"); tx.className="text"; tx.textContent=m.body; el.appendChild(tx);
+  const tx=document.createElement("span"); tx.className="text";
+  if (m.foreign_lang) tx.textContent=m.body; else tx.appendChild(linkify(m.body)); el.appendChild(tx);
   if (!inThread){
     const r=document.createElement("span"); r.className="replies";
     r.textContent = m.reply_count ? `💬 ${m.reply_count}` : "";
@@ -497,6 +501,29 @@ function renderMsg(m, inThread){
   }
   return el;
 }
+/* ---------- 와우헤드 링크 → 툴팁 링크 ---------- */
+const WH_RE = /https?:\/\/(?:[a-z]{2,4}\.)?wowhead\.com\/[^\s<>"']+/gi;
+function linkify(text){
+  const frag=document.createDocumentFragment(); let last=0; text=String(text||"");
+  for (const m of text.matchAll(WH_RE)){
+    let url=m[0].replace(/[).,!?]+$/,"");
+    frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+    const a=document.createElement("a"); a.className="whl"; a.href=url; a.target="_blank"; a.rel="noopener noreferrer";
+    a.dataset.whRenameLink="true"; a.dataset.whIconSize="small";
+    const path=url.replace(/^https?:\/\/[^/]+\//,"").replace(/^(forever|classic|ko|en)\//g,"").replace(/^(ko|en)\//,"");
+    a.textContent="와우헤드 "+decodeURIComponent(path).slice(0,40);
+    a.onclick=(e)=>e.stopPropagation();
+    frag.appendChild(a); last=m.index+m[0].length - (m[0].length-url.length);
+  }
+  frag.appendChild(document.createTextNode(text.slice(last)));
+  scheduleWhRefresh();
+  return frag;
+}
+let whTimer=null;
+function scheduleWhRefresh(){ clearTimeout(whTimer); whTimer=setTimeout(()=>{
+  try { window.$WowheadPower?.refreshLinks?.(); } catch {}
+  try { window.WH?.Tooltips?.refreshLinks?.(); } catch {} }, 150); }
+
 let muted = new Set(); try { muted = new Set(JSON.parse(ls.get("wowchat_muted")||"[]")); } catch {}
 const visible = (m) => (filterTag==="all" || m.tag===filterTag || (filterTag==="chat" && m.tag==="emote")) && (!myFactionOnly || m.sender_faction===me.faction)
   && !muted.has(m.player_id);
