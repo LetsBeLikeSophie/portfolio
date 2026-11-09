@@ -100,3 +100,8 @@ ssh -i <SSH 키 파일> ubuntu@<서버 IP> "cd /var/www/portfolio && ls index.ht
 `group`은 `public`(공개 중) 또는 `building`(만드는 중), `state`는 `live`·`released`·`building` 중 하나입니다.
 `state`와 별개로 표시할 상태가 있으면 `badge`에 적습니다 (예: `"badge": "앱 심사 중"`). 빼면 표시되지 않습니다.
 모든 페이지에 한 번에 반영되고, 회사별 페이지에서는 `order`에 없으면 뒤에 붙습니다.
+
+## 포에버 채팅 (`/forever/`)
+
+`forever/index.html`은 와우 포에버 실시간 채팅 페이지입니다. `build.py`와 상관없는 독립 파일이라 직접 고칩니다.
+데이터는 Supabase(camtrip 프로젝트의 `wow` 스키마)에 있고, 캐릭터 조회는 Edge Function `wow-character`가 블리자드 API로 처리합니다.
