@@ -60,7 +60,8 @@
   .pick .who2{flex:1;min-width:0}
   .pick .nm{font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .pick .sub2{font-size:12px;color:var(--muted)}
-  .pick select{width:auto;padding:6px 8px;font-size:13px}
+  .pick.off{opacity:.55}
+  .srv.unk{color:var(--muted);border-style:dashed}
   .srv{font-size:11px;padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--gold);white-space:nowrap}
   .srv.pvp{color:#ff8a7a;border-color:#5a2a24}
 
@@ -91,9 +92,6 @@
   .msg.tap:active{background:#ffffff08}
   .msg .time{color:#6d6354;font-size:11px;margin-right:5px}
   .msg .who{font-weight:700}
-  .vwrap{display:inline-block;width:14px;height:14px;margin-left:3px;vertical-align:-2px;line-height:0}
-  .vwrap.lg{width:18px;height:18px;margin-left:5px;vertical-align:-2px}
-  .vbadge{width:100%;height:100%;display:block}
   .msg .lv{color:#6d6354;font-size:11px;margin-left:3px}
   .msg .lang{color:var(--muted);font-style:italic;margin-right:4px}
   .msg .text{color:var(--body)}
@@ -151,6 +149,21 @@
     background:var(--gold);color:#1a1205;border:0;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;
     box-shadow:0 6px 20px #000a;cursor:pointer;z-index:4}
 
+  /* 알림 */
+  .bell{position:relative;background:#0006;border:1px solid var(--line);border-radius:999px;width:34px;height:34px;
+    display:grid;place-items:center;color:var(--gold);cursor:pointer;flex:none;padding:0}
+  .bdot{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;
+    background:var(--danger);color:#fff;font-size:10px;font-weight:700;line-height:17px;text-align:center}
+  #notif{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);z-index:7}
+  #notif header .top button{background:none;border:0;color:var(--gold);font-size:15px;cursor:pointer;padding:4px 2px}
+  #nList{flex:1;overflow-y:auto;padding:6px 10px}
+  .ni{padding:10px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px}
+  .ni:active{background:#ffffff08}
+  .ni.new{background:#3a2c1440}
+  .ni .k{font-size:11.5px;color:var(--gold-dim);margin-bottom:3px}
+  .ni .b{font-size:14.5px;line-height:1.5;color:var(--body);word-break:break-word}
+  .ni .b.foreign{font-style:italic;color:#a99e8a}
+
   /* 시트 */
   #sheet{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:8}
   #sheet .card{border-radius:14px 14px 0 0;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
@@ -170,32 +183,14 @@
       <div id="pickList"></div>
       <div class="err" id="pickErr"></div>
       <button class="btn ghost sm" id="refreshBtn" type="button">배틀넷에서 캐릭터 다시 불러오기</button>
-      <button class="btn ghost sm" id="toManual" type="button">직접 입장하기</button>
     </div>
 
     <!-- 처음 화면 -->
     <div id="altBox">
       <button class="btn bnet" id="bnetBtn" type="button">배틀넷으로 로그인</button>
       <div class="err" id="bnetErr"></div>
-      <p class="note" style="margin-top:2px;text-align:center">내 포에버 캐릭터를 골라서 <b style="color:var(--text)"><span class="vwrap"><svg class="vbadge" viewBox="0 0 24 24" aria-label="배틀넷 인증" role="img"><polygon points="12.00,1.00 14.48,2.73 17.50,2.47 18.79,5.21 21.53,6.50 21.27,9.52 23.00,12.00 21.27,14.48 21.53,17.50 18.79,18.79 17.50,21.53 14.48,21.27 12.00,23.00 9.52,21.27 6.50,21.53 5.21,18.79 2.47,17.50 2.73,14.48 1.00,12.00 2.73,9.52 2.47,6.50 5.21,5.21 6.50,2.47 9.52,2.73" fill="#2f8cf0" stroke="#2f8cf0" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.4 12.3l3.1 3.1 6.1-6.3" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> 인증</b> 표시로 입장해요</p>
+      <p class="note" style="margin-top:2px;text-align:center">배틀넷 계정의 포에버 캐릭터로 입장해요</p>
 
-      <details id="manualWrap">
-        <summary><div class="or"><span>또는 직접 입장</span></div></summary>
-        <form id="manualBox" autocomplete="off">
-          <div class="row">
-            <div><label for="fName">캐릭터 이름</label><input id="fName" maxlength="24" required placeholder="이름 성"></div>
-            <div style="flex:.7"><label for="fRealm">서버</label><select id="fRealm"><option value="일반">일반</option><option value="PvP">PvP</option></select></div>
-          </div>
-          <label for="fRace">종족</label>
-          <select id="fRace" required></select>
-          <div class="row">
-            <div><label for="fClass">직업</label><select id="fClass" required></select></div>
-            <div style="flex:.6"><label for="fLevel">레벨</label><input id="fLevel" type="number" min="1" max="100" inputmode="numeric" placeholder="선택"></div>
-          </div>
-          <button class="btn" type="submit" id="joinBtn">입장하기</button>
-          <div class="err" id="joinErr"></div>
-        </form>
-      </details>
     </div>
 
     <p class="note">다른 진영 사람이 쓴 채팅은 게임처럼 <b>공용어 / 오크어</b>로 바뀌어 보여요. 원문은 같은 진영에게만 전달되고, 메시지는 3일 뒤 지워져요.</p>
@@ -209,6 +204,7 @@
     <div class="top">
       <div class="title">FOREVER</div>
       <span class="srv" id="srvBadge"></span>
+      <button class="bell" id="bellBtn" type="button" aria-label="알림"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bdot hidden" id="bellDot"></span></button>
       <button class="me" id="meBtn" type="button"><span class="icons" id="meIcons"></span><span id="meName"></span></button>
     </div>
     <div class="chips" id="chips"></div>
@@ -238,6 +234,18 @@
   </form>
 </section>
 
+<!-- 알림함 -->
+<section id="notif" class="hidden">
+  <header>
+    <div class="top">
+      <button type="button" id="nBack">‹ 채팅</button>
+      <div style="flex:1;text-align:center;color:var(--gold);font-weight:700">알림</div>
+      <span style="width:52px"></span>
+    </div>
+  </header>
+  <div id="nList"></div>
+</section>
+
 <div id="sheet" class="hidden">
   <div class="card">
     <div id="sheetInfo" style="font-size:15px;line-height:1.8"></div>
@@ -254,7 +262,6 @@
       <button type="button" id="pCopy">이름 복사</button>
       <button type="button" id="pMute" class="warn">채팅 숨기기</button>
     </div>
-    <div class="recent"><h4>최근 글</h4><div id="pRecent"></div></div>
     <button class="btn ghost sm" id="pClose" type="button">닫기</button>
   </div>
 </div>
@@ -286,8 +293,6 @@ const TAGS = [
   { id: "guild", label: "길드 모집" }, { id: "party", label: "파티·공대" },
 ];
 const TAG_LABEL = Object.fromEntries(TAGS.map(t => [t.id, t.label]));
-const VBADGE = '<svg class="vbadge" viewBox="0 0 24 24" aria-label="배틀넷 인증" role="img"><polygon points="12.00,1.00 14.48,2.73 17.50,2.47 18.79,5.21 21.53,6.50 21.27,9.52 23.00,12.00 21.27,14.48 21.53,17.50 18.79,18.79 17.50,21.53 14.48,21.27 12.00,23.00 9.52,21.27 6.50,21.53 5.21,18.79 2.47,17.50 2.73,14.48 1.00,12.00 2.73,9.52 2.47,6.50 5.21,5.21 6.50,2.47 9.52,2.73" fill="#2f8cf0" stroke="#2f8cf0" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.4 12.3l3.1 3.1 6.1-6.3" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-function vbadge(){ const s=document.createElement("span"); s.className="vwrap"; s.title="배틀넷 인증 캐릭터"; s.innerHTML=VBADGE; return s; }
 
 // 블리자드 공식 아이콘 서버 (불러오지 못하면 글자 배지로 대체)
 const ICON = (n) => `https://render.worldofwarcraft.com/us/icons/56/${n}.jpg`;
@@ -336,35 +341,14 @@ function show(id){ for (const s of ["join","chat"]) $(s).classList.toggle("hidde
 
 let me = null, channel = "general";
 let cache = [];
-let filterTag = "all", myFactionOnly = false;
+let filterTag = "all", myFactionOnly = ls.get("wowchat_hide_enemy")==="1";
 let msgSub = null, presence = null;
 let threadParent = null, threadMsgs = [];
 
 /* ---------- 입장: 직접 ---------- */
 (function fill(){
-  const r=$("fRace");
-  for (const [fac, list] of Object.entries(RACES)) {
-    const g=document.createElement("optgroup"); g.label = fac==="alliance"?"얼라이언스":"호드";
-    list.forEach(x=>{ const o=document.createElement("option"); o.value=x; o.textContent=x; g.appendChild(o); });
-    r.appendChild(g);
-  }
-  CLASSES.forEach(x=>{ const o=document.createElement("option"); o.value=x; o.textContent=x; $("fClass").appendChild(o); });
   TAGS.forEach(t=>{ const o=document.createElement("option"); o.value=t.id; o.textContent=t.label; $("tagSel").appendChild(o); });
 })();
-
-$("manualBox").onsubmit = async (ev) => {
-  ev.preventDefault();
-  $("joinErr").textContent=""; $("joinBtn").disabled=true;
-  const lv = parseInt($("fLevel").value,10);
-  const { data, error } = await sb.rpc("wow_register", {
-    p_name: $("fName").value.trim(), p_realm: $("fRealm").value, p_race: $("fRace").value, p_class: $("fClass").value,
-    p_level: Number.isFinite(lv) ? lv : null, p_faction: null,
-  });
-  $("joinBtn").disabled=false;
-  if (error) { $("joinErr").textContent = errMsg(error); return; }
-  ls.set("wowchat_token", data.token);
-  enterChat(data);
-};
 
 /* ---------- 입장: 배틀넷 ---------- */
 async function startBnet(btn){
@@ -385,7 +369,6 @@ async function startBnet(btn){
 }
 $("bnetBtn").onclick = () => startBnet($("bnetBtn"));
 $("refreshBtn").onclick = () => startBnet($("refreshBtn"));
-$("toManual").onclick = () => { showAlt(); $("manualWrap").open = true; };
 
 function showAlt(){ $("pickBox").classList.add("hidden"); $("altBox").classList.remove("hidden"); }
 
@@ -402,20 +385,18 @@ function showPicker(acc){
     const sub = document.createElement("span"); sub.className = "sub2";
     sub.textContent = `${c.level ? "Lv." + c.level + " " : ""}${c.race || ""} ${c.class || ""}`.trim();
     who.append(nm, sub);
-    let srvEl;
-    if (c.realm) { srvEl = document.createElement("span"); srvEl.className = "srv"+(c.realm==="PvP"?" pvp":""); srvEl.textContent = c.realm; }
-    else {
-      srvEl = document.createElement("select"); srvEl.title = "서버 정보를 못 받아서 직접 골라 주세요";
-      ["일반","PvP"].forEach(v=>{ const o=document.createElement("option"); o.value=v; o.textContent=v; srvEl.appendChild(o); });
-      const saved = ls.get("wowchat_srv_"+c.name); if (saved) srvEl.value = saved;
-      srvEl.onclick = (e)=>e.stopPropagation();
-    }
+    const srvEl = document.createElement("span");
+    srvEl.className = "srv"+(c.realm==="PvP"?" pvp":"")+(c.realm?"":" unk");
+    srvEl.textContent = c.realm || "서버 확인 중";
+    if (!c.realm) b.classList.add("off");
     b.append(iconSet(c, true), who, srvEl);
     const go = async () => {
       if (b.dataset.busy) return; b.dataset.busy = "1";
       $("pickErr").textContent = "";
-      const realm = c.realm || srvEl.value;
-      if (!c.realm) ls.set("wowchat_srv_"+c.name, realm);
+      if (!c.realm) { delete b.dataset.busy;
+        $("pickErr").textContent = "이 캐릭터의 서버(일반/PvP)를 아직 알아내지 못했어요. 관리자에게 알려주세요 (서버 번호 "+(c.realm_id ?? "?")+")";
+        return; }
+      const realm = c.realm;
       const { data, error } = await sb.rpc("wow_register_verified",
         { p_account: ls.get("wowchat_account"), p_index: i, p_realm: realm });
       delete b.dataset.busy;
@@ -451,9 +432,9 @@ async function handleBnetReturn(params){
       body: JSON.stringify({ code: params.get("code"), redirect_uri: REDIRECT }),
     });
     const d = await r.json();
-    if (!d.ok) throw new Error((d.message || "캐릭터를 불러오지 못했어요") + " · 직접 입장으로 들어갈 수 있어요");
+    if (!d.ok) throw new Error(d.message || "캐릭터를 불러오지 못했어요");
     ls.set("wowchat_account", d.account_token);
-    showPicker(d);
+    if (!(await openPickerFromAccount())) throw new Error("캐릭터 목록을 불러오지 못했어요");
   } catch (e) {
     $("bnetErr").textContent = errMsg(e);
   } finally {
@@ -476,7 +457,6 @@ function renderMsg(m, inThread){
   who.style.cursor="pointer";
   who.onclick=(e)=>{ e.stopPropagation(); openProfile(m); };
   el.append(t, who);
-  if (m.sender_verified) el.appendChild(vbadge());
   if (m.sender_level){ const l=document.createElement("span"); l.className="lv"; l.textContent="Lv."+m.sender_level; el.appendChild(l); }
   el.appendChild(document.createTextNode(": "));
   if (m.tag && m.tag!=="chat"){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag; el.appendChild(g); }
@@ -496,13 +476,12 @@ const visible = (m) => (filterTag==="all" || m.tag===filterTag) && (!myFactionOn
 
 /* ---------- 프로필 카드 ---------- */
 let profFor = null;
-async function openProfile(m){
+function openProfile(m){
   profFor = m;
   const head=$("pHead"); head.innerHTML="";
   const who=document.createElement("div");
   const nm=document.createElement("div"); nm.className="nm"; nm.style.color=CLASS_COLOR[m.sender_class]||"";
   nm.textContent=m.sender_name;
-  if (m.sender_verified){ const v=vbadge(); v.classList.add("lg"); nm.appendChild(v); }
   const meta=document.createElement("div"); meta.className="meta2";
   meta.textContent=[m.sender_level?`Lv.${m.sender_level}`:null, `${m.sender_race} ${m.sender_class}`,
     m.sender_faction==="alliance"?"얼라이언스":"호드", m.sender_realm?`${m.sender_realm} 서버`:null].filter(Boolean).join(" · ");
@@ -511,23 +490,7 @@ async function openProfile(m){
   const self = m.player_id===me.id;
   $("pMute").classList.toggle("hidden", self);
   $("pMute").textContent = muted.has(m.player_id) ? "채팅 보이기" : "채팅 숨기기";
-  $("pRecent").innerHTML='<div class="empty" style="margin:8px 0">불러오는 중…</div>';
   $("prof").classList.remove("hidden");
-  const { data, error } = await sb.rpc("wow_player_recent", { p_token: me.token, p_player: m.player_id, p_limit: 5 });
-  if (profFor !== m) return;
-  const box=$("pRecent"); box.innerHTML="";
-  if (error || !data?.length){ box.innerHTML='<div class="empty" style="margin:8px 0">최근 글이 없어요</div>'; return; }
-  data.forEach(r=>{
-    const row={ ...m, id:r.id, tag:r.tag, body:r.body, foreign_lang:r.foreign_lang, reply_count:r.reply_count, parent_id:r.parent_id, created_at:r.created_at };
-    const el=renderMsg(row, true);
-    el.querySelector(".who").onclick=null;
-    if (r.parent_id){ const s=document.createElement("span"); s.className="lv"; s.textContent=" (답글)"; el.appendChild(s); }
-    el.classList.add("tap");
-    el.onclick=()=>{ $("prof").classList.add("hidden");
-      if (r.parent_id) { const p=cache.find(x=>x.id===r.parent_id); openThread(p || { ...row, id:r.parent_id, parent_id:null }); }
-      else openThread(row); };
-    box.appendChild(el);
-  });
 }
 $("pClose").onclick = () => $("prof").classList.add("hidden");
 $("prof").onclick = (e) => { if (e.target.id==="prof") $("prof").classList.add("hidden"); };
@@ -538,8 +501,8 @@ function mentionCandidates(q){
   const push=(u)=>{ if (!u.name || u.id===me.id || seen.has(u.name)) return; seen.add(u.name); out.push(u); };
   const ql=q.toLowerCase();
   const match=(n)=> !ql || n.toLowerCase().split(" ").some(w=>w.startsWith(ql)) || n.toLowerCase().startsWith(ql) || n.toLowerCase().includes(ql);
-  [...onlineUsers.values()].filter(u=>match(u.name)).forEach(u=>push({ ...u, online:true }));
-  [...cache].reverse().forEach(m=>{ if (match(m.sender_name)) push({ id:m.player_id, name:m.sender_name, cls:m.sender_class, faction:m.sender_faction }); });
+  [...onlineUsers.values()].filter(u=>u.faction===me.faction && match(u.name)).forEach(u=>push({ ...u, online:true }));
+  [...cache].reverse().forEach(m=>{ if (m.sender_faction===me.faction && match(m.sender_name)) push({ id:m.player_id, name:m.sender_name, cls:m.sender_class, faction:m.sender_faction }); });
   return out.slice(0, 6);
 }
 function attachMention(input){
@@ -606,6 +569,11 @@ function pingIfMentioned(m){
 }
 function addMsg(m){
   pingIfMentioned(m);
+  if (me && m.player_id!==me.id && (m.parent_id || (!m.foreign_lang && (m.body||"").includes("@"+me.name)))) {
+    const mine = m.parent_id && (cache.find(x=>x.id===m.parent_id)?.player_id===me.id);
+    if (mine && !muted.has(m.player_id)) toast(`${m.sender_name} 님이 내 글에 답글을 달았어요`);
+    scheduleNotifs();
+  }
   if (m.parent_id) { addThreadMsg(m); return; }
   if (cache.some(x=>x.id===m.id)) return;
   cache.push(m); if (cache.length>400) cache.splice(0, cache.length-400);
@@ -623,17 +591,18 @@ function updateReplyCount(id, count){
 
 function buildChips(){
   const c=$("chips"); c.innerHTML="";
+  const f=document.createElement("button"); f.type="button";
+  f.className="chip fac "+me.faction+(myFactionOnly?" on":"");
+  f.textContent = (myFactionOnly ? "✕ " : "") + (me.faction==="alliance"?"호드":"얼라이언스") + " 채팅 숨기기";
+  f.onclick=()=>{ myFactionOnly=!myFactionOnly; ls.set("wowchat_hide_enemy", myFactionOnly?"1":"0"); buildChips(); renderAll(); };
+  c.appendChild(f);
   const all=[{id:"all",label:"전체"}, ...TAGS];
   all.forEach(t=>{
     const b=document.createElement("button"); b.type="button"; b.className="chip"+(filterTag===t.id?" on":"");
     b.textContent=t.label; b.onclick=()=>{ filterTag=t.id; buildChips(); renderAll(); };
     c.appendChild(b);
   });
-  const f=document.createElement("button"); f.type="button";
-  f.className="chip fac "+me.faction+(myFactionOnly?" on":"");
-  f.textContent = (me.faction==="alliance"?"얼라이언스":"호드")+"만";
-  f.onclick=()=>{ myFactionOnly=!myFactionOnly; buildChips(); renderAll(); };
-  c.appendChild(f);
+
 }
 
 async function loadHistory(){
@@ -689,7 +658,7 @@ function subscribe(){
 
 function enterChat(player){
   me = player; channel = chOf(me.realm);
-  cache = []; filterTag = "all"; myFactionOnly = false;
+  cache = []; filterTag = "all";
   show("chat");
   $("srvBadge").textContent = `${me.realm||"일반"} 서버`;
   $("srvBadge").className = "srv"+(me.realm==="PvP"?" pvp":"");
@@ -702,6 +671,7 @@ function enterChat(player){
   $("list").innerHTML = '<div class="empty">불러오는 중…</div>';
   buildChips();
   subscribe();
+  loadNotifs();
 }
 
 $("send").onsubmit = async (ev) => {
@@ -747,17 +717,62 @@ $("tSend").onsubmit = async (ev) => {
   input.focus();
 };
 
+/* ---------- 알림함 ---------- */
+let notifs = [], notifTimer = null;
+const seenKey = () => "wowchat_seen_" + me.id;
+function lastSeen(){ return Number(ls.get(seenKey()) || 0); }
+async function loadNotifs(){
+  if (!me) return;
+  const { data, error } = await sb.rpc("wow_notifications", { p_token: me.token, p_limit: 40 });
+  if (error || !me) return;
+  notifs = data || [];
+  const unread = notifs.filter(n => n.id > lastSeen()).length;
+  const d = $("bellDot"); d.textContent = unread > 99 ? "99+" : unread; d.classList.toggle("hidden", !unread);
+  if (!$("notif").classList.contains("hidden")) renderNotifs();
+}
+function scheduleNotifs(){ clearTimeout(notifTimer); notifTimer = setTimeout(loadNotifs, 700); }
+function renderNotifs(){
+  const l=$("nList"); l.innerHTML="";
+  if (!notifs.length){ l.innerHTML='<div class="empty">아직 알림이 없어요<br>누가 @로 부르거나 내 글에 답글을 달면 여기 모여요</div>'; return; }
+  const seen = Number(ls.get("wowchat_seen_prev_"+me.id) || 0);
+  notifs.forEach(n=>{
+    const el=document.createElement("div"); el.className="ni"+(n.id>seen?" new":"");
+    const k=document.createElement("div"); k.className="k";
+    k.textContent = `${n.kind==="mention"?"나를 불렀어요":"내 글에 답글"} · ${fmtTime(n.created_at)}`;
+    const b=document.createElement("div"); b.className="b"+(n.foreign_lang?" foreign":"");
+    const w=document.createElement("b"); w.textContent=n.sender_name; w.style.color=CLASS_COLOR[n.sender_class]||"";
+    b.append(w, document.createTextNode(": "+(n.foreign_lang?`[${LANG[n.sender_faction]}] `:"")+n.body));
+    el.append(k,b);
+    el.onclick = () => {
+      const pid = n.parent_id || n.id;
+      const p = cache.find(x=>x.id===pid);
+      $("notif").classList.add("hidden");
+      openThread(p || { id: pid, channel, player_id:null, sender_name:"원래 글", sender_class:"", sender_faction:me.faction,
+        sender_race:"", body:"", foreign_lang:false, tag:"chat", parent_id:null, reply_count:0, created_at:n.created_at });
+    };
+    l.appendChild(el);
+  });
+}
+$("bellBtn").onclick = async () => {
+  $("notif").classList.remove("hidden");
+  await loadNotifs();
+  ls.set("wowchat_seen_prev_"+me.id, String(lastSeen()));
+  renderNotifs();
+  const max = notifs.reduce((a,n)=>Math.max(a,n.id), lastSeen());
+  ls.set(seenKey(), String(max));
+  $("bellDot").classList.add("hidden");
+};
+$("nBack").onclick = () => $("notif").classList.add("hidden");
+
 /* ---------- 내 정보 ---------- */
 $("meBtn").onclick = () => {
   const box=$("sheetInfo"); box.innerHTML="";
   const head=document.createElement("div"); head.style.cssText="display:flex;align-items:center;gap:10px;margin-bottom:8px";
   const nm=document.createElement("b"); nm.textContent=me.name; nm.style.color=CLASS_COLOR[me.class]||""; nm.style.fontSize="17px";
-  if (me.verified){ const v=vbadge(); v.classList.add("lg"); nm.appendChild(v); }
   head.append(iconSet(me, true), nm);
   box.appendChild(head);
   [["서버", me.realm || "-"], ["종족·직업", `${me.race} ${me.class}`], ["레벨", me.level || "-"],
-   ["진영", me.faction==="alliance" ? "얼라이언스 (공용어)" : "호드 (오크어)"],
-   ["인증", me.verified ? "배틀넷 인증" : "직접 입장"]].forEach(([k,v])=>{
+   ["진영", me.faction==="alliance" ? "얼라이언스 (공용어)" : "호드 (오크어)"]].forEach(([k,v])=>{
     const d=document.createElement("div"); const b=document.createElement("span");
     b.style.color="var(--muted)"; b.textContent=k+"  "; d.append(b, document.createTextNode(v)); box.appendChild(d);
   });
@@ -769,7 +784,7 @@ function leaveChat(){
   if (msgSub) sb.removeChannel(msgSub); if (presence) sb.removeChannel(presence);
   msgSub=presence=null; me=null;
   $("sheet").classList.add("hidden"); $("thread").classList.add("hidden");
-  $("prof").classList.add("hidden"); $("newBar").classList.add("hidden");
+  $("prof").classList.add("hidden"); $("newBar").classList.add("hidden"); $("notif").classList.add("hidden");
 }
 $("switchBtn").onclick = async () => {
   leaveChat(); ls.del("wowchat_token");
