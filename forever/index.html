@@ -91,7 +91,9 @@
   .msg.tap:active{background:#ffffff08}
   .msg .time{color:#6d6354;font-size:11px;margin-right:5px}
   .msg .who{font-weight:700}
-  .msg .vf{color:var(--gold);font-size:11px;margin-left:2px}
+  .vwrap{display:inline-block;width:14px;height:14px;margin-left:3px;vertical-align:-2px;line-height:0}
+  .vwrap.lg{width:18px;height:18px;margin-left:5px;vertical-align:-2px}
+  .vbadge{width:100%;height:100%;display:block}
   .msg .lv{color:#6d6354;font-size:11px;margin-left:3px}
   .msg .lang{color:var(--muted);font-style:italic;margin-right:4px}
   .msg .text{color:var(--body)}
@@ -112,6 +114,15 @@
   form.send select{width:auto;padding:0 8px;font-size:13px;color:var(--gold)}
   form.send button{border:1px solid #8a6a26;border-radius:9px;padding:0 14px;flex:none;
     background:linear-gradient(180deg,#c9a24c,#8c6b25);color:#1a1205;font-weight:700;cursor:pointer}
+  form.send{position:relative}
+  .mbox{position:absolute;left:10px;right:10px;bottom:calc(100% + 4px);background:var(--panel2);border:1px solid var(--gold-dim);
+    border-radius:10px;overflow:hidden;box-shadow:0 -8px 24px #000a;z-index:5}
+  form.send .mbox .mi{display:flex;justify-content:space-between;align-items:center;width:100%;padding:11px 12px;
+    background:none;border:0;border-radius:0;border-bottom:1px solid var(--line);cursor:pointer;text-align:left;
+    font-size:15px;font-weight:400;color:var(--text);flex:none}
+  form.send .mbox .mi:last-child{border-bottom:0}
+  form.send .mbox .mi.on{background:#3a2c1488}
+  .mi .md{font-size:11px;color:#7bd17b}
   .toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);
     background:#2a1d10;border:1px solid var(--gold-dim);padding:8px 14px;border-radius:9px;font-size:13px;
     opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%;z-index:20}
@@ -166,7 +177,7 @@
     <div id="altBox">
       <button class="btn bnet" id="bnetBtn" type="button">배틀넷으로 로그인</button>
       <div class="err" id="bnetErr"></div>
-      <p class="note" style="margin-top:2px;text-align:center">내 포에버 캐릭터를 골라서 <b style="color:var(--gold)">✔ 인증</b> 표시로 입장해요</p>
+      <p class="note" style="margin-top:2px;text-align:center">내 포에버 캐릭터를 골라서 <b style="color:var(--text)"><span class="vwrap"><svg class="vbadge" viewBox="0 0 24 24" aria-label="배틀넷 인증" role="img"><polygon points="12.00,1.00 14.48,2.73 17.50,2.47 18.79,5.21 21.53,6.50 21.27,9.52 23.00,12.00 21.27,14.48 21.53,17.50 18.79,18.79 17.50,21.53 14.48,21.27 12.00,23.00 9.52,21.27 6.50,21.53 5.21,18.79 2.47,17.50 2.73,14.48 1.00,12.00 2.73,9.52 2.47,6.50 5.21,5.21 6.50,2.47 9.52,2.73" fill="#2f8cf0" stroke="#2f8cf0" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.4 12.3l3.1 3.1 6.1-6.3" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> 인증</b> 표시로 입장해요</p>
 
       <details id="manualWrap">
         <summary><div class="or"><span>또는 직접 입장</span></div></summary>
@@ -240,9 +251,8 @@
   <div class="card">
     <div class="ph" id="pHead"></div>
     <div class="acts">
-      <button type="button" id="pMention">@ 부르기</button>
       <button type="button" id="pCopy">이름 복사</button>
-      <button type="button" id="pMute" class="warn">숨기기</button>
+      <button type="button" id="pMute" class="warn">채팅 숨기기</button>
     </div>
     <div class="recent"><h4>최근 글</h4><div id="pRecent"></div></div>
     <button class="btn ghost sm" id="pClose" type="button">닫기</button>
@@ -276,6 +286,8 @@ const TAGS = [
   { id: "guild", label: "길드 모집" }, { id: "party", label: "파티·공대" },
 ];
 const TAG_LABEL = Object.fromEntries(TAGS.map(t => [t.id, t.label]));
+const VBADGE = '<svg class="vbadge" viewBox="0 0 24 24" aria-label="배틀넷 인증" role="img"><polygon points="12.00,1.00 14.48,2.73 17.50,2.47 18.79,5.21 21.53,6.50 21.27,9.52 23.00,12.00 21.27,14.48 21.53,17.50 18.79,18.79 17.50,21.53 14.48,21.27 12.00,23.00 9.52,21.27 6.50,21.53 5.21,18.79 2.47,17.50 2.73,14.48 1.00,12.00 2.73,9.52 2.47,6.50 5.21,5.21 6.50,2.47 9.52,2.73" fill="#2f8cf0" stroke="#2f8cf0" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.4 12.3l3.1 3.1 6.1-6.3" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function vbadge(){ const s=document.createElement("span"); s.className="vwrap"; s.title="배틀넷 인증 캐릭터"; s.innerHTML=VBADGE; return s; }
 
 // 블리자드 공식 아이콘 서버 (불러오지 못하면 글자 배지로 대체)
 const ICON = (n) => `https://render.worldofwarcraft.com/us/icons/56/${n}.jpg`;
@@ -464,7 +476,7 @@ function renderMsg(m, inThread){
   who.style.cursor="pointer";
   who.onclick=(e)=>{ e.stopPropagation(); openProfile(m); };
   el.append(t, who);
-  if (m.sender_verified){ const v=document.createElement("span"); v.className="vf"; v.textContent="✔"; v.title="배틀넷 인증 캐릭터"; el.appendChild(v); }
+  if (m.sender_verified) el.appendChild(vbadge());
   if (m.sender_level){ const l=document.createElement("span"); l.className="lv"; l.textContent=m.sender_level; el.appendChild(l); }
   el.appendChild(document.createTextNode(": "));
   if (m.tag && m.tag!=="chat"){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag; el.appendChild(g); }
@@ -490,7 +502,7 @@ async function openProfile(m){
   const who=document.createElement("div");
   const nm=document.createElement("div"); nm.className="nm"; nm.style.color=CLASS_COLOR[m.sender_class]||"";
   nm.textContent=m.sender_name;
-  if (m.sender_verified){ const v=document.createElement("span"); v.style.cssText="color:var(--gold);font-size:13px;margin-left:5px"; v.textContent="✔ 인증"; nm.appendChild(v); }
+  if (m.sender_verified){ const v=vbadge(); v.classList.add("lg"); nm.appendChild(v); }
   const meta=document.createElement("div"); meta.className="meta2";
   meta.textContent=[m.sender_level?`Lv${m.sender_level}`:null, `${m.sender_race} ${m.sender_class}`,
     m.sender_faction==="alliance"?"얼라이언스":"호드", m.sender_realm?`${m.sender_realm} 서버`:null].filter(Boolean).join(" · ");
@@ -498,7 +510,7 @@ async function openProfile(m){
   head.append(iconSet({faction:m.sender_faction, race:m.sender_race, class:m.sender_class}, true), who);
   const self = m.player_id===me.id;
   $("pMute").classList.toggle("hidden", self);
-  $("pMute").textContent = muted.has(m.player_id) ? "숨김 해제" : "숨기기";
+  $("pMute").textContent = muted.has(m.player_id) ? "채팅 보이기" : "채팅 숨기기";
   $("pRecent").innerHTML='<div class="empty" style="margin:8px 0">불러오는 중…</div>';
   $("prof").classList.remove("hidden");
   const { data, error } = await sb.rpc("wow_player_recent", { p_token: me.token, p_player: m.player_id, p_limit: 5 });
@@ -519,20 +531,53 @@ async function openProfile(m){
 }
 $("pClose").onclick = () => $("prof").classList.add("hidden");
 $("prof").onclick = (e) => { if (e.target.id==="prof") $("prof").classList.add("hidden"); };
-$("pMention").onclick = () => {
-  const inThread = !$("thread").classList.contains("hidden");
-  const input = inThread ? $("tInput") : $("msgInput");
-  const tag = `@${profFor.sender_name} `;
-  if (!input.value.includes(tag)) input.value = tag + input.value;
-  $("prof").classList.add("hidden"); input.focus();
-};
+/* ---------- @ 자동완성 (접속 중인 사람 우선, 그다음 최근에 말한 사람) ---------- */
+let onlineUsers = new Map();
+function mentionCandidates(q){
+  const seen=new Set(), out=[];
+  const push=(u)=>{ if (!u.name || u.id===me.id || seen.has(u.name)) return; seen.add(u.name); out.push(u); };
+  const ql=q.toLowerCase();
+  const match=(n)=> !ql || n.toLowerCase().split(" ").some(w=>w.startsWith(ql)) || n.toLowerCase().startsWith(ql) || n.toLowerCase().includes(ql);
+  [...onlineUsers.values()].filter(u=>match(u.name)).forEach(u=>push({ ...u, online:true }));
+  [...cache].reverse().forEach(m=>{ if (match(m.sender_name)) push({ id:m.player_id, name:m.sender_name, cls:m.sender_class, faction:m.sender_faction }); });
+  return out.slice(0, 6);
+}
+function attachMention(input){
+  const box=document.createElement("div"); box.className="mbox hidden";
+  input.closest("form").appendChild(box);
+  let items=[], sel=0;
+  const tokenAt=()=>{ const v=input.value.slice(0, input.selectionStart ?? input.value.length);
+    const m=v.match(/@([^@\n]{0,20})$/); return m ? { q:m[1].trimStart(), start:v.length-m[0].length, end:v.length } : null; };
+  const close=()=>{ box.classList.add("hidden"); items=[]; };
+  const pick=(u)=>{ const t=tokenAt(); if (!t) return close();
+    input.value = input.value.slice(0,t.start) + "@" + u.name + " " + input.value.slice(t.end);
+    const pos=t.start+u.name.length+2; input.setSelectionRange(pos,pos); close(); input.focus(); };
+  const render=()=>{ box.innerHTML="";
+    items.forEach((u,i)=>{ const b=document.createElement("button"); b.type="button"; b.className="mi"+(i===sel?" on":"");
+      const n=document.createElement("span"); n.textContent=u.name; n.style.color=CLASS_COLOR[u.cls]||""; n.style.fontWeight="700";
+      const d=document.createElement("span"); d.className="md"; d.textContent=u.online?"● 접속 중":"";
+      b.append(n,d); b.onmousedown=(e)=>{ e.preventDefault(); pick(u); }; box.appendChild(b); }); };
+  input.addEventListener("input", ()=>{ const t=tokenAt();
+    // 공백 하나는 이름 안에 있을 수 있어서 허용, 일치하는 사람이 없으면 닫기
+    if (!t) return close(); items=mentionCandidates(t.q); sel=0;
+    if (!items.length) return close(); box.classList.remove("hidden"); render(); });
+  input.addEventListener("keydown", (e)=>{ if (box.classList.contains("hidden")) return;
+    if (e.key==="ArrowDown"){ sel=(sel+1)%items.length; render(); e.preventDefault(); }
+    else if (e.key==="ArrowUp"){ sel=(sel-1+items.length)%items.length; render(); e.preventDefault(); }
+    else if (e.key==="Enter" || e.key==="Tab"){ pick(items[sel]); e.preventDefault(); }
+    else if (e.key==="Escape") close(); });
+  input.addEventListener("blur", ()=>setTimeout(close, 150));
+}
+attachMention($("msgInput")); attachMention($("tInput"));
+
 $("pCopy").onclick = async () => {
   try { await navigator.clipboard.writeText(profFor.sender_name); toast("이름을 복사했어요. 게임에서 /귓 뒤에 붙여넣으세요"); }
   catch { toast(profFor.sender_name); }
 };
 $("pMute").onclick = () => {
   const id = profFor.player_id;
-  if (muted.has(id)) { muted.delete(id); toast("다시 보여요"); } else { muted.add(id); toast(`${profFor.sender_name} 님 글을 숨겼어요`); }
+  if (muted.has(id)) { muted.delete(id); toast(`${profFor.sender_name} 님 채팅이 다시 보여요`); }
+  else { muted.add(id); toast(`${profFor.sender_name} 님 채팅을 숨겼어요 (내 화면에서만)`); }
   ls.set("wowchat_muted", JSON.stringify([...muted]));
   $("prof").classList.add("hidden"); renderAll(); if (threadParent) renderThread();
 };
@@ -553,7 +598,14 @@ function renderAll(){
   const frag=document.createDocumentFragment(); arr.forEach(m=>frag.appendChild(renderMsg(m))); l.appendChild(frag);
   l.scrollTop=l.scrollHeight;
 }
+function pingIfMentioned(m){
+  if (!me || m.foreign_lang || m.player_id===me.id || muted.has(m.player_id)) return;
+  if (!(m.body||"").includes("@"+me.name)) return;
+  toast(`${m.sender_name} 님이 불렀어요`);
+  try { navigator.vibrate?.(80); } catch {}
+}
 function addMsg(m){
+  pingIfMentioned(m);
   if (m.parent_id) { addThreadMsg(m); return; }
   if (cache.some(x=>x.id===m.id)) return;
   cache.push(m); if (cache.length>400) cache.splice(0, cache.length-400);
@@ -627,9 +679,12 @@ function subscribe(){
   presence = sb.channel("wow-presence-"+channel, { config: { presence: { key: me.id } } });
   presence.on("presence", { event:"sync" }, ()=>{
     let a=0,h=0;
-    Object.values(presence.presenceState()).forEach(list=>{ const p=list[list.length-1]; if(!p) return; if (p.faction==="alliance") a++; else h++; });
+    onlineUsers = new Map();
+    Object.values(presence.presenceState()).forEach(list=>{ const p=list[list.length-1]; if(!p) return;
+      if (p.faction==="alliance") a++; else h++;
+      if (p.id && p.name && p.id!==me.id) onlineUsers.set(p.id, p); });
     $("online").innerHTML = `<b>●</b> ${me.realm||"일반"} 서버 접속 ${a+h}명 · 얼라이언스 ${a} · 호드 ${h}`;
-  }).subscribe(async (s)=>{ if (s==="SUBSCRIBED") await presence.track({ id: me.id, faction: me.faction }); });
+  }).subscribe(async (s)=>{ if (s==="SUBSCRIBED") await presence.track({ id: me.id, faction: me.faction, name: me.name, cls: me.class }); });
 }
 
 function enterChat(player){
@@ -697,11 +752,12 @@ $("meBtn").onclick = () => {
   const box=$("sheetInfo"); box.innerHTML="";
   const head=document.createElement("div"); head.style.cssText="display:flex;align-items:center;gap:10px;margin-bottom:8px";
   const nm=document.createElement("b"); nm.textContent=me.name; nm.style.color=CLASS_COLOR[me.class]||""; nm.style.fontSize="17px";
+  if (me.verified){ const v=vbadge(); v.classList.add("lg"); nm.appendChild(v); }
   head.append(iconSet(me, true), nm);
   box.appendChild(head);
   [["서버", me.realm || "-"], ["종족·직업", `${me.race} ${me.class}`], ["레벨", me.level || "-"],
    ["진영", me.faction==="alliance" ? "얼라이언스 (공용어)" : "호드 (오크어)"],
-   ["인증", me.verified ? "✔ 배틀넷 인증" : "직접 입장"]].forEach(([k,v])=>{
+   ["인증", me.verified ? "배틀넷 인증" : "직접 입장"]].forEach(([k,v])=>{
     const d=document.createElement("div"); const b=document.createElement("span");
     b.style.color="var(--muted)"; b.textContent=k+"  "; d.append(b, document.createTextNode(v)); box.appendChild(d);
   });
