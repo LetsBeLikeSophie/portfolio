@@ -358,6 +358,7 @@
       <li>목록을 내려서 <b>홈 화면에 추가</b>를 눌러요</li>
       <li>오른쪽 위 <b>추가</b>를 누르면 끝!</li>
     </ol>
+    <p class="note">공유 창에 <b>홈 화면에 추가</b>가 안 보이면, 창을 닫고 Safari 막대에 있는 공유 버튼으로 다시 해 주세요.</p>
     <p class="note" id="iosNote">Safari가 아닌 앱(카톡, 디코 안 브라우저 등)으로 열었다면 먼저 Safari로 열어 주세요.</p>
     <button class="btn ghost sm" id="iosClose" type="button">알겠어요</button>
   </div>
@@ -1009,7 +1010,10 @@ function showInstallButtons(on){ document.querySelectorAll(".installBtn").forEac
 try { navigator.serviceWorker?.register("/forever/sw.js", { scope: "/forever/" }).catch(()=>{}); } catch {}
 window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvt = e; if (!isStandalone()) showInstallButtons(true); });
 window.addEventListener("appinstalled", () => { installEvt = null; showInstallButtons(false); toast("홈 화면에 추가했어요"); });
-if (!isStandalone() && isIOS) showInstallButtons(true);
+if (!isStandalone() && isIOS) {
+  showInstallButtons(true);
+  document.querySelectorAll(".installBtn").forEach(b => b.innerHTML = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> 공유로 홈 화면에 추가`);
+}
 document.querySelectorAll(".installBtn").forEach(b => b.onclick = async () => {
   if (installEvt) {
     installEvt.prompt();
@@ -1017,6 +1021,8 @@ document.querySelectorAll(".installBtn").forEach(b => b.onclick = async () => {
     installEvt = null; return;
   }
   if (isIOS) {
+    // 아이폰 공유 창을 바로 띄워 보고, 안내도 같이 보여줌 (웹에서 띄운 공유 창엔 '홈 화면에 추가'가 없을 수 있음)
+    if (navigator.share) { navigator.share({ title: "포에버 채팅", url: location.origin + "/forever/" }).catch(()=>{}); }
     const inApp = /KAKAOTALK|Instagram|FBAN|FBAV|Line|NAVER|Discord|DaumApps/i.test(navigator.userAgent) || !/Safari/i.test(navigator.userAgent);
     $("iosNote").classList.toggle("hidden", !inApp);
     $("sheet").classList.add("hidden"); $("iosGuide").classList.remove("hidden"); return;
