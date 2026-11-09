@@ -107,7 +107,7 @@
   .msg.foreign .text{font-style:italic;color:#a99e8a}
   .msg.emote{color:#ff9f45;font-style:normal}
   .msg.emote .etext{color:#ff9f45}
-  .emotes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .emotes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;max-height:34vh;overflow-y:auto}
   .emotes button{border:1px solid #5a3a1a;background:#2a1a0c;color:#ffb46b;border-radius:999px;padding:6px 11px;font-size:13px;cursor:pointer}
   .tag{display:inline-block;font-size:11px;font-weight:700;padding:0 6px;border-radius:5px;margin-right:5px;vertical-align:1px}
   .tag.question{background:#183a4a;color:#8fd6f5}
@@ -127,7 +127,7 @@
     background:linear-gradient(180deg,#c9a24c,#8c6b25);color:#1a1205;font-weight:700;cursor:pointer}
   form.send{position:relative}
   .mbox{position:absolute;left:10px;right:10px;bottom:calc(100% + 4px);background:var(--panel2);border:1px solid var(--gold-dim);
-    border-radius:10px;overflow:hidden;box-shadow:0 -8px 24px #000a;z-index:5}
+    border-radius:10px;overflow-y:auto;max-height:min(46vh,360px);box-shadow:0 -8px 24px #000a;z-index:5}
   form.send .mbox .mi{display:flex;justify-content:space-between;align-items:center;width:100%;padding:11px 12px;
     background:none;border:0;border-radius:0;border-bottom:1px solid var(--line);cursor:pointer;text-align:left;
     font-size:15px;font-weight:400;color:var(--text);flex:none}
@@ -579,10 +579,11 @@ function attachMention(input, allowEmote){
       if (tok.type==="emote"){ n.textContent="/"+it.key; n.style.color="#ffb46b"; d.textContent=it.solo.replace("{s}님이 ",""); d.style.color="var(--muted)"; }
       else { n.textContent=it.name; n.style.color=CLASS_COLOR[it.cls]||"";
         d.textContent=(it.faction!==me.faction ? (it.faction==="alliance"?"얼라 ":"호드 ") : "")+(it.online?"● 접속 중":""); }
-      b.append(n,d); b.onmousedown=(e)=>{ e.preventDefault(); pick(it); }; box.appendChild(b); }); };
+      b.append(n,d); b.onmousedown=(e)=>{ e.preventDefault(); pick(it); }; box.appendChild(b); });
+    box.children[sel]?.scrollIntoView({ block:"nearest" }); };
   input.addEventListener("input", ()=>{ tok=tokenAt();
     if (!tok) return close();
-    if (tok.type==="emote") items=EMOTES.filter(e=>e.key.startsWith(tok.q)).slice(0,8);
+    if (tok.type==="emote") items=[...EMOTES.filter(e=>e.key.startsWith(tok.q)), ...EMOTES.filter(e=>!e.key.startsWith(tok.q) && (e.key.includes(tok.q) || e.solo.includes(tok.q)))].slice(0,40);
     else items=mentionCandidates(tok.q, tok.all);
     sel=0;
     if (!items.length) return close(); box.classList.remove("hidden"); render(); });
