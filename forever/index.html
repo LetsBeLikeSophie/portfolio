@@ -75,7 +75,16 @@
   .me{display:flex;align-items:center;gap:6px;font-size:13px;background:#0006;border:1px solid var(--line);
     padding:4px 10px 4px 5px;border-radius:999px;cursor:pointer;max-width:58%}
   .me span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
-  .chips{display:flex;gap:6px;overflow-x:auto;margin-top:9px;padding-bottom:2px;scrollbar-width:none}
+  .chiprow{display:flex;align-items:center;gap:8px;margin-top:9px}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;flex:1;min-width:0}
+  .sw{flex:none;display:flex;align-items:center;gap:6px;background:none;border:0;padding:0 2px;cursor:pointer;
+    font-size:13px;font-weight:700;color:var(--muted)}
+  .sw .track{width:34px;height:20px;border-radius:999px;background:#3a2f22;position:relative;transition:background .15s}
+  .sw .knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#bbb;transition:left .15s}
+  .sw[aria-checked="true"] .knob{left:16px;background:#fff}
+  .sw.horde[aria-checked="true"] .track{background:var(--horde)}
+  .sw.alliance[aria-checked="true"] .track{background:var(--alliance)}
+  .sw.horde[aria-checked="true"]{color:#ffb0a6} .sw.alliance[aria-checked="true"]{color:#a9c8ff}
   .chips::-webkit-scrollbar{display:none}
   .chip{flex:none;border:1px solid var(--line);background:#0006;border-radius:999px;padding:5px 11px;
     font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap}
@@ -207,7 +216,12 @@
       <button class="bell" id="bellBtn" type="button" aria-label="알림"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bdot hidden" id="bellDot"></span></button>
       <button class="me" id="meBtn" type="button"><span class="icons" id="meIcons"></span><span id="meName"></span></button>
     </div>
-    <div class="chips" id="chips"></div>
+    <div class="chiprow">
+      <div class="chips" id="chips"></div>
+      <button type="button" class="sw" id="enemySw" role="switch" aria-checked="true">
+        <span id="enemyLbl"></span><span class="track"><span class="knob"></span></span>
+      </button>
+    </div>
   </header>
   <div class="online" id="online">접속 중…</div>
   <div id="list"></div>
@@ -589,13 +603,17 @@ function updateReplyCount(id, count){
   if (el) el.textContent = count ? `💬 ${count}` : "";
 }
 
+function renderSwitch(){
+  const enemy = me.faction==="alliance" ? "horde" : "alliance";
+  const sw=$("enemySw"); sw.className="sw "+enemy;
+  sw.setAttribute("aria-checked", myFactionOnly ? "false" : "true");
+  sw.title = (enemy==="alliance"?"얼라이언스":"호드")+" 채팅 "+(myFactionOnly?"숨김":"보임");
+  $("enemyLbl").textContent = enemy==="alliance" ? "얼라" : "호드";
+}
+$("enemySw").onclick = () => { myFactionOnly=!myFactionOnly; ls.set("wowchat_hide_enemy", myFactionOnly?"1":"0"); renderSwitch(); renderAll(); };
 function buildChips(){
+  renderSwitch();
   const c=$("chips"); c.innerHTML="";
-  const f=document.createElement("button"); f.type="button";
-  f.className="chip fac "+me.faction+(myFactionOnly?" on":"");
-  f.textContent = (myFactionOnly ? "✕ " : "") + (me.faction==="alliance"?"호드":"얼라이언스") + " 채팅 숨기기";
-  f.onclick=()=>{ myFactionOnly=!myFactionOnly; ls.set("wowchat_hide_enemy", myFactionOnly?"1":"0"); buildChips(); renderAll(); };
-  c.appendChild(f);
   const all=[{id:"all",label:"전체"}, ...TAGS];
   all.forEach(t=>{
     const b=document.createElement("button"); b.type="button"; b.className="chip"+(filterTag===t.id?" on":"");
