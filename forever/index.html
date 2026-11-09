@@ -41,6 +41,15 @@
   .btn.ghost{background:none;color:var(--gold);border-color:var(--line);font-weight:500}
   .note{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.5}
   .err{color:var(--danger);font-size:13px;margin-top:10px;min-height:1em}
+  .btn.bnet{margin-top:4px;background:linear-gradient(180deg,#1a8dff,#0060c7);border-color:#0a55a8;color:#fff}
+  .or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:18px 0 14px}
+  .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+  .pick{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-top:8px;padding:11px 12px;
+    background:#0a0806;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+  .pick:hover,.pick:focus{border-color:var(--gold-dim);outline:none}
+  .pick .nm{font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pick .sub2{font-size:12.5px;color:var(--muted);white-space:nowrap}
+  .vf{color:var(--gold);font-size:11px;margin-left:2px}
   .found{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0005;font-size:14px}
 
   /* ---------- 채팅 ---------- */
@@ -98,6 +107,21 @@
     <h1 class="logo">FOREVER CHAT</h1>
     <p class="sub">와우 포에버 실시간 채팅</p>
 
+    <div id="pickBox" class="hidden">
+      <label for="pkRealm">서버</label>
+      <select id="pkRealm"><option value="일반">일반</option><option value="PvP">PvP</option></select>
+      <label>캐릭터 선택 <span id="pkTag" style="color:var(--gold-dim)"></span></label>
+      <div id="pickList"></div>
+      <div class="err" id="pickErr"></div>
+      <button class="btn ghost" id="pickCancel" type="button">처음으로</button>
+    </div>
+
+    <div id="altBox">
+    <button class="btn bnet" id="bnetBtn" type="button">배틀넷으로 로그인</button>
+    <div class="err" id="bnetErr"></div>
+    <p class="note" style="margin-top:4px;text-align:center">로그인하면 내 포에버 캐릭터를 골라서 <b style="color:var(--gold)">✔ 인증</b> 표시로 입장해요</p>
+    <div class="or"><span>또는 직접 입장</span></div>
+
     <div class="seg">
       <button type="button" data-mode="lookup" class="on">캐릭터 조회</button>
       <button type="button" data-mode="manual">직접 입력</button>
@@ -128,6 +152,7 @@
       <div class="err" id="joinErr"></div>
       <p class="note">다른 진영 사람이 쓴 채팅은 게임처럼 <b>공용어 / 오크어</b>로 바뀌어 보여요. 원문은 같은 진영에게만 전달돼요.</p>
     </form>
+    </div>
   </div>
 </section>
 
@@ -266,6 +291,87 @@ $("manualBox").onsubmit = async (ev) => {
   enterChat(data);
 };
 
+/* ---------- 배틀넷 로그인 ---------- */
+const FN_URL = `${SUPABASE_URL}/functions/v1/wow-character`;
+const REDIRECT = location.origin + location.pathname.replace(/index\.html$/, "").replace(/\/?$/, "/");
+const ss = {
+  get(k){ try { return sessionStorage.getItem(k); } catch { return null; } },
+  set(k,v){ try { sessionStorage.setItem(k,v); } catch {} },
+  del(k){ try { sessionStorage.removeItem(k); } catch {} },
+};
+
+$("bnetBtn").onclick = async () => {
+  $("bnetErr").textContent = "";
+  $("bnetBtn").disabled = true; $("bnetBtn").textContent = "배틀넷으로 이동 중…";
+  try {
+    const state = crypto.randomUUID();
+    ss.set("wowchat_state", state);
+    const r = await fetch(`${FN_URL}?action=login_url&redirect_uri=${encodeURIComponent(REDIRECT)}&state=${state}`,
+      { headers: { apikey: SUPABASE_KEY } });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.message || d.reason || "로그인 주소를 만들지 못했어요");
+    location.href = d.url;
+  } catch (e) {
+    $("bnetErr").textContent = errMsg(e);
+    $("bnetBtn").disabled = false; $("bnetBtn").textContent = "배틀넷으로 로그인";
+  }
+};
+
+function showPicker(login){
+  $("altBox").classList.add("hidden"); $("pickBox").classList.remove("hidden");
+  $("pkTag").textContent = login.battletag ? `· ${login.battletag}` : "";
+  const list = $("pickList"); list.innerHTML = "";
+  login.characters.forEach((c, i) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "pick";
+    const crest = document.createElement("div"); crest.className = "crest " + c.faction;
+    crest.textContent = c.faction === "alliance" ? "얼" : "호";
+    const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = c.name;
+    nm.style.color = CLASS_COLOR[c.class] || "";
+    const sub = document.createElement("span"); sub.className = "sub2";
+    sub.textContent = `${c.level ? "Lv" + c.level + " " : ""}${c.race || ""} ${c.class || ""}`.trim();
+    b.append(crest, nm, sub);
+    b.onclick = async () => {
+      $("pickErr").textContent = "";
+      list.querySelectorAll("button").forEach(x => x.disabled = true);
+      const { data, error } = await sb.rpc("wow_register_verified",
+        { p_login: login.login_id, p_index: i, p_realm: $("pkRealm").value });
+      if (error) {
+        $("pickErr").textContent = errMsg(error);
+        list.querySelectorAll("button").forEach(x => x.disabled = false);
+        return;
+      }
+      store.set("wowchat_token", data.token);
+      $("pickBox").classList.add("hidden"); $("altBox").classList.remove("hidden");
+      enterChat(data);
+    };
+    list.appendChild(b);
+  });
+}
+$("pickCancel").onclick = () => { $("pickBox").classList.add("hidden"); $("altBox").classList.remove("hidden"); };
+
+async function handleBnetReturn(params){
+  history.replaceState(null, "", location.pathname);
+  $("join").classList.remove("hidden");
+  const err = params.get("error");
+  if (err) { $("bnetErr").textContent = err === "access_denied" ? "배틀넷 로그인을 취소했어요" : "배틀넷 로그인 오류: " + err; return; }
+  const saved = ss.get("wowchat_state"); ss.del("wowchat_state");
+  if (saved && saved !== params.get("state")) { $("bnetErr").textContent = "로그인 확인에 실패했어요. 다시 시도해 주세요"; return; }
+  $("bnetBtn").disabled = true; $("bnetBtn").textContent = "캐릭터 불러오는 중…";
+  try {
+    const r = await fetch(`${FN_URL}?action=exchange`, {
+      method: "POST", headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ code: params.get("code"), redirect_uri: REDIRECT }),
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error((d.message || "캐릭터를 불러오지 못했어요") + " · 직접 입장으로 들어갈 수 있어요");
+    showPicker(d);
+  } catch (e) {
+    $("bnetErr").textContent = errMsg(e);
+  } finally {
+    $("bnetBtn").disabled = false; $("bnetBtn").textContent = "배틀넷으로 로그인";
+  }
+}
+
 /* ---------- 채팅 ---------- */
 function fmtTime(iso){ const d=new Date(iso); return d.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",hour12:false}); }
 
@@ -282,7 +388,9 @@ function renderMsg(m){
   const meta=document.createElement("span"); meta.className="meta";
   meta.textContent = `${m.sender_level?("Lv"+m.sender_level+" "):""}${m.sender_race}`;
   const colon=document.createTextNode(": ");
-  el.append(t, crest, who, meta, colon);
+  el.append(t, crest, who);
+  if (m.sender_verified){ const v=document.createElement("span"); v.className="vf"; v.textContent="✔"; v.title="배틀넷 인증 캐릭터"; el.appendChild(v); }
+  el.append(meta, colon);
   if (m.foreign_lang){ const l=document.createElement("span"); l.className="lang"; l.textContent=`[${LANG[m.sender_faction]}]`; el.appendChild(l); }
   const tx=document.createElement("span"); tx.className="text"; tx.textContent=m.body; el.appendChild(tx);
   return el;
@@ -403,6 +511,7 @@ $("meBtn").onclick = () => {
   const lines = [
     ["캐릭터", me.name], ["서버", me.realm || "-"], ["종족", me.race], ["직업", me.class],
     ["레벨", me.level || "-"], ["진영", me.faction==="alliance" ? "얼라이언스 (공용어)" : "호드 (오크어)"],
+    ["인증", me.verified ? "✔ 배틀넷 인증" : "직접 입장 (인증 안 됨)"],
   ];
   lines.forEach(([k,v])=>{ const d=document.createElement("div"); const b=document.createElement("span");
     b.style.color="var(--muted)"; b.textContent=k+"  "; d.append(b, document.createTextNode(v)); $("sheetInfo").appendChild(d); });
@@ -421,6 +530,8 @@ $("switchBtn").onclick = () => {
 /* ---------- 시작 ---------- */
 fillSelects();
 (async () => {
+  const params = new URLSearchParams(location.search);
+  if (params.has("code") || params.has("error")) { await handleBnetReturn(params); return; }
   const tok = store.get("wowchat_token");
   if (tok) {
     const { data } = await sb.rpc("wow_me", { p_token: tok });
