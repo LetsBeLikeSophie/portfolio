@@ -9,6 +9,13 @@
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://itssophie.dev/forever/">
 <meta name="theme-color" content="#0d0b09">
+<link rel="manifest" href="/forever/manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="/forever/icon-192.png">
+<link rel="apple-touch-icon" href="/forever/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="포에버 채팅">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="포에버 채팅">
 <meta property="og:locale" content="ko_KR">
@@ -223,6 +230,12 @@
   .ni .b{font-size:14.5px;line-height:1.5;color:var(--body);word-break:break-word}
   .ni .b.foreign{font-style:italic;color:#a99e8a}
 
+  /* 홈 화면 추가 안내 */
+  #iosGuide{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:12}
+  #iosGuide .card{border-radius:14px 14px 0 0;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
+  .guide{margin:0;padding-left:20px;line-height:1.9;font-size:15px}
+  .shareIc{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:#2a2218;color:#7fb6ff;vertical-align:-7px}
+
   /* 시트 */
   #sheet{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:8}
   #sheet .card{border-radius:14px 14px 0 0;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
@@ -252,6 +265,7 @@
 
     </div>
 
+    <button class="btn ghost sm installBtn hidden" type="button">📲 홈 화면에 추가</button>
     <p class="note">다른 진영 사람이 쓴 채팅은 게임처럼 <b>공용어 / 오크어</b>로 바뀌어 보여요. 원문은 같은 진영에게만 전달되고, 메시지는 3일 뒤 지워져요.<br>감정 표현(<b>/인사</b>, <b>/춤</b> 등)은 상대 진영에게도 보여요.</p>
     <p class="note" style="font-size:12px">월드 오브 워크래프트: 포에버 한국 서버 플레이어를 위한 채팅이에요. 일반 서버와 PvP 서버가 나뉘어 있고, 파티·공대 모집, 거래, 길드 모집, 질문 글을 말머리로 모아볼 수 있어요.</p>
     <p class="legal">비공식 팬 사이트예요. World of Warcraft와 게임 이미지는 Blizzard Entertainment의 자산이며, 이 사이트는 블리자드와 관계없어요.</p>
@@ -315,6 +329,7 @@
   <div class="card">
     <div id="sheetInfo" style="font-size:15px;line-height:1.8"></div>
     <button class="btn" id="switchBtn" type="button">캐릭터 바꾸기</button>
+    <button class="btn ghost sm installBtn hidden" type="button">📲 홈 화면에 추가</button>
     <button class="btn ghost sm" id="logoutBtn" type="button">로그아웃</button>
     <button class="btn ghost sm" id="closeSheet" type="button">닫기</button>
   </div>
@@ -334,6 +349,19 @@
 </div>
 
 <button id="newBar" class="hidden" type="button">새 메시지 ↓</button>
+
+<div id="iosGuide" class="hidden">
+  <div class="card">
+    <div style="font-size:17px;font-weight:700;color:var(--gold);margin-bottom:10px">홈 화면에 추가하기</div>
+    <ol class="guide">
+      <li>Safari 아래(또는 위) 막대의 <b>공유 버튼</b> <span class="shareIc"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span> 을 눌러요</li>
+      <li>목록을 내려서 <b>홈 화면에 추가</b>를 눌러요</li>
+      <li>오른쪽 위 <b>추가</b>를 누르면 끝!</li>
+    </ol>
+    <p class="note" id="iosNote">Safari가 아닌 앱(카톡, 디코 안 브라우저 등)으로 열었다면 먼저 Safari로 열어 주세요.</p>
+    <button class="btn ghost sm" id="iosClose" type="button">알겠어요</button>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -972,6 +1000,31 @@ $("logoutBtn").onclick = () => {
   leaveChat(); ls.del("wowchat_token"); ls.del("wowchat_account");
   show("join"); showAlt();
 };
+
+/* ---------- 홈 화면에 추가 ---------- */
+const isStandalone = () => window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+let installEvt = null;
+function showInstallButtons(on){ document.querySelectorAll(".installBtn").forEach(b=>b.classList.toggle("hidden", !on)); }
+try { navigator.serviceWorker?.register("/forever/sw.js", { scope: "/forever/" }).catch(()=>{}); } catch {}
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvt = e; if (!isStandalone()) showInstallButtons(true); });
+window.addEventListener("appinstalled", () => { installEvt = null; showInstallButtons(false); toast("홈 화면에 추가했어요"); });
+if (!isStandalone() && isIOS) showInstallButtons(true);
+document.querySelectorAll(".installBtn").forEach(b => b.onclick = async () => {
+  if (installEvt) {
+    installEvt.prompt();
+    try { await installEvt.userChoice; } catch {}
+    installEvt = null; return;
+  }
+  if (isIOS) {
+    const inApp = /KAKAOTALK|Instagram|FBAN|FBAV|Line|NAVER|Discord|DaumApps/i.test(navigator.userAgent) || !/Safari/i.test(navigator.userAgent);
+    $("iosNote").classList.toggle("hidden", !inApp);
+    $("sheet").classList.add("hidden"); $("iosGuide").classList.remove("hidden"); return;
+  }
+  toast("브라우저 메뉴(⋮)에서 '홈 화면에 추가'를 눌러 주세요");
+});
+$("iosClose").onclick = () => $("iosGuide").classList.add("hidden");
+$("iosGuide").onclick = (e) => { if (e.target.id==="iosGuide") $("iosGuide").classList.add("hidden"); };
 
 /* ---------- 시작 ---------- */
 (async () => {
