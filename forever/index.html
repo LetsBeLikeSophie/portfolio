@@ -87,6 +87,7 @@
   #list,#tList{flex:1;overflow-y:auto;padding:6px 10px;-webkit-overflow-scrolling:touch;font-size:15px;line-height:1.5}
   .msg{padding:5px 4px;word-break:break-word;border-radius:8px}
   .msg.tap{cursor:pointer}
+  .msg.ment{background:#3a2c1455;box-shadow:inset 3px 0 0 var(--gold)}
   .msg.tap:active{background:#ffffff08}
   .msg .time{color:#6d6354;font-size:11px;margin-right:5px}
   .msg .who{font-weight:700}
@@ -120,6 +121,24 @@
   #thread{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);z-index:6}
   #thread header .top button{background:none;border:0;color:var(--gold);font-size:15px;cursor:pointer;padding:4px 2px}
   #tList .msg:first-child{background:#ffffff08;border:1px solid var(--line);margin-bottom:8px;padding:8px}
+
+  /* 프로필 카드 */
+  #prof{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:9}
+  #prof .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}
+  .ph{display:flex;align-items:center;gap:12px}
+  .ph .icons{margin:0}
+  .ph .nm{font-size:19px;font-weight:700}
+  .ph .meta2{font-size:13px;color:var(--muted);margin-top:2px}
+  .acts{display:flex;gap:8px;margin-top:14px}
+  .acts button{flex:1;border:1px solid var(--line);background:#0006;border-radius:9px;padding:9px 4px;
+    font-size:13px;color:var(--gold);cursor:pointer}
+  .acts button.warn{color:#ff9a8c}
+  .recent{margin-top:14px;border-top:1px solid var(--line);padding-top:8px}
+  .recent h4{margin:4px 0 6px;font-size:12px;color:var(--muted);font-weight:500}
+  .recent .msg{font-size:14px}
+  #newBar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(68px + env(safe-area-inset-bottom));
+    background:var(--gold);color:#1a1205;border:0;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;
+    box-shadow:0 6px 20px #000a;cursor:pointer;z-index:4}
 
   /* 시트 */
   #sheet{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:8}
@@ -216,6 +235,21 @@
     <button class="btn ghost sm" id="closeSheet" type="button">닫기</button>
   </div>
 </div>
+
+<div id="prof" class="hidden">
+  <div class="card">
+    <div class="ph" id="pHead"></div>
+    <div class="acts">
+      <button type="button" id="pMention">@ 부르기</button>
+      <button type="button" id="pCopy">이름 복사</button>
+      <button type="button" id="pMute" class="warn">숨기기</button>
+    </div>
+    <div class="recent"><h4>최근 글</h4><div id="pRecent"></div></div>
+    <button class="btn ghost sm" id="pClose" type="button">닫기</button>
+  </div>
+</div>
+
+<button id="newBar" class="hidden" type="button">새 메시지 ↓</button>
 
 <div class="toast" id="toast"></div>
 
@@ -420,12 +454,15 @@ function fmtTime(iso){ return new Date(iso).toLocaleTimeString("ko-KR",{hour:"2-
 
 function renderMsg(m, inThread){
   const el=document.createElement("div");
-  el.className="msg"+(m.foreign_lang?" foreign":"")+(!inThread?" tap":"");
+  el.className="msg"+(m.foreign_lang?" foreign":"")+(!inThread?" tap":"")
+    +(me && !m.foreign_lang && m.player_id!==me.id && (m.body||"").includes("@"+me.name) ? " ment" : "");
   el.dataset.id = m.id;
   const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
   const who=document.createElement("span"); who.className="who"; who.style.color=CLASS_COLOR[m.sender_class]||"#ddd";
   who.textContent=m.sender_name;
   who.title=`${m.sender_level?("Lv."+m.sender_level+" "):""}${m.sender_race} ${m.sender_class}`;
+  who.style.cursor="pointer";
+  who.onclick=(e)=>{ e.stopPropagation(); openProfile(m); };
   el.append(t, who);
   if (m.sender_verified){ const v=document.createElement("span"); v.className="vf"; v.textContent="✔"; v.title="배틀넷 인증 캐릭터"; el.appendChild(v); }
   if (m.sender_level){ const l=document.createElement("span"); l.className="lv"; l.textContent=m.sender_level; el.appendChild(l); }
@@ -441,7 +478,68 @@ function renderMsg(m, inThread){
   }
   return el;
 }
-const visible = (m) => (filterTag==="all" || m.tag===filterTag) && (!myFactionOnly || m.sender_faction===me.faction);
+let muted = new Set(); try { muted = new Set(JSON.parse(ls.get("wowchat_muted")||"[]")); } catch {}
+const visible = (m) => (filterTag==="all" || m.tag===filterTag) && (!myFactionOnly || m.sender_faction===me.faction)
+  && !muted.has(m.player_id);
+
+/* ---------- 프로필 카드 ---------- */
+let profFor = null;
+async function openProfile(m){
+  profFor = m;
+  const head=$("pHead"); head.innerHTML="";
+  const who=document.createElement("div");
+  const nm=document.createElement("div"); nm.className="nm"; nm.style.color=CLASS_COLOR[m.sender_class]||"";
+  nm.textContent=m.sender_name;
+  if (m.sender_verified){ const v=document.createElement("span"); v.style.cssText="color:var(--gold);font-size:13px;margin-left:5px"; v.textContent="✔ 인증"; nm.appendChild(v); }
+  const meta=document.createElement("div"); meta.className="meta2";
+  meta.textContent=[m.sender_level?`Lv${m.sender_level}`:null, `${m.sender_race} ${m.sender_class}`,
+    m.sender_faction==="alliance"?"얼라이언스":"호드", m.sender_realm?`${m.sender_realm} 서버`:null].filter(Boolean).join(" · ");
+  who.append(nm, meta);
+  head.append(iconSet({faction:m.sender_faction, race:m.sender_race, class:m.sender_class}, true), who);
+  const self = m.player_id===me.id;
+  $("pMute").classList.toggle("hidden", self);
+  $("pMute").textContent = muted.has(m.player_id) ? "숨김 해제" : "숨기기";
+  $("pRecent").innerHTML='<div class="empty" style="margin:8px 0">불러오는 중…</div>';
+  $("prof").classList.remove("hidden");
+  const { data, error } = await sb.rpc("wow_player_recent", { p_token: me.token, p_player: m.player_id, p_limit: 5 });
+  if (profFor !== m) return;
+  const box=$("pRecent"); box.innerHTML="";
+  if (error || !data?.length){ box.innerHTML='<div class="empty" style="margin:8px 0">최근 글이 없어요</div>'; return; }
+  data.forEach(r=>{
+    const row={ ...m, id:r.id, tag:r.tag, body:r.body, foreign_lang:r.foreign_lang, reply_count:r.reply_count, parent_id:r.parent_id, created_at:r.created_at };
+    const el=renderMsg(row, true);
+    el.querySelector(".who").onclick=null;
+    if (r.parent_id){ const s=document.createElement("span"); s.className="lv"; s.textContent=" (답글)"; el.appendChild(s); }
+    el.classList.add("tap");
+    el.onclick=()=>{ $("prof").classList.add("hidden");
+      if (r.parent_id) { const p=cache.find(x=>x.id===r.parent_id); openThread(p || { ...row, id:r.parent_id, parent_id:null }); }
+      else openThread(row); };
+    box.appendChild(el);
+  });
+}
+$("pClose").onclick = () => $("prof").classList.add("hidden");
+$("prof").onclick = (e) => { if (e.target.id==="prof") $("prof").classList.add("hidden"); };
+$("pMention").onclick = () => {
+  const inThread = !$("thread").classList.contains("hidden");
+  const input = inThread ? $("tInput") : $("msgInput");
+  const tag = `@${profFor.sender_name} `;
+  if (!input.value.includes(tag)) input.value = tag + input.value;
+  $("prof").classList.add("hidden"); input.focus();
+};
+$("pCopy").onclick = async () => {
+  try { await navigator.clipboard.writeText(profFor.sender_name); toast("이름을 복사했어요. 게임에서 /귓 뒤에 붙여넣으세요"); }
+  catch { toast(profFor.sender_name); }
+};
+$("pMute").onclick = () => {
+  const id = profFor.player_id;
+  if (muted.has(id)) { muted.delete(id); toast("다시 보여요"); } else { muted.add(id); toast(`${profFor.sender_name} 님 글을 숨겼어요`); }
+  ls.set("wowchat_muted", JSON.stringify([...muted]));
+  $("prof").classList.add("hidden"); renderAll(); if (threadParent) renderThread();
+};
+
+/* 새 메시지 알림 */
+$("newBar").onclick = () => { const l=$("list"); l.scrollTop=l.scrollHeight; $("newBar").classList.add("hidden"); };
+$("list").addEventListener("scroll", () => { if (nearBottom($("list"))) $("newBar").classList.add("hidden"); });
 function nearBottom(l){ return l.scrollHeight - l.scrollTop - l.clientHeight < 120; }
 
 function renderAll(){
@@ -462,7 +560,8 @@ function addMsg(m){
   if (!visible(m)) return;
   const l=$("list"); const stick=nearBottom(l) || m.player_id===me.id;
   l.querySelector(".empty")?.remove();
-  l.appendChild(renderMsg(m)); if (stick) l.scrollTop=l.scrollHeight;
+  l.appendChild(renderMsg(m));
+  if (stick) l.scrollTop=l.scrollHeight; else $("newBar").classList.remove("hidden");
 }
 function updateReplyCount(id, count){
   const m = cache.find(x=>x.id===id); if (m) m.reply_count = count;
@@ -575,7 +674,7 @@ async function openThread(m){
 }
 function renderThread(){
   const l=$("tList"); l.innerHTML="";
-  threadMsgs.forEach(x=>l.appendChild(renderMsg(x, true)));
+  threadMsgs.filter((x,i)=>i===0 || !muted.has(x.player_id)).forEach(x=>l.appendChild(renderMsg(x, true)));
   if (threadMsgs.length<=1){ const e=document.createElement("div"); e.className="empty"; e.style.marginTop="16px"; e.textContent="첫 답글을 달아 보세요"; l.appendChild(e); }
   l.scrollTop=l.scrollHeight;
 }
@@ -614,6 +713,7 @@ function leaveChat(){
   if (msgSub) sb.removeChannel(msgSub); if (presence) sb.removeChannel(presence);
   msgSub=presence=null; me=null;
   $("sheet").classList.add("hidden"); $("thread").classList.add("hidden");
+  $("prof").classList.add("hidden"); $("newBar").classList.add("hidden");
 }
 $("switchBtn").onclick = async () => {
   leaveChat(); ls.del("wowchat_token");
