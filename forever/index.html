@@ -137,6 +137,23 @@
   .emotes button{border:1px solid #5a3a1a;background:#2a1a0c;color:#ffb46b;border-radius:999px;padding:6px 11px;font-size:13px;cursor:pointer}
   a.whl{color:#7fb6ff;text-decoration:none;border-bottom:1px dotted currentColor;word-break:break-all}
   a.whl.tok{border-bottom:0;font-weight:700;word-break:keep-all}
+
+  /* 와우헤드 폰 툴팁 화면을 우리 테마로 (Tap Link 버튼, 닫기 버튼, 배경) */
+  #wowhead-tooltip-screen{background:rgba(8,6,4,.82)!important}
+  #wowhead-tooltip-screen-caption{
+    position:fixed!important;left:16px!important;right:16px!important;bottom:calc(16px + env(safe-area-inset-bottom))!important;
+    width:auto!important;height:auto!important;margin:0!important;padding:14px 12px!important;
+    background:linear-gradient(180deg,#c9a24c,#8c6b25)!important;border:1px solid #8a6a26!important;border-radius:12px!important;
+    box-shadow:0 8px 30px #000a!important;font-size:0!important;line-height:0!important;color:transparent!important;
+    text-align:center!important;cursor:pointer!important}
+  #wowhead-tooltip-screen-caption *{display:none!important}
+  #wowhead-tooltip-screen-caption::after{content:"와우헤드에서 자세히 보기";display:inline-block;
+    font:700 16px/1.2 "Noto Sans KR",system-ui,sans-serif;color:#1a1205;letter-spacing:.01em}
+  #wowhead-tooltip-screen-close,.wowhead-tooltip-screen-close{
+    background:#17130f!important;border:1px solid #a88b45!important;border-radius:50%!important;box-shadow:0 4px 16px #000a!important;
+    color:#e6c36a!important;top:calc(14px + env(safe-area-inset-top))!important;right:14px!important}
+  #wowhead-tooltip-screen-close *, .wowhead-tooltip-screen-close *{color:#e6c36a!important}
+  .wowhead-tooltip table, .wowhead-tooltip th, .wowhead-tooltip td{font-family:"Noto Sans KR",system-ui,sans-serif!important}
   .tag{display:inline-block;font-size:11px;font-weight:700;padding:0 6px;border-radius:5px;margin-right:5px;vertical-align:1px}
   .tag.question{background:#183a4a;color:#8fd6f5}
   .tag.trade{background:#3d3412;color:#f0d36b}
