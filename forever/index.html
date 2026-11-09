@@ -136,7 +136,8 @@
   .mi .md{font-size:11px;color:#7bd17b}
   .toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);
     background:#2a1d10;border:1px solid var(--gold-dim);padding:8px 14px;border-radius:9px;font-size:13px;
-    opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%;z-index:20}
+    opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;
+    white-space:nowrap;width:max-content;max-width:calc(100vw - 24px);overflow:hidden;text-overflow:ellipsis}
   .toast.show{opacity:1}
 
   /* 답글 */
@@ -708,7 +709,7 @@ function subscribe(){
     })
     .subscribe((status)=>{
       if (status==="SUBSCRIBED") loadHistory();
-      if (status==="CHANNEL_ERROR" || status==="TIMED_OUT") toast("연결이 끊겼어요. 다시 연결 중…");
+      if (status==="CHANNEL_ERROR" || status==="TIMED_OUT") toast("연결이 끊겨서 다시 연결하는 중…");
     });
 
   if (presence) sb.removeChannel(presence);
