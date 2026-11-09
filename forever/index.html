@@ -423,11 +423,10 @@ function renderMsg(m, inThread){
   el.className="msg"+(m.foreign_lang?" foreign":"")+(!inThread?" tap":"");
   el.dataset.id = m.id;
   const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
-  const icons = iconSet({ faction:m.sender_faction, race:m.sender_race, class:m.sender_class });
   const who=document.createElement("span"); who.className="who"; who.style.color=CLASS_COLOR[m.sender_class]||"#ddd";
   who.textContent=m.sender_name;
   who.title=`${m.sender_level?("Lv."+m.sender_level+" "):""}${m.sender_race} ${m.sender_class}`;
-  el.append(t, icons, who);
+  el.append(t, who);
   if (m.sender_verified){ const v=document.createElement("span"); v.className="vf"; v.textContent="✔"; v.title="배틀넷 인증 캐릭터"; el.appendChild(v); }
   if (m.sender_level){ const l=document.createElement("span"); l.className="lv"; l.textContent=m.sender_level; el.appendChild(l); }
   el.appendChild(document.createTextNode(": "));
@@ -540,7 +539,9 @@ function enterChat(player){
   show("chat");
   $("srvBadge").textContent = `${me.realm||"일반"} 서버`;
   $("srvBadge").className = "srv"+(me.realm==="PvP"?" pvp":"");
-  $("meIcons").replaceWith(Object.assign(iconSet(me), { id:"meIcons" }));
+  const fi=document.createElement("span"); fi.className="icons"; fi.id="meIcons";
+  fi.appendChild(iconEl("faction", me.faction, me.faction));
+  $("meIcons").replaceWith(fi);
   $("meName").textContent = me.name;
   $("meName").style.color = CLASS_COLOR[me.class] || "";
   $("msgInput").placeholder = `${me.realm||"일반"} 서버에 메시지`;
