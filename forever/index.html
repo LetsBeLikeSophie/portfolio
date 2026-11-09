@@ -709,32 +709,14 @@ async function loadHistory(){
   renderAll();
 }
 
-// 같은 진영 원문은 묶어서 가져오기
-let pendingRows=new Map(), flushTimer=null;
-function queueOwn(row){ pendingRows.set(row.id,row); if (!flushTimer) flushTimer=setTimeout(flushBodies, 60); }
-async function flushBodies(){
-  const rows=pendingRows; pendingRows=new Map(); flushTimer=null;
-  const ids=[...rows.keys()];
-  const { data, error } = await sb.rpc("wow_bodies", { p_token: me.token, p_ids: ids });
-  const map=new Map((data||[]).map(x=>[x.id,x.body]));
-  ids.forEach(id=>{ const r=rows.get(id);
-    if (map.has(id)) addMsg({ ...r, body: map.get(id), foreign_lang:false });
-    else if (error) addMsg({ ...r, body: r.garbled, foreign_lang:false });
-  });
-}
-
-function subscribe(){
+async function subscribe(){
   if (msgSub) sb.removeChannel(msgSub);
-  msgSub = sb.channel("wow-messages-"+channel)
-    .on("postgres_changes", { event:"INSERT", schema:"wow", table:"messages", filter:`channel=eq.${channel}` }, (p)=>{
-      const r=p.new;
-      if (r.tag==="emote") addMsg({ ...r, body: r.garbled, foreign_lang:false });
-      else if (r.sender_faction===me.faction) queueOwn(r);
-      else addMsg({ ...r, body: r.garbled, foreign_lang:true });
-    })
-    .on("postgres_changes", { event:"UPDATE", schema:"wow", table:"messages", filter:`channel=eq.${channel}` }, (p)=>{
-      updateReplyCount(p.new.id, p.new.reply_count);
-    })
+  // 진영별 방송 채널: 같은 진영 글은 원문으로, 상대 진영 글은 바뀐 글로 서버가 바로 보내줌
+  const { data: topic, error } = await sb.rpc("wow_topic", { p_token: me.token });
+  if (error || !topic) { toast("채팅 연결에 실패했어요. 새로고침해 주세요"); return; }
+  msgSub = sb.channel(topic)
+    .on("broadcast", { event:"msg" }, ({ payload })=>{ if (payload && payload.channel===channel) addMsg(payload); })
+    .on("broadcast", { event:"count" }, ({ payload })=>{ if (payload) updateReplyCount(payload.id, payload.reply_count); })
     .subscribe((status)=>{
       if (status==="SUBSCRIBED") loadHistory();
       if (status==="CHANNEL_ERROR" || status==="TIMED_OUT") toast("연결이 끊겨서 다시 연결하는 중…");
