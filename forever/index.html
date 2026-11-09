@@ -400,7 +400,7 @@ function showPicker(acc){
     const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = c.name;
     nm.style.color = CLASS_COLOR[c.class] || "";
     const sub = document.createElement("span"); sub.className = "sub2";
-    sub.textContent = `${c.level ? "Lv" + c.level + " " : ""}${c.race || ""} ${c.class || ""}`.trim();
+    sub.textContent = `${c.level ? "Lv." + c.level + " " : ""}${c.race || ""} ${c.class || ""}`.trim();
     who.append(nm, sub);
     let srvEl;
     if (c.realm) { srvEl = document.createElement("span"); srvEl.className = "srv"+(c.realm==="PvP"?" pvp":""); srvEl.textContent = c.realm; }
@@ -477,7 +477,7 @@ function renderMsg(m, inThread){
   who.onclick=(e)=>{ e.stopPropagation(); openProfile(m); };
   el.append(t, who);
   if (m.sender_verified) el.appendChild(vbadge());
-  if (m.sender_level){ const l=document.createElement("span"); l.className="lv"; l.textContent=m.sender_level; el.appendChild(l); }
+  if (m.sender_level){ const l=document.createElement("span"); l.className="lv"; l.textContent="Lv."+m.sender_level; el.appendChild(l); }
   el.appendChild(document.createTextNode(": "));
   if (m.tag && m.tag!=="chat"){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag; el.appendChild(g); }
   if (m.foreign_lang){ const l=document.createElement("span"); l.className="lang"; l.textContent=`[${LANG[m.sender_faction]}]`; el.appendChild(l); }
@@ -504,7 +504,7 @@ async function openProfile(m){
   nm.textContent=m.sender_name;
   if (m.sender_verified){ const v=vbadge(); v.classList.add("lg"); nm.appendChild(v); }
   const meta=document.createElement("div"); meta.className="meta2";
-  meta.textContent=[m.sender_level?`Lv${m.sender_level}`:null, `${m.sender_race} ${m.sender_class}`,
+  meta.textContent=[m.sender_level?`Lv.${m.sender_level}`:null, `${m.sender_race} ${m.sender_class}`,
     m.sender_faction==="alliance"?"얼라이언스":"호드", m.sender_realm?`${m.sender_realm} 서버`:null].filter(Boolean).join(" · ");
   who.append(nm, meta);
   head.append(iconSet({faction:m.sender_faction, race:m.sender_race, class:m.sender_class}, true), who);
