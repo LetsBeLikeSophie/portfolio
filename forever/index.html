@@ -9,7 +9,7 @@
 <style>
   :root{
     --bg:#0d0b09; --panel:#17130f; --panel2:#1f1a14; --line:#3a2f22;
-    --gold:#e6c36a; --gold-dim:#a88b45; --text:#ece4d6; --muted:#9b8f7c;
+    --gold:#e6c36a; --gold-dim:#a88b45; --text:#ece4d6; --body:#c9bfae; --muted:#9b8f7c;
     --alliance:#3f7fd9; --horde:#c8372d; --danger:#ff6b5b;
   }
   *{box-sizing:border-box}
@@ -19,17 +19,22 @@
   button,input,select{font:inherit;color:inherit}
   .hidden{display:none!important}
 
+  /* 아이콘 */
+  .ic{width:18px;height:18px;border-radius:4px;flex:none;vertical-align:-4px;object-fit:cover;
+    box-shadow:0 0 0 1px #0008;background:#000}
+  .ic.lg{width:28px;height:28px;border-radius:6px;vertical-align:middle}
+  .ic.fb{display:inline-grid;place-items:center;font-size:10px;font-weight:700;color:#fff;background:#3a2f22}
+  .ic.fb.alliance{background:var(--alliance)} .ic.fb.horde{background:var(--horde)}
+  .icons{display:inline-flex;gap:3px;margin-right:5px;vertical-align:-4px}
+
   /* ---------- 입장 ---------- */
   #join{min-height:100%;display:flex;align-items:center;justify-content:center;
     padding:calc(24px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom))}
-  .card{width:100%;max-width:420px;background:linear-gradient(180deg,var(--panel2),var(--panel));
+  .card{width:100%;max-width:440px;background:linear-gradient(180deg,var(--panel2),var(--panel));
     border:1px solid var(--line);border-radius:14px;padding:22px 20px;
     box-shadow:0 0 0 1px #0006 inset,0 20px 60px #0008}
   .logo{font-family:Cinzel,serif;color:var(--gold);font-size:28px;letter-spacing:.06em;text-align:center;margin:0}
   .sub{color:var(--muted);text-align:center;font-size:13px;margin:6px 0 18px}
-  .seg{display:flex;background:#0006;border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:16px}
-  .seg button{flex:1;border:0;background:none;padding:9px 0;border-radius:8px;color:var(--muted);cursor:pointer}
-  .seg button.on{background:var(--panel2);color:var(--gold);box-shadow:0 0 0 1px var(--line)}
   label{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px}
   input,select{width:100%;background:#0a0806;border:1px solid var(--line);border-radius:9px;
     padding:11px 12px;outline:none;font-size:16px}
@@ -39,63 +44,85 @@
     background:linear-gradient(180deg,#c9a24c,#8c6b25);color:#1a1205;font-weight:700;letter-spacing:.02em}
   .btn:disabled{opacity:.5;cursor:default}
   .btn.ghost{background:none;color:var(--gold);border-color:var(--line);font-weight:500}
+  .btn.bnet{margin-top:4px;background:linear-gradient(180deg,#1a8dff,#0060c7);border-color:#0a55a8;color:#fff}
+  .btn.sm{margin-top:10px;padding:9px;font-size:14px}
   .note{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.5}
   .err{color:var(--danger);font-size:13px;margin-top:10px;min-height:1em}
-  .btn.bnet{margin-top:4px;background:linear-gradient(180deg,#1a8dff,#0060c7);border-color:#0a55a8;color:#fff}
-  .or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:18px 0 14px}
+  .or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:18px 0 6px}
   .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
-  .pick{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-top:8px;padding:11px 12px;
+  details summary{cursor:pointer;color:var(--muted);font-size:13px;text-align:center;list-style:none;padding:6px}
+  details summary::-webkit-details-marker{display:none}
+  .legal{font-size:11px;color:#6d6354;text-align:center;margin-top:16px;line-height:1.5}
+
+  .pick{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-top:8px;padding:10px 12px;
     background:#0a0806;border:1px solid var(--line);border-radius:10px;cursor:pointer}
-  .pick:hover,.pick:focus{border-color:var(--gold-dim);outline:none}
-  .pick .nm{font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .pick .sub2{font-size:12.5px;color:var(--muted);white-space:nowrap}
-  .vf{color:var(--gold);font-size:11px;margin-left:2px}
-  .found{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0005;font-size:14px}
+  .pick:hover,.pick:focus-visible{border-color:var(--gold-dim);outline:none}
+  .pick .who2{flex:1;min-width:0}
+  .pick .nm{font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pick .sub2{font-size:12px;color:var(--muted)}
+  .pick select{width:auto;padding:6px 8px;font-size:13px}
+  .srv{font-size:11px;padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--gold);white-space:nowrap}
+  .srv.pvp{color:#ff8a7a;border-color:#5a2a24}
 
   /* ---------- 채팅 ---------- */
   #chat{position:fixed;inset:0;display:flex;flex-direction:column}
-  header{padding:calc(10px + env(safe-area-inset-top)) 14px 0;background:linear-gradient(180deg,#1b150e,#120e0a);
+  header{padding:calc(10px + env(safe-area-inset-top)) 12px 8px;background:linear-gradient(180deg,#1b150e,#120e0a);
     border-bottom:1px solid var(--line)}
-  .top{display:flex;align-items:center;gap:10px}
-  .title{font-family:Cinzel,serif;color:var(--gold);font-size:18px;letter-spacing:.05em;flex:1}
-  .me{display:flex;align-items:center;gap:8px;font-size:13px;background:#0006;border:1px solid var(--line);
-    padding:5px 10px 5px 6px;border-radius:999px;cursor:pointer;max-width:60%}
-  .me span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .crest{width:20px;height:20px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:10px;font-weight:700;color:#fff}
-  .crest.alliance{background:var(--alliance)} .crest.horde{background:var(--horde)}
-  .tabs{display:flex;gap:4px;margin-top:10px}
-  .tab{flex:1;border:0;background:none;padding:10px 0 11px;color:var(--muted);cursor:pointer;position:relative;font-weight:500}
-  .tab.on{color:var(--gold)}
-  .tab.on::after{content:"";position:absolute;left:20%;right:20%;bottom:-1px;height:2px;background:var(--gold);border-radius:2px}
-  .tab .dot{display:inline-block;min-width:16px;padding:0 5px;height:16px;line-height:16px;border-radius:8px;
-    background:var(--danger);color:#fff;font-size:10px;margin-left:5px;vertical-align:1px}
-  .online{font-size:11.5px;color:var(--muted);text-align:center;padding:6px 0 8px}
+  .top{display:flex;align-items:center;gap:8px}
+  .title{font-family:Cinzel,serif;color:var(--gold);font-size:18px;letter-spacing:.05em}
+  .top .srv{margin-right:auto}
+  .me{display:flex;align-items:center;gap:6px;font-size:13px;background:#0006;border:1px solid var(--line);
+    padding:4px 10px 4px 5px;border-radius:999px;cursor:pointer;max-width:58%}
+  .me span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+  .chips{display:flex;gap:6px;overflow-x:auto;margin-top:9px;padding-bottom:2px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none;border:1px solid var(--line);background:#0006;border-radius:999px;padding:5px 11px;
+    font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .chip.on{background:#3a2c14;border-color:var(--gold-dim);color:var(--gold)}
+  .chip.fac.on{background:#2a1416;border-color:#7a2f2a;color:#ffb0a6}
+  .chip.fac.alliance.on{background:#132036;border-color:#2f5a9a;color:#a9c8ff}
+  .online{font-size:11.5px;color:var(--muted);text-align:center;padding:5px 0}
   .online b{color:#7bd17b;font-weight:500}
 
-  #list{flex:1;overflow-y:auto;padding:10px 12px;-webkit-overflow-scrolling:touch;
-    font-size:15px;line-height:1.5}
-  .msg{padding:3px 0;word-break:break-word}
-  .msg .time{color:#6d6354;font-size:11px;margin-right:6px}
-  .msg .who{font-weight:700;cursor:default}
-  .msg .meta{color:#6d6354;font-size:11px;margin-left:4px}
+  #list,#tList{flex:1;overflow-y:auto;padding:6px 10px;-webkit-overflow-scrolling:touch;font-size:15px;line-height:1.5}
+  .msg{padding:5px 4px;word-break:break-word;border-radius:8px}
+  .msg.tap{cursor:pointer}
+  .msg.tap:active{background:#ffffff08}
+  .msg .time{color:#6d6354;font-size:11px;margin-right:5px}
+  .msg .who{font-weight:700}
+  .msg .vf{color:var(--gold);font-size:11px;margin-left:2px}
+  .msg .lv{color:#6d6354;font-size:11px;margin-left:3px}
   .msg .lang{color:var(--muted);font-style:italic;margin-right:4px}
-  .msg.foreign .text{font-style:italic;color:#c9bda7}
-  .msg.pvp-ch .text{}
+  .msg .text{color:var(--body)}
+  .msg.foreign .text{font-style:italic;color:#a99e8a}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:0 6px;border-radius:5px;margin-right:5px;vertical-align:1px}
+  .tag.question{background:#183a4a;color:#8fd6f5}
+  .tag.trade{background:#3d3412;color:#f0d36b}
+  .tag.guild{background:#2a1f45;color:#c7b1ff}
+  .tag.party{background:#173a22;color:#8ee6a6}
+  .replies:empty{display:none}
+  .replies{display:inline-block;margin-left:6px;font-size:12px;color:var(--gold-dim);white-space:nowrap}
   .sys{color:#e0b34a;font-size:13px;text-align:center;padding:8px 0;opacity:.85}
-  .empty{color:var(--muted);text-align:center;margin-top:40px;font-size:14px}
+  .empty{color:var(--muted);text-align:center;margin-top:40px;font-size:14px;line-height:1.6}
 
-  form#send{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  form.send{display:flex;gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));
     border-top:1px solid var(--line);background:#120e0a}
-  form#send input{flex:1}
-  form#send button{border:1px solid #8a6a26;border-radius:9px;padding:0 16px;
+  form.send input{flex:1;min-width:0}
+  form.send select{width:auto;padding:0 8px;font-size:13px;color:var(--gold)}
+  form.send button{border:1px solid #8a6a26;border-radius:9px;padding:0 14px;flex:none;
     background:linear-gradient(180deg,#c9a24c,#8c6b25);color:#1a1205;font-weight:700;cursor:pointer}
   .toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);
     background:#2a1d10;border:1px solid var(--gold-dim);padding:8px 14px;border-radius:9px;font-size:13px;
-    opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%}
+    opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%;z-index:20}
   .toast.show{opacity:1}
 
+  /* 답글 */
+  #thread{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);z-index:6}
+  #thread header .top button{background:none;border:0;color:var(--gold);font-size:15px;cursor:pointer;padding:4px 2px}
+  #tList .msg:first-child{background:#ffffff08;border:1px solid var(--line);margin-bottom:8px;padding:8px}
+
   /* 시트 */
-  #sheet{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:5}
+  #sheet{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:8}
   #sheet .card{border-radius:14px 14px 0 0;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
 </style>
 </head>
@@ -107,52 +134,42 @@
     <h1 class="logo">FOREVER CHAT</h1>
     <p class="sub">와우 포에버 실시간 채팅</p>
 
+    <!-- 배틀넷 캐릭터 선택 -->
     <div id="pickBox" class="hidden">
-      <label for="pkRealm">서버</label>
-      <select id="pkRealm"><option value="일반">일반</option><option value="PvP">PvP</option></select>
-      <label>캐릭터 선택 <span id="pkTag" style="color:var(--gold-dim)"></span></label>
+      <label style="margin-top:0">캐릭터 선택 <span id="pkTag" style="color:var(--gold-dim)"></span></label>
       <div id="pickList"></div>
       <div class="err" id="pickErr"></div>
-      <button class="btn ghost" id="pickCancel" type="button">처음으로</button>
+      <button class="btn ghost sm" id="refreshBtn" type="button">배틀넷에서 캐릭터 다시 불러오기</button>
+      <button class="btn ghost sm" id="toManual" type="button">직접 입장하기</button>
     </div>
 
+    <!-- 처음 화면 -->
     <div id="altBox">
-    <button class="btn bnet" id="bnetBtn" type="button">배틀넷으로 로그인</button>
-    <div class="err" id="bnetErr"></div>
-    <p class="note" style="margin-top:4px;text-align:center">로그인하면 내 포에버 캐릭터를 골라서 <b style="color:var(--gold)">✔ 인증</b> 표시로 입장해요</p>
-    <div class="or"><span>또는 직접 입장</span></div>
+      <button class="btn bnet" id="bnetBtn" type="button">배틀넷으로 로그인</button>
+      <div class="err" id="bnetErr"></div>
+      <p class="note" style="margin-top:2px;text-align:center">내 포에버 캐릭터를 골라서 <b style="color:var(--gold)">✔ 인증</b> 표시로 입장해요</p>
 
-    <div class="seg">
-      <button type="button" data-mode="lookup" class="on">캐릭터 조회</button>
-      <button type="button" data-mode="manual">직접 입력</button>
+      <details id="manualWrap">
+        <summary><div class="or"><span>또는 직접 입장</span></div></summary>
+        <form id="manualBox" autocomplete="off">
+          <div class="row">
+            <div><label for="fName">캐릭터 이름</label><input id="fName" maxlength="24" required placeholder="이름 성"></div>
+            <div style="flex:.7"><label for="fRealm">서버</label><select id="fRealm"><option value="일반">일반</option><option value="PvP">PvP</option></select></div>
+          </div>
+          <label for="fRace">종족</label>
+          <select id="fRace" required></select>
+          <div class="row">
+            <div><label for="fClass">직업</label><select id="fClass" required></select></div>
+            <div style="flex:.6"><label for="fLevel">레벨</label><input id="fLevel" type="number" min="1" max="100" inputmode="numeric" placeholder="선택"></div>
+          </div>
+          <button class="btn" type="submit" id="joinBtn">입장하기</button>
+          <div class="err" id="joinErr"></div>
+        </form>
+      </details>
     </div>
 
-    <div id="lookupBox">
-      <div class="row">
-        <div><label for="lkRealm">서버</label><select id="lkRealm"><option value="일반">일반</option><option value="PvP">PvP</option></select></div>
-        <div><label for="lkName">캐릭터 이름 (이름 성)</label><input id="lkName" placeholder="예: 아서 로드리" autocomplete="off"></div>
-      </div>
-      <button class="btn" id="lkBtn" type="button">불러오기</button>
-      <div class="err" id="lkErr"></div>
-    </div>
-
-    <form id="manualBox" class="hidden" autocomplete="off">
-      <div class="row">
-        <div><label for="fName">캐릭터 이름</label><input id="fName" maxlength="24" required></div>
-        <div><label for="fRealm">서버</label><select id="fRealm"><option value="일반">일반</option><option value="PvP">PvP</option></select></div>
-      </div>
-      <label for="fRace">종족</label>
-      <select id="fRace" required></select>
-      <div class="row">
-        <div><label for="fClass">직업</label><select id="fClass" required></select></div>
-        <div style="flex:.6"><label for="fLevel">레벨</label><input id="fLevel" type="number" min="1" max="100" inputmode="numeric" placeholder="선택"></div>
-      </div>
-      <input type="hidden" id="fFaction">
-      <button class="btn" type="submit" id="joinBtn">입장하기</button>
-      <div class="err" id="joinErr"></div>
-      <p class="note">다른 진영 사람이 쓴 채팅은 게임처럼 <b>공용어 / 오크어</b>로 바뀌어 보여요. 원문은 같은 진영에게만 전달돼요.</p>
-    </form>
-    </div>
+    <p class="note">다른 진영 사람이 쓴 채팅은 게임처럼 <b>공용어 / 오크어</b>로 바뀌어 보여요. 원문은 같은 진영에게만 전달되고, 메시지는 3일 뒤 지워져요.</p>
+    <p class="legal">비공식 팬 사이트예요. World of Warcraft와 게임 이미지는 Blizzard Entertainment의 자산이며, 이 사이트는 블리자드와 관계없어요.</p>
   </div>
 </section>
 
@@ -161,26 +178,42 @@
   <header>
     <div class="top">
       <div class="title">FOREVER</div>
-      <button class="me" id="meBtn" type="button"><div class="crest" id="meCrest"></div><span id="meName"></span></button>
+      <span class="srv" id="srvBadge"></span>
+      <button class="me" id="meBtn" type="button"><span class="icons" id="meIcons"></span><span id="meName"></span></button>
     </div>
-    <div class="tabs">
-      <button class="tab on" data-ch="general" type="button">일반<span class="dot hidden" id="dot-general"></span></button>
-      <button class="tab" data-ch="pvp" type="button">PvP<span class="dot hidden" id="dot-pvp"></span></button>
-    </div>
+    <div class="chips" id="chips"></div>
   </header>
   <div class="online" id="online">접속 중…</div>
   <div id="list"></div>
-  <form id="send" autocomplete="off">
+  <form class="send" id="send" autocomplete="off">
+    <select id="tagSel" aria-label="말머리"></select>
     <input id="msgInput" maxlength="300" placeholder="메시지 입력" enterkeyhint="send">
     <button type="submit">전송</button>
   </form>
 </section>
 
+<!-- 답글 -->
+<section id="thread" class="hidden">
+  <header>
+    <div class="top">
+      <button type="button" id="tBack">‹ 채팅</button>
+      <div style="flex:1;text-align:center;color:var(--gold);font-weight:700">답글</div>
+      <span style="width:52px"></span>
+    </div>
+  </header>
+  <div id="tList"></div>
+  <form class="send" id="tSend" autocomplete="off">
+    <input id="tInput" maxlength="300" placeholder="답글 입력" enterkeyhint="send">
+    <button type="submit">답글</button>
+  </form>
+</section>
+
 <div id="sheet" class="hidden">
   <div class="card">
-    <div id="sheetInfo" style="font-size:15px;line-height:1.7"></div>
-    <button class="btn ghost" id="switchBtn" type="button">다른 캐릭터로 입장</button>
-    <button class="btn ghost" id="closeSheet" type="button" style="margin-top:8px">닫기</button>
+    <div id="sheetInfo" style="font-size:15px;line-height:1.8"></div>
+    <button class="btn" id="switchBtn" type="button">캐릭터 바꾸기</button>
+    <button class="btn ghost sm" id="logoutBtn" type="button">로그아웃</button>
+    <button class="btn ghost sm" id="closeSheet" type="button">닫기</button>
   </div>
 </div>
 
@@ -192,7 +225,10 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://ztxzqvnybiemgbhtrwiw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7";
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+const FN_URL = `${SUPABASE_URL}/functions/v1/wow-character`;
+const REDIRECT = location.origin + location.pathname.replace(/index\.html$/, "").replace(/\/?$/, "/");
 
+/* ---------- 게임 데이터 ---------- */
 const RACES = {
   alliance: ["인간", "드워프", "노움", "나이트 엘프", "고등 마법원 스카이본"],
   horde: ["오크", "언데드", "타우렌", "트롤", "바람구체자 스카이본"],
@@ -201,108 +237,93 @@ const CLASSES = ["전사","성기사","사냥꾼","도적","사제","주술사",
 const CLASS_COLOR = { "전사":"#C69B6D","성기사":"#F48CBA","사냥꾼":"#AAD372","도적":"#FFF468","사제":"#FFFFFF",
   "주술사":"#0070DD","마법사":"#3FC7EB","흑마법사":"#8788EE","드루이드":"#FF7C0A" };
 const LANG = { alliance: "공용어", horde: "오크어" };
-const CH_NAME = { general: "일반", pvp: "PvP" };
+const TAGS = [
+  { id: "chat", label: "잡담" }, { id: "question", label: "질문" }, { id: "trade", label: "거래" },
+  { id: "guild", label: "길드 모집" }, { id: "party", label: "파티·공대" },
+];
+const TAG_LABEL = Object.fromEntries(TAGS.map(t => [t.id, t.label]));
 
+// 블리자드 공식 아이콘 서버 (불러오지 못하면 글자 배지로 대체)
+const ICON = (n) => `https://render.worldofwarcraft.com/us/icons/56/${n}.jpg`;
+const CLASS_ICON = { "전사":"classicon_warrior","성기사":"classicon_paladin","사냥꾼":"classicon_hunter","도적":"classicon_rogue",
+  "사제":"classicon_priest","주술사":"classicon_shaman","마법사":"classicon_mage","흑마법사":"classicon_warlock","드루이드":"classicon_druid" };
+const RACE_ICON = { "인간":"achievement_character_human_male","드워프":"achievement_character_dwarf_male",
+  "노움":"achievement_character_gnome_male","나이트 엘프":"achievement_character_nightelf_male",
+  "오크":"achievement_character_orc_male","언데드":"achievement_character_undead_male",
+  "타우렌":"achievement_character_tauren_male","트롤":"achievement_character_troll_male" };
+const FACTION_ICON = { horde: "inv_bannerpvp_01", alliance: "inv_bannerpvp_02" };
+
+function iconEl(kind, key, faction, big){
+  const name = kind==="class" ? CLASS_ICON[key] : kind==="race" ? RACE_ICON[key] : FACTION_ICON[key];
+  const fallback = () => {
+    const s=document.createElement("span"); s.className="ic fb "+(faction||"")+(big?" lg":"");
+    s.textContent = kind==="faction" ? (key==="alliance"?"얼":"호") : String(key||"?").replace("고등 마법원 ","").replace("바람구체자 ","").slice(0,1);
+    s.title = kind==="faction" ? (key==="alliance"?"얼라이언스":"호드") : (key||"");
+    return s;
+  };
+  if (!name) return fallback();
+  const img=document.createElement("img"); img.className="ic"+(big?" lg":""); img.alt=key||""; img.loading="lazy";
+  img.title = kind==="faction" ? (key==="alliance"?"얼라이언스":"호드") : key;
+  img.referrerPolicy="no-referrer"; img.src=ICON(name);
+  img.onerror=()=>img.replaceWith(fallback());
+  return img;
+}
+function iconSet(o, big){
+  const w=document.createElement("span"); w.className="icons";
+  w.append(iconEl("faction", o.faction, o.faction, big), iconEl("race", o.race, o.faction, big), iconEl("class", o.class, o.faction, big));
+  return w;
+}
+
+/* ---------- 공통 ---------- */
 const $ = (id) => document.getElementById(id);
-const store = {
-  get(k){ try { return localStorage.getItem(k); } catch { return null; } },
-  set(k,v){ try { localStorage.setItem(k,v); } catch {} },
-  del(k){ try { localStorage.removeItem(k); } catch {} },
-};
-
-let me = null;
-let current = "general";
-const cache = { general: [], pvp: [] };  // 채널별 메시지
-const loaded = { general: false, pvp: false };
-const unread = { general: 0, pvp: 0 };
-let msgChannel = null, presence = null;
-
+const mk = (store) => ({
+  get(k){ try { return store().getItem(k); } catch { return null; } },
+  set(k,v){ try { store().setItem(k,v); } catch {} },
+  del(k){ try { store().removeItem(k); } catch {} },
+});
+const ls = mk(()=>localStorage), ss = mk(()=>sessionStorage);
 function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("show");
-  clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("show"),2200); }
+  clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("show"),2400); }
 function errMsg(e){ return (e && (e.message || e.error_description)) || String(e); }
+const chOf = (realm) => realm === "PvP" ? "pvp" : "general";
+function show(id){ for (const s of ["join","chat"]) $(s).classList.toggle("hidden", s!==id); }
 
-/* ---------- 입장 폼 ---------- */
-function fillSelects(){
-  const r=$("fRace"); r.innerHTML="";
+let me = null, channel = "general";
+let cache = [];
+let filterTag = "all", myFactionOnly = false;
+let msgSub = null, presence = null;
+let threadParent = null, threadMsgs = [];
+
+/* ---------- 입장: 직접 ---------- */
+(function fill(){
+  const r=$("fRace");
   for (const [fac, list] of Object.entries(RACES)) {
     const g=document.createElement("optgroup"); g.label = fac==="alliance"?"얼라이언스":"호드";
-    list.forEach(x=>{ const o=document.createElement("option"); o.value=x; o.textContent=x; o.dataset.faction=fac; g.appendChild(o); });
+    list.forEach(x=>{ const o=document.createElement("option"); o.value=x; o.textContent=x; g.appendChild(o); });
     r.appendChild(g);
   }
-  const c=$("fClass"); c.innerHTML="";
-  CLASSES.forEach(x=>{ const o=document.createElement("option"); o.value=x; o.textContent=x; c.appendChild(o); });
-}
-function setMode(mode){
-  document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on", b.dataset.mode===mode));
-  $("lookupBox").classList.toggle("hidden", mode!=="lookup");
-  $("manualBox").classList.toggle("hidden", mode!=="manual");
-}
-document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
-
-$("lkBtn").onclick = async () => {
-  const realm=$("lkRealm").value.trim(), name=$("lkName").value.trim();
-  $("lkErr").textContent="";
-  if(!realm||!name){ $("lkErr").textContent="서버와 캐릭터 이름을 입력해 주세요"; return; }
-  $("lkBtn").disabled=true; $("lkBtn").textContent="불러오는 중…";
-  try{
-    const r = await fetch(`${SUPABASE_URL}/functions/v1/wow-character?realm=${encodeURIComponent(realm)}&name=${encodeURIComponent(name)}`,
-      { headers: { apikey: SUPABASE_KEY } });
-    const d = await r.json();
-    if (d.ok) {
-      const c = d.character;
-      $("fName").value = name.replace(/-/g, " ");
-      $("fRealm").value = c.ruleset ? (/pvp/i.test(c.ruleset) ? "PvP" : "일반") : realm;
-      if (c.level) $("fLevel").value = c.level;
-      const known = [...$("fRace").options].find(o=>o.value===c.race);
-      if (!known && c.race) {
-        const o=document.createElement("option"); o.value=c.race; o.textContent=c.race; o.dataset.faction=c.faction||"";
-        $("fRace").appendChild(o);
-      }
-      if (c.race) $("fRace").value = c.race;
-      if (c.class && CLASSES.includes(c.class)) $("fClass").value = c.class;
-      $("fFaction").value = c.faction || "";
-      setMode("manual");
-      toast(`${c.name} · ${c.race} ${c.class} 불러왔어요`);
-    } else if (d.reason === "not_configured") {
-      $("fName").value=name; $("fRealm").value=realm;
-      setMode("manual");
-      toast("캐릭터 조회가 아직 연결 안 됐어요. 종족·직업을 골라 주세요");
-    } else {
-      $("lkErr").textContent = (d.message || "조회에 실패했어요") + " · 직접 입력으로 들어갈 수 있어요";
-    }
-  }catch(e){ $("lkErr").textContent="조회 중 오류: "+errMsg(e); }
-  finally{ $("lkBtn").disabled=false; $("lkBtn").textContent="불러오기"; }
-};
+  CLASSES.forEach(x=>{ const o=document.createElement("option"); o.value=x; o.textContent=x; $("fClass").appendChild(o); });
+  TAGS.forEach(t=>{ const o=document.createElement("option"); o.value=t.id; o.textContent=t.label; $("tagSel").appendChild(o); });
+})();
 
 $("manualBox").onsubmit = async (ev) => {
   ev.preventDefault();
   $("joinErr").textContent=""; $("joinBtn").disabled=true;
-  const opt = $("fRace").selectedOptions[0];
   const lv = parseInt($("fLevel").value,10);
   const { data, error } = await sb.rpc("wow_register", {
-    p_name: $("fName").value.trim(), p_realm: $("fRealm").value.trim(),
-    p_race: $("fRace").value, p_class: $("fClass").value,
-    p_level: Number.isFinite(lv) ? lv : null,
-    p_faction: $("fFaction").value || opt?.dataset.faction || null,
+    p_name: $("fName").value.trim(), p_realm: $("fRealm").value, p_race: $("fRace").value, p_class: $("fClass").value,
+    p_level: Number.isFinite(lv) ? lv : null, p_faction: null,
   });
   $("joinBtn").disabled=false;
   if (error) { $("joinErr").textContent = errMsg(error); return; }
-  store.set("wowchat_token", data.token);
+  ls.set("wowchat_token", data.token);
   enterChat(data);
 };
 
-/* ---------- 배틀넷 로그인 ---------- */
-const FN_URL = `${SUPABASE_URL}/functions/v1/wow-character`;
-const REDIRECT = location.origin + location.pathname.replace(/index\.html$/, "").replace(/\/?$/, "/");
-const ss = {
-  get(k){ try { return sessionStorage.getItem(k); } catch { return null; } },
-  set(k,v){ try { sessionStorage.setItem(k,v); } catch {} },
-  del(k){ try { sessionStorage.removeItem(k); } catch {} },
-};
-
-$("bnetBtn").onclick = async () => {
-  $("bnetErr").textContent = "";
-  $("bnetBtn").disabled = true; $("bnetBtn").textContent = "배틀넷으로 이동 중…";
+/* ---------- 입장: 배틀넷 ---------- */
+async function startBnet(btn){
+  $("bnetErr").textContent = ""; $("pickErr").textContent = "";
+  btn.disabled = true;
   try {
     const state = crypto.randomUUID();
     ss.set("wowchat_state", state);
@@ -312,46 +333,67 @@ $("bnetBtn").onclick = async () => {
     if (!d.ok) throw new Error(d.message || d.reason || "로그인 주소를 만들지 못했어요");
     location.href = d.url;
   } catch (e) {
-    $("bnetErr").textContent = errMsg(e);
-    $("bnetBtn").disabled = false; $("bnetBtn").textContent = "배틀넷으로 로그인";
+    ($("pickBox").classList.contains("hidden") ? $("bnetErr") : $("pickErr")).textContent = errMsg(e);
+    btn.disabled = false;
   }
-};
+}
+$("bnetBtn").onclick = () => startBnet($("bnetBtn"));
+$("refreshBtn").onclick = () => startBnet($("refreshBtn"));
+$("toManual").onclick = () => { showAlt(); $("manualWrap").open = true; };
 
-function showPicker(login){
+function showAlt(){ $("pickBox").classList.add("hidden"); $("altBox").classList.remove("hidden"); }
+
+function showPicker(acc){
+  show("join");
   $("altBox").classList.add("hidden"); $("pickBox").classList.remove("hidden");
-  $("pkTag").textContent = login.battletag ? `· ${login.battletag}` : "";
+  $("pkTag").textContent = acc.battletag ? `· ${acc.battletag}` : "";
   const list = $("pickList"); list.innerHTML = "";
-  login.characters.forEach((c, i) => {
-    const b = document.createElement("button"); b.type = "button"; b.className = "pick";
-    const crest = document.createElement("div"); crest.className = "crest " + c.faction;
-    crest.textContent = c.faction === "alliance" ? "얼" : "호";
+  (acc.characters || []).forEach((c, i) => {
+    const b = document.createElement("div"); b.className = "pick"; b.tabIndex = 0; b.setAttribute("role","button");
+    const who = document.createElement("div"); who.className = "who2";
     const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = c.name;
     nm.style.color = CLASS_COLOR[c.class] || "";
     const sub = document.createElement("span"); sub.className = "sub2";
     sub.textContent = `${c.level ? "Lv" + c.level + " " : ""}${c.race || ""} ${c.class || ""}`.trim();
-    b.append(crest, nm, sub);
-    b.onclick = async () => {
+    who.append(nm, sub);
+    let srvEl;
+    if (c.realm) { srvEl = document.createElement("span"); srvEl.className = "srv"+(c.realm==="PvP"?" pvp":""); srvEl.textContent = c.realm; }
+    else {
+      srvEl = document.createElement("select"); srvEl.title = "서버 정보를 못 받아서 직접 골라 주세요";
+      ["일반","PvP"].forEach(v=>{ const o=document.createElement("option"); o.value=v; o.textContent=v; srvEl.appendChild(o); });
+      const saved = ls.get("wowchat_srv_"+c.name); if (saved) srvEl.value = saved;
+      srvEl.onclick = (e)=>e.stopPropagation();
+    }
+    b.append(iconSet(c, true), who, srvEl);
+    const go = async () => {
+      if (b.dataset.busy) return; b.dataset.busy = "1";
       $("pickErr").textContent = "";
-      list.querySelectorAll("button").forEach(x => x.disabled = true);
+      const realm = c.realm || srvEl.value;
+      if (!c.realm) ls.set("wowchat_srv_"+c.name, realm);
       const { data, error } = await sb.rpc("wow_register_verified",
-        { p_login: login.login_id, p_index: i, p_realm: $("pkRealm").value });
-      if (error) {
-        $("pickErr").textContent = errMsg(error);
-        list.querySelectorAll("button").forEach(x => x.disabled = false);
-        return;
-      }
-      store.set("wowchat_token", data.token);
-      $("pickBox").classList.add("hidden"); $("altBox").classList.remove("hidden");
+        { p_account: ls.get("wowchat_account"), p_index: i, p_realm: realm });
+      delete b.dataset.busy;
+      if (error) { $("pickErr").textContent = errMsg(error); return; }
+      ls.set("wowchat_token", data.token);
       enterChat(data);
     };
+    b.onclick = go; b.onkeydown = (e)=>{ if (e.key==="Enter") go(); };
     list.appendChild(b);
   });
 }
-$("pickCancel").onclick = () => { $("pickBox").classList.add("hidden"); $("altBox").classList.remove("hidden"); };
+
+async function openPickerFromAccount(){
+  const acc = ls.get("wowchat_account");
+  if (!acc) return false;
+  const { data } = await sb.rpc("wow_account_characters", { p_account: acc });
+  if (!data) { ls.del("wowchat_account"); return false; }
+  showPicker(data);
+  return true;
+}
 
 async function handleBnetReturn(params){
   history.replaceState(null, "", location.pathname);
-  $("join").classList.remove("hidden");
+  show("join");
   const err = params.get("error");
   if (err) { $("bnetErr").textContent = err === "access_denied" ? "배틀넷 로그인을 취소했어요" : "배틀넷 로그인 오류: " + err; return; }
   const saved = ss.get("wowchat_state"); ss.del("wowchat_state");
@@ -364,6 +406,7 @@ async function handleBnetReturn(params){
     });
     const d = await r.json();
     if (!d.ok) throw new Error((d.message || "캐릭터를 불러오지 못했어요") + " · 직접 입장으로 들어갈 수 있어요");
+    ls.set("wowchat_account", d.account_token);
     showPicker(d);
   } catch (e) {
     $("bnetErr").textContent = errMsg(e);
@@ -373,172 +416,225 @@ async function handleBnetReturn(params){
 }
 
 /* ---------- 채팅 ---------- */
-function fmtTime(iso){ const d=new Date(iso); return d.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",hour12:false}); }
+function fmtTime(iso){ return new Date(iso).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",hour12:false}); }
 
-function renderMsg(m){
+function renderMsg(m, inThread){
   const el=document.createElement("div");
-  el.className="msg"+(m.foreign_lang?" foreign":"");
+  el.className="msg"+(m.foreign_lang?" foreign":"")+(!inThread?" tap":"");
+  el.dataset.id = m.id;
   const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
-  const crest=document.createElement("span"); crest.className="crest "+m.sender_faction;
-  crest.style.cssText="display:inline-grid;width:15px;height:15px;font-size:8px;margin-right:4px;vertical-align:-2px";
-  crest.textContent = m.sender_faction==="alliance"?"얼":"호";
+  const icons = iconSet({ faction:m.sender_faction, race:m.sender_race, class:m.sender_class });
   const who=document.createElement("span"); who.className="who"; who.style.color=CLASS_COLOR[m.sender_class]||"#ddd";
-  who.textContent=`[${m.sender_name}]`;
-  who.title=`${m.sender_realm||""} ${m.sender_level?("Lv."+m.sender_level+" "):""}${m.sender_race} ${m.sender_class}`.trim();
-  const meta=document.createElement("span"); meta.className="meta";
-  meta.textContent = `${m.sender_level?("Lv"+m.sender_level+" "):""}${m.sender_race}`;
-  const colon=document.createTextNode(": ");
-  el.append(t, crest, who);
+  who.textContent=m.sender_name;
+  who.title=`${m.sender_level?("Lv."+m.sender_level+" "):""}${m.sender_race} ${m.sender_class}`;
+  el.append(t, icons, who);
   if (m.sender_verified){ const v=document.createElement("span"); v.className="vf"; v.textContent="✔"; v.title="배틀넷 인증 캐릭터"; el.appendChild(v); }
-  el.append(meta, colon);
+  if (m.sender_level){ const l=document.createElement("span"); l.className="lv"; l.textContent=m.sender_level; el.appendChild(l); }
+  el.appendChild(document.createTextNode(": "));
+  if (m.tag && m.tag!=="chat"){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag; el.appendChild(g); }
   if (m.foreign_lang){ const l=document.createElement("span"); l.className="lang"; l.textContent=`[${LANG[m.sender_faction]}]`; el.appendChild(l); }
   const tx=document.createElement("span"); tx.className="text"; tx.textContent=m.body; el.appendChild(tx);
+  if (!inThread){
+    const r=document.createElement("span"); r.className="replies";
+    r.textContent = m.reply_count ? `💬 ${m.reply_count}` : "";
+    el.appendChild(r);
+    el.onclick = () => openThread(m);
+  }
   return el;
 }
-function nearBottom(){ const l=$("list"); return l.scrollHeight - l.scrollTop - l.clientHeight < 120; }
-function scrollBottom(){ const l=$("list"); l.scrollTop=l.scrollHeight; }
+const visible = (m) => (filterTag==="all" || m.tag===filterTag) && (!myFactionOnly || m.sender_faction===me.faction);
+function nearBottom(l){ return l.scrollHeight - l.scrollTop - l.clientHeight < 120; }
 
 function renderAll(){
   const l=$("list"); l.innerHTML="";
-  const arr=cache[current];
-  if (!arr.length){ const e=document.createElement("div"); e.className="empty";
-    e.textContent = loaded[current] ? `${CH_NAME[current]} 채널의 첫 메시지를 남겨 보세요` : "불러오는 중…"; l.appendChild(e); return; }
+  const arr=cache.filter(visible);
+  if (!arr.length){
+    const e=document.createElement("div"); e.className="empty";
+    e.textContent = cache.length ? "이 필터에 맞는 메시지가 없어요" : `${me.realm||"일반"} 서버의 첫 메시지를 남겨 보세요`;
+    l.appendChild(e); return;
+  }
   const frag=document.createDocumentFragment(); arr.forEach(m=>frag.appendChild(renderMsg(m))); l.appendChild(frag);
-  scrollBottom();
+  l.scrollTop=l.scrollHeight;
 }
 function addMsg(m){
-  const arr=cache[m.channel];
-  if (arr.some(x=>x.id===m.id)) return;
-  arr.push(m); if (arr.length>300) arr.splice(0, arr.length-300);
-  if (m.channel===current){
-    const stick=nearBottom() || m.player_id===me.id;
-    const l=$("list"); const empty=l.querySelector(".empty"); if (empty) empty.remove();
-    l.appendChild(renderMsg(m)); if (stick) scrollBottom();
-  } else {
-    unread[m.channel]++; updateDots();
-  }
+  if (m.parent_id) { addThreadMsg(m); return; }
+  if (cache.some(x=>x.id===m.id)) return;
+  cache.push(m); if (cache.length>400) cache.splice(0, cache.length-400);
+  if (!visible(m)) return;
+  const l=$("list"); const stick=nearBottom(l) || m.player_id===me.id;
+  l.querySelector(".empty")?.remove();
+  l.appendChild(renderMsg(m)); if (stick) l.scrollTop=l.scrollHeight;
 }
-function updateDots(){
-  for (const ch of ["general","pvp"]) {
-    const d=$("dot-"+ch); d.textContent = unread[ch]>99?"99+":unread[ch];
-    d.classList.toggle("hidden", !unread[ch]);
-  }
+function updateReplyCount(id, count){
+  const m = cache.find(x=>x.id===id); if (m) m.reply_count = count;
+  const el = $("list").querySelector(`.msg[data-id="${id}"] .replies`);
+  if (el) el.textContent = count ? `💬 ${count}` : "";
 }
 
-async function loadHistory(ch){
-  const { data, error } = await sb.rpc("wow_history", { p_token: me.token, p_channel: ch, p_limit: 120 });
+function buildChips(){
+  const c=$("chips"); c.innerHTML="";
+  const all=[{id:"all",label:"전체"}, ...TAGS];
+  all.forEach(t=>{
+    const b=document.createElement("button"); b.type="button"; b.className="chip"+(filterTag===t.id?" on":"");
+    b.textContent=t.label; b.onclick=()=>{ filterTag=t.id; buildChips(); renderAll(); };
+    c.appendChild(b);
+  });
+  const f=document.createElement("button"); f.type="button";
+  f.className="chip fac "+me.faction+(myFactionOnly?" on":"");
+  f.textContent = (me.faction==="alliance"?"얼라이언스":"호드")+"만";
+  f.onclick=()=>{ myFactionOnly=!myFactionOnly; buildChips(); renderAll(); };
+  c.appendChild(f);
+}
+
+async function loadHistory(){
+  const { data, error } = await sb.rpc("wow_history", { p_token: me.token, p_channel: channel, p_limit: 150 });
   if (error) { toast("불러오기 실패: "+errMsg(error)); return; }
-  const existing = new Map(cache[ch].map(x=>[x.id,x]));
-  data.reverse().forEach(m=>existing.set(m.id,m));
-  cache[ch] = [...existing.values()].sort((a,b)=>a.id-b.id);
-  loaded[ch]=true;
-  if (ch===current) renderAll();
-}
-
-function switchChannel(ch){
-  current=ch; unread[ch]=0; updateDots();
-  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on", b.dataset.ch===ch));
-  $("msgInput").placeholder = `${CH_NAME[ch]} 채널에 메시지 입력`;
+  const map = new Map(cache.map(x=>[x.id,x]));
+  data.forEach(m=>map.set(m.id,m));
+  cache = [...map.values()].sort((a,b)=>a.id-b.id);
   renderAll();
-  if (!loaded[ch]) loadHistory(ch);
-  if (presence) presence.track({ id: me.id, name: me.name, faction: me.faction, ch }).catch(()=>{});
 }
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchChannel(b.dataset.ch));
 
 // 같은 진영 원문은 묶어서 가져오기
-let pendingIds=[], pendingRows=new Map(), flushTimer=null;
-function queueOwnFaction(row){
-  pendingIds.push(row.id); pendingRows.set(row.id,row);
-  if (!flushTimer) flushTimer=setTimeout(flushBodies, 60);
-}
+let pendingRows=new Map(), flushTimer=null;
+function queueOwn(row){ pendingRows.set(row.id,row); if (!flushTimer) flushTimer=setTimeout(flushBodies, 60); }
 async function flushBodies(){
-  const ids=pendingIds; const rows=pendingRows; pendingIds=[]; pendingRows=new Map(); flushTimer=null;
+  const rows=pendingRows; pendingRows=new Map(); flushTimer=null;
+  const ids=[...rows.keys()];
   const { data, error } = await sb.rpc("wow_bodies", { p_token: me.token, p_ids: ids });
   const map=new Map((data||[]).map(x=>[x.id,x.body]));
-  ids.forEach(id=>{
-    const r=rows.get(id);
+  ids.forEach(id=>{ const r=rows.get(id);
     if (map.has(id)) addMsg({ ...r, body: map.get(id), foreign_lang:false });
     else if (error) addMsg({ ...r, body: r.garbled, foreign_lang:false });
   });
 }
 
 function subscribe(){
-  if (msgChannel) sb.removeChannel(msgChannel);
-  msgChannel = sb.channel("wow-messages")
-    .on("postgres_changes", { event:"INSERT", schema:"wow", table:"messages" }, (p)=>{
+  if (msgSub) sb.removeChannel(msgSub);
+  msgSub = sb.channel("wow-messages-"+channel)
+    .on("postgres_changes", { event:"INSERT", schema:"wow", table:"messages", filter:`channel=eq.${channel}` }, (p)=>{
       const r=p.new;
-      if (r.sender_faction===me.faction) queueOwnFaction(r);
+      if (r.sender_faction===me.faction) queueOwn(r);
       else addMsg({ ...r, body: r.garbled, foreign_lang:true });
     })
+    .on("postgres_changes", { event:"UPDATE", schema:"wow", table:"messages", filter:`channel=eq.${channel}` }, (p)=>{
+      updateReplyCount(p.new.id, p.new.reply_count);
+    })
     .subscribe((status)=>{
-      if (status==="SUBSCRIBED") { loadHistory(current); if (current!=="general") loaded.general=false; if (current!=="pvp") loaded.pvp=false; }
+      if (status==="SUBSCRIBED") loadHistory();
       if (status==="CHANNEL_ERROR" || status==="TIMED_OUT") toast("연결이 끊겼어요. 다시 연결 중…");
     });
 
   if (presence) sb.removeChannel(presence);
-  presence = sb.channel("wow-presence", { config: { presence: { key: me.id } } });
+  presence = sb.channel("wow-presence-"+channel, { config: { presence: { key: me.id } } });
   presence.on("presence", { event:"sync" }, ()=>{
-    const st=presence.presenceState(); let a=0,h=0,here=0;
-    Object.values(st).forEach(list=>{ const p=list[list.length-1]; if(!p) return;
-      if (p.faction==="alliance") a++; else h++; if (p.ch===current) here++; });
-    $("online").innerHTML = `<b>●</b> 접속 ${a+h}명 · 얼라이언스 ${a} · 호드 ${h}`;
-  }).subscribe(async (s)=>{ if (s==="SUBSCRIBED") await presence.track({ id: me.id, name: me.name, faction: me.faction, ch: current }); });
+    let a=0,h=0;
+    Object.values(presence.presenceState()).forEach(list=>{ const p=list[list.length-1]; if(!p) return; if (p.faction==="alliance") a++; else h++; });
+    $("online").innerHTML = `<b>●</b> ${me.realm||"일반"} 서버 접속 ${a+h}명 · 얼라이언스 ${a} · 호드 ${h}`;
+  }).subscribe(async (s)=>{ if (s==="SUBSCRIBED") await presence.track({ id: me.id, faction: me.faction }); });
 }
 
 function enterChat(player){
-  me = player;
-  $("join").classList.add("hidden"); $("chat").classList.remove("hidden");
-  const crest=$("meCrest"); crest.className="crest "+me.faction; crest.textContent = me.faction==="alliance"?"얼":"호";
-  $("meName").textContent = `${me.name} · ${me.race} ${me.class}`;
+  me = player; channel = chOf(me.realm);
+  cache = []; filterTag = "all"; myFactionOnly = false;
+  show("chat");
+  $("srvBadge").textContent = `${me.realm||"일반"} 서버`;
+  $("srvBadge").className = "srv"+(me.realm==="PvP"?" pvp":"");
+  $("meIcons").replaceWith(Object.assign(iconSet(me), { id:"meIcons" }));
+  $("meName").textContent = me.name;
   $("meName").style.color = CLASS_COLOR[me.class] || "";
-  cache.general=[]; cache.pvp=[]; loaded.general=loaded.pvp=false; unread.general=unread.pvp=0; updateDots();
-  switchChannel(me.realm === "PvP" ? "pvp" : "general");
+  $("msgInput").placeholder = `${me.realm||"일반"} 서버에 메시지`;
+  $("list").innerHTML = '<div class="empty">불러오는 중…</div>';
+  buildChips();
   subscribe();
 }
 
 $("send").onsubmit = async (ev) => {
   ev.preventDefault();
-  const input=$("msgInput"); const body=input.value.trim();
-  if (!body) return;
+  const input=$("msgInput"); const body=input.value.trim(); if (!body) return;
+  const tag=$("tagSel").value;
   input.value="";
-  const { error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: current, p_body: body });
+  const { error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: body, p_tag: tag, p_parent: null });
+  if (error) { toast(errMsg(error)); if (!input.value) input.value=body; return; }
+  $("tagSel").value = "chat";
+  input.focus();
+};
+
+/* ---------- 답글 ---------- */
+async function openThread(m){
+  threadParent = m.id; threadMsgs = [];
+  $("thread").classList.remove("hidden");
+  $("tList").innerHTML = ""; $("tList").appendChild(renderMsg(m, true));
+  const { data, error } = await sb.rpc("wow_thread", { p_token: me.token, p_parent: m.id });
+  if (error) { toast(errMsg(error)); return; }
+  if (threadParent !== m.id) return;
+  threadMsgs = data;
+  renderThread();
+  $("tInput").focus();
+}
+function renderThread(){
+  const l=$("tList"); l.innerHTML="";
+  threadMsgs.forEach(x=>l.appendChild(renderMsg(x, true)));
+  if (threadMsgs.length<=1){ const e=document.createElement("div"); e.className="empty"; e.style.marginTop="16px"; e.textContent="첫 답글을 달아 보세요"; l.appendChild(e); }
+  l.scrollTop=l.scrollHeight;
+}
+function addThreadMsg(m){
+  if (threadParent !== m.parent_id || threadMsgs.some(x=>x.id===m.id)) return;
+  threadMsgs.push(m); renderThread();
+}
+$("tBack").onclick = () => { $("thread").classList.add("hidden"); threadParent = null; };
+$("tSend").onsubmit = async (ev) => {
+  ev.preventDefault();
+  const input=$("tInput"); const body=input.value.trim(); if (!body || !threadParent) return;
+  input.value="";
+  const { error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: body, p_tag: "chat", p_parent: threadParent });
   if (error) { toast(errMsg(error)); if (!input.value) input.value=body; }
   input.focus();
 };
 
+/* ---------- 내 정보 ---------- */
 $("meBtn").onclick = () => {
-  $("sheetInfo").innerHTML = "";
-  const lines = [
-    ["캐릭터", me.name], ["서버", me.realm || "-"], ["종족", me.race], ["직업", me.class],
-    ["레벨", me.level || "-"], ["진영", me.faction==="alliance" ? "얼라이언스 (공용어)" : "호드 (오크어)"],
-    ["인증", me.verified ? "✔ 배틀넷 인증" : "직접 입장 (인증 안 됨)"],
-  ];
-  lines.forEach(([k,v])=>{ const d=document.createElement("div"); const b=document.createElement("span");
-    b.style.color="var(--muted)"; b.textContent=k+"  "; d.append(b, document.createTextNode(v)); $("sheetInfo").appendChild(d); });
+  const box=$("sheetInfo"); box.innerHTML="";
+  const head=document.createElement("div"); head.style.cssText="display:flex;align-items:center;gap:10px;margin-bottom:8px";
+  const nm=document.createElement("b"); nm.textContent=me.name; nm.style.color=CLASS_COLOR[me.class]||""; nm.style.fontSize="17px";
+  head.append(iconSet(me, true), nm);
+  box.appendChild(head);
+  [["서버", me.realm || "-"], ["종족·직업", `${me.race} ${me.class}`], ["레벨", me.level || "-"],
+   ["진영", me.faction==="alliance" ? "얼라이언스 (공용어)" : "호드 (오크어)"],
+   ["인증", me.verified ? "✔ 배틀넷 인증" : "직접 입장"]].forEach(([k,v])=>{
+    const d=document.createElement("div"); const b=document.createElement("span");
+    b.style.color="var(--muted)"; b.textContent=k+"  "; d.append(b, document.createTextNode(v)); box.appendChild(d);
+  });
   $("sheet").classList.remove("hidden");
 };
 $("closeSheet").onclick = () => $("sheet").classList.add("hidden");
 $("sheet").onclick = (e) => { if (e.target.id==="sheet") $("sheet").classList.add("hidden"); };
-$("switchBtn").onclick = () => {
-  store.del("wowchat_token");
-  if (msgChannel) sb.removeChannel(msgChannel); if (presence) sb.removeChannel(presence);
-  msgChannel=presence=null; me=null;
-  $("sheet").classList.add("hidden"); $("chat").classList.add("hidden"); $("join").classList.remove("hidden");
-  setMode("lookup");
+function leaveChat(){
+  if (msgSub) sb.removeChannel(msgSub); if (presence) sb.removeChannel(presence);
+  msgSub=presence=null; me=null;
+  $("sheet").classList.add("hidden"); $("thread").classList.add("hidden");
+}
+$("switchBtn").onclick = async () => {
+  leaveChat(); ls.del("wowchat_token");
+  if (!(await openPickerFromAccount())) { show("join"); showAlt(); }
+};
+$("logoutBtn").onclick = () => {
+  leaveChat(); ls.del("wowchat_token"); ls.del("wowchat_account");
+  show("join"); showAlt();
 };
 
 /* ---------- 시작 ---------- */
-fillSelects();
 (async () => {
   const params = new URLSearchParams(location.search);
   if (params.has("code") || params.has("error")) { await handleBnetReturn(params); return; }
-  const tok = store.get("wowchat_token");
+  const tok = ls.get("wowchat_token");
   if (tok) {
     const { data } = await sb.rpc("wow_me", { p_token: tok });
     if (data) { enterChat(data); return; }
-    store.del("wowchat_token");
+    ls.del("wowchat_token");
   }
-  $("join").classList.remove("hidden");
+  if (await openPickerFromAccount()) return;
+  show("join");
 })();
 </script>
 </body>
