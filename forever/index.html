@@ -112,6 +112,7 @@
   .emotes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;max-height:34vh;overflow-y:auto}
   .emotes button{border:1px solid #5a3a1a;background:#2a1a0c;color:#ffb46b;border-radius:999px;padding:6px 11px;font-size:13px;cursor:pointer}
   a.whl{color:#7fb6ff;text-decoration:none;border-bottom:1px dotted currentColor;word-break:break-all}
+  a.whl.tok{border-bottom:0;font-weight:700;word-break:keep-all}
   .tag{display:inline-block;font-size:11px;font-weight:700;padding:0 6px;border-radius:5px;margin-right:5px;vertical-align:1px}
   .tag.question{background:#183a4a;color:#8fd6f5}
   .tag.trade{background:#3d3412;color:#f0d36b}
@@ -501,19 +502,30 @@ function renderMsg(m, inThread){
   }
   return el;
 }
-/* ---------- 와우헤드 링크 → 툴팁 링크 ---------- */
-const WH_RE = /https?:\/\/(?:[a-z]{2,4}\.)?wowhead\.com\/[^\s<>"']+/gi;
+/* ---------- 게임 링크: [[종류:번호:등급:이름]] 토큰, 와우헤드 주소 → 툴팁 링크 ---------- */
+const QUALITY_COLOR = { POOR:"#9d9d9d", COMMON:"#ffffff", UNCOMMON:"#1eff00", RARE:"#0070dd", EPIC:"#a335ee",
+  LEGENDARY:"#ff8000", ARTIFACT:"#e6cc80", HEIRLOOM:"#00ccff" };
+const KIND_LABEL = { item:"아이템", npc:"NPC", spell:"주문", achievement:"업적" };
+const LINK_RE = /\[\[(item|npc|spell|achievement):(\d+):([A-Z_]*):([^\]\n]{1,60})\]\]|https?:\/\/(?:[a-z]{2,4}\.)?wowhead\.com\/[^\s<>"']+/gi;
+const plainText = (t) => String(t||"").replace(/\[\[(?:item|npc|spell|achievement):\d+:[A-Z_]*:([^\]\n]{1,60})\]\]/g, "[$1]");
 function linkify(text){
   const frag=document.createDocumentFragment(); let last=0; text=String(text||"");
-  for (const m of text.matchAll(WH_RE)){
-    let url=m[0].replace(/[).,!?]+$/,"");
+  for (const m of text.matchAll(LINK_RE)){
     frag.appendChild(document.createTextNode(text.slice(last, m.index)));
-    const a=document.createElement("a"); a.className="whl"; a.href=url; a.target="_blank"; a.rel="noopener noreferrer";
-    a.dataset.whRenameLink="true"; a.dataset.whIconSize="small";
-    const path=url.replace(/^https?:\/\/[^/]+\//,"").replace(/^(forever|classic|ko|en)\//g,"").replace(/^(ko|en)\//,"");
-    a.textContent="와우헤드 "+decodeURIComponent(path).slice(0,40);
+    const a=document.createElement("a"); a.className="whl"; a.target="_blank"; a.rel="noopener noreferrer";
     a.onclick=(e)=>e.stopPropagation();
-    frag.appendChild(a); last=m.index+m[0].length - (m[0].length-url.length);
+    let consumed=m[0].length;
+    if (m[1]) {
+      a.href=`https://www.wowhead.com/forever/ko/${m[1]}=${m[2]}`;
+      a.textContent=`[${m[4]}]`; a.dataset.whRenameLink="false"; a.dataset.whIconSize="small";
+      a.classList.add("tok"); if (QUALITY_COLOR[m[3]]) a.style.color=QUALITY_COLOR[m[3]];
+    } else {
+      const url=m[0].replace(/[).,!?]+$/,""); consumed=url.length;
+      a.href=url; a.dataset.whRenameLink="true"; a.dataset.whIconSize="small";
+      const path=url.replace(/^https?:\/\/[^/]+\//,"").replace(/^(forever|classic)\//,"").replace(/^(ko|en)\//,"");
+      a.textContent="와우헤드 "+decodeURIComponent(path).slice(0,40);
+    }
+    frag.appendChild(a); last=m.index+consumed;
   }
   frag.appendChild(document.createTextNode(text.slice(last)));
   scheduleWhRefresh();
@@ -567,6 +579,22 @@ async function sendEmote(key, target){
   return true;
 }
 
+/* ---------- 게임 검색 ([ 자동완성) ---------- */
+const linkTokens = new Map();   // "[이름]" → [[종류:번호:등급:이름]]
+const searchMemo = new Map();
+async function searchGame(q){
+  if (searchMemo.has(q)) return searchMemo.get(q);
+  try {
+    const r = await fetch(`${FN_URL}?action=search&q=${encodeURIComponent(q)}`, { headers: { apikey: SUPABASE_KEY } });
+    const d = await r.json(); const res = d.results || [];
+    searchMemo.set(q, res); return res;
+  } catch { return []; }
+}
+function applyLinks(body){
+  for (const [k,v] of linkTokens) if (body.includes(k)) body = body.split(k).join(v);
+  return body;
+}
+
 /* ---------- 자동완성: /감정 표현, @이름 (감정 표현 대상은 양 진영, 그냥 @는 우리 진영만) ---------- */
 let onlineUsers = new Map();
 function mentionCandidates(q, allFactions){
@@ -584,6 +612,8 @@ function attachMention(input, allowEmote){
   input.closest("form").appendChild(box);
   let items=[], sel=0, tok=null;
   const tokenAt=()=>{ const v=input.value.slice(0, input.selectionStart ?? input.value.length);
+    const lm=v.match(/\[([^\[\]\n]{1,30})$/);
+    if (lm && lm[1].trim()) return { type:"link", q:lm[1].trim(), start:v.length-lm[0].length, end:v.length };
     if (allowEmote){
       let m=v.match(/^\/(\S*)$/); if (m) return { type:"emote", q:m[1], start:0, end:v.length };
       m=v.match(/^\/\S+\s+@?([^@\n]{0,20})$/); if (m) return { type:"user", all:true, q:m[1].trimStart(), start:v.length-m[0].length+m[0].search(/\s/)+1, end:v.length, bare:true };
@@ -593,7 +623,8 @@ function attachMention(input, allowEmote){
   const close=()=>{ box.classList.add("hidden"); items=[]; };
   const pick=(it)=>{ const t=tokenAt(); if (!t) return close();
     let ins;
-    if (t.type==="emote") ins = "/" + it.key + " ";
+    if (t.type==="link") { ins = `[${it.name}] `; linkTokens.set(`[${it.name}]`, `[[${it.type}:${it.id}:${it.quality||""}:${it.name}]]`); }
+    else if (t.type==="emote") ins = "/" + it.key + " ";
     else ins = (t.bare ? "" : "@") + it.name + " ";
     if (t.bare) { const v=input.value; const pre=v.slice(0,t.end).replace(/\s+@?[^@\n]*$/, " "); input.value = pre + ins + v.slice(t.end); }
     else input.value = input.value.slice(0,t.start) + ins + input.value.slice(t.end);
@@ -603,13 +634,27 @@ function attachMention(input, allowEmote){
     items.forEach((it,i)=>{ const b=document.createElement("button"); b.type="button"; b.className="mi"+(i===sel?" on":"");
       const n=document.createElement("span"); n.style.fontWeight="700";
       const d=document.createElement("span"); d.className="md";
-      if (tok.type==="emote"){ n.textContent="/"+it.key; n.style.color="#ffb46b"; d.textContent=it.solo.replace("{s}님이 ",""); d.style.color="var(--muted)"; }
+      if (tok.type==="link"){ n.textContent=`[${it.name}]`; n.style.color=QUALITY_COLOR[it.quality]||"#7fb6ff";
+        d.textContent=KIND_LABEL[it.type]||it.type; d.style.color="var(--muted)"; }
+      else if (tok.type==="emote"){ n.textContent="/"+it.key; n.style.color="#ffb46b"; d.textContent=it.solo.replace("{s}님이 ",""); d.style.color="var(--muted)"; }
       else { n.textContent=it.name; n.style.color=CLASS_COLOR[it.cls]||"";
         d.textContent=(it.faction!==me.faction ? (it.faction==="alliance"?"얼라 ":"호드 ") : "")+(it.online?"● 접속 중":""); }
       b.append(n,d); b.onmousedown=(e)=>{ e.preventDefault(); pick(it); }; box.appendChild(b); });
     box.children[sel]?.scrollIntoView({ block:"nearest" }); };
+  let searchTimer=null, searchSeq=0;
   input.addEventListener("input", ()=>{ tok=tokenAt();
     if (!tok) return close();
+    if (tok.type==="link"){
+      clearTimeout(searchTimer); const mySeq=++searchSeq; const q=tok.q;
+      searchTimer=setTimeout(async ()=>{
+        const res = await searchGame(q);
+        if (mySeq!==searchSeq || tok?.type!=="link" || tok.q!==q) return;
+        items=res; sel=0;
+        if (!items.length){ box.innerHTML='<div class="mi" style="color:var(--muted)">찾는 게 없어요</div>'; box.classList.remove("hidden"); return; }
+        box.classList.remove("hidden"); render();
+      }, 250);
+      return;
+    }
     if (tok.type==="emote") items=[...EMOTES.filter(e=>e.key.startsWith(tok.q)), ...EMOTES.filter(e=>!e.key.startsWith(tok.q) && (e.key.includes(tok.q) || e.solo.includes(tok.q)))].slice(0,40);
     else items=mentionCandidates(tok.q, tok.all);
     sel=0;
@@ -764,8 +809,10 @@ $("send").onsubmit = async (ev) => {
     input.focus(); return;
   }
   const tag=$("tagSel").value;
+  const sendBody = applyLinks(body);
+  if (sendBody.length > 300) { toast("링크가 많아서 300자를 넘었어요. 조금 줄여 주세요"); return; }
   input.value="";
-  const { error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: body, p_tag: tag, p_parent: null });
+  const { error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: sendBody, p_tag: tag, p_parent: null });
   if (error) { toast(errMsg(error)); if (!input.value) input.value=body; return; }
   $("tagSel").value = "chat";
   input.focus();
@@ -799,7 +846,7 @@ $("tSend").onsubmit = async (ev) => {
   const input=$("tInput"); const body=input.value.trim(); if (!body || !threadParent) return;
   if (body.startsWith("/")) { toast("감정 표현은 채팅에서만 할 수 있어요"); return; }
   input.value="";
-  const { error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: body, p_tag: "chat", p_parent: threadParent });
+  const { error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: applyLinks(body), p_tag: "chat", p_parent: threadParent });
   if (error) { toast(errMsg(error)); if (!input.value) input.value=body; }
   input.focus();
 };
@@ -829,7 +876,7 @@ function renderNotifs(){
     const b=document.createElement("div"); b.className="b"+(n.foreign_lang?" foreign":"");
     const w=document.createElement("b"); w.textContent=n.sender_name; w.style.color=CLASS_COLOR[n.sender_class]||"";
     if (n.kind==="emote") { b.style.color="#ff9f45"; b.textContent=n.body; }
-    else b.append(w, document.createTextNode(": "+(n.foreign_lang?`[${LANG[n.sender_faction]}] `:"")+n.body));
+    else { b.append(w, document.createTextNode(": "+(n.foreign_lang?`[${LANG[n.sender_faction]}] `:""))); b.appendChild(n.foreign_lang ? document.createTextNode(n.body) : linkify(n.body)); }
     el.append(k,b);
     el.onclick = () => {
       if (n.kind==="emote") { $("notif").classList.add("hidden"); return; }
