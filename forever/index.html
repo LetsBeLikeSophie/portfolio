@@ -1124,7 +1124,8 @@ $("send").onsubmit = async (ev) => {
     if (!(await sendEmote(key, target))) input.value=body;
     input.focus(); return;
   }
-  const tag = replyCtx ? "chat" : $("tagSel").value;
+  // 봇에게 하는 질문은 말머리를 무조건 '질문'으로
+  const tag = replyCtx ? "chat" : forBot(body) ? "question" : $("tagSel").value;
   const parent = replyCtx ? replyCtx.parent : null;
   const sendBody = applyLinks(body);
   if (sendBody.length > 300) { toast("링크가 많아서 300자를 넘었어요. 조금 줄여 주세요"); return; }
