@@ -740,15 +740,14 @@ function renderMsg(m, inThread){
     el.append(t, tx); return el;
   }
   if (m.tag==="bot"){
-    const el=document.createElement("div"); el.className="msg bot"+(!inThread?" tap":"")
-      ; el.dataset.id=m.id;
+    // 봇 글은 답글·감정·신고를 쓸 수 없으니 눌러도 메뉴를 열지 않는다
+    const el=document.createElement("div"); el.className="msg bot"; el.dataset.id=m.id;
     const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
     const who=document.createElement("span"); who.className="who"; who.textContent=BOT_NAME;
     const bb=document.createElement("span"); bb.className="botb"; bb.textContent="BOT";
     const tx=document.createElement("span"); tx.className="text"; tx.appendChild(linkify(m.body)); markMe(tx);
     const co=document.createElement("span"); co.className="colon"; co.textContent=": ";
     el.append(t, who, bb, co, tx);
-    if (!inThread || inThread==="reply"){ el.classList.add("tap"); el.onclick=()=>toggleActions(m, el); }
     return el;
   }
   const el=document.createElement("div");
@@ -873,7 +872,7 @@ function toggleActions(m, el){
   const other = m.player_id!==me.id && m.tag!=="bot";
   // 세 아이콘은 늘 같은 자리에. 쓸 수 없는 글이면 흐리게 두고 누르면 이유를 알려 준다
   const offBtn=(label, svg, why)=>btn(label, svg, ()=>toast(why), "off");
-  const mineWhy = m.tag==="bot" ? "봇 글에는 할 수 없어요" : "내 글에는 할 수 없어요";
+  const mineWhy = "내 글에는 할 수 없어요";
   bar.appendChild(btn("답글", SVG.reply, ()=>startReply(m)));
   if (!other) bar.appendChild(offBtn("감정", SVG.emote, mineWhy));
   else bar.appendChild(btn("감정", SVG.emote, async (b)=>{
