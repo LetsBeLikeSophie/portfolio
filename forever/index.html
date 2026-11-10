@@ -746,9 +746,10 @@ $("replyX").onclick = () => { cancelReply(); $("msgInput").focus(); };
 /* ---------- 게임 링크: [[종류:번호:등급:이름]] 토큰, 와우헤드 주소 → 툴팁 링크 ---------- */
 const QUALITY_COLOR = { POOR:"#9d9d9d", COMMON:"#ffffff", UNCOMMON:"#1eff00", RARE:"#0070dd", EPIC:"#a335ee",
   LEGENDARY:"#ff8000", ARTIFACT:"#e6cc80", HEIRLOOM:"#00ccff" };
-const KIND_LABEL = { item:"아이템", npc:"NPC", spell:"주문", achievement:"업적" };
-const LINK_RE = /\[\[(item|npc|spell|achievement):(\d+):([A-Z_]*):([^\]\n]{1,60})\]\]|https?:\/\/(?:[a-z]{2,4}\.)?wowhead\.com\/[^\s<>"']+/gi;
-const plainText = (t) => String(t||"").replace(/\[\[(?:item|npc|spell|achievement):\d+:[A-Z_]*:([^\]\n]{1,60})\]\]/g, "[$1]");
+const KIND_LABEL = { quest:"퀘스트", item:"아이템", npc:"NPC", spell:"주문", achievement:"업적" };
+// 주소는 영문·숫자·기호까지만 (뒤에 붙은 한글 조사나 괄호는 빼고)
+const LINK_RE = /\[\[(quest|item|npc|spell|achievement):(\d+):([A-Z_]*):([^\]\n]{1,60})\]\]|https?:\/\/(?:[a-z]{2,4}\.)?wowhead\.com[\x21-\x7e]*/gi;
+const plainText = (t) => String(t||"").replace(/\[\[(?:quest|item|npc|spell|achievement):\d+:[A-Z_]*:([^\]\n]{1,60})\]\]/g, "[$1]");
 function linkify(text){
   const frag=document.createDocumentFragment(); let last=0; text=String(text||"");
   for (const m of text.matchAll(LINK_RE)){
@@ -759,12 +760,15 @@ function linkify(text){
     if (m[1]) {
       a.href=`https://www.wowhead.com/forever/ko/${m[1]}=${m[2]}`;
       a.textContent=`[${m[4]}]`; a.dataset.whRenameLink="false"; a.dataset.whIconSize="small";
-      a.classList.add("tok"); if (QUALITY_COLOR[m[3]]) a.style.color=QUALITY_COLOR[m[3]];
+      a.classList.add("tok"); if (QUALITY_COLOR[m[3]]) a.style.color=QUALITY_COLOR[m[3]]; else if (m[1]==="quest") a.style.color="#ffd100";
     } else {
-      const url=m[0].replace(/[).,!?]+$/,""); consumed=url.length;
-      a.href=url; a.dataset.whRenameLink="true"; a.dataset.whIconSize="small";
-      const path=url.replace(/^https?:\/\/[^/]+\//,"").replace(/^(forever|classic)\//,"").replace(/^(ko|en)\//,"");
-      a.textContent="와우헤드 "+decodeURIComponent(path).slice(0,40);
+      let url=m[0].replace(/["'<>]+.*$/,"").replace(/[.,!?:;]+$/,"");
+      if (url.endsWith(")") && !url.includes("(")) url=url.slice(0,-1);
+      consumed=url.length;
+      a.href=url; a.dataset.whIconSize="small";
+      const path=url.replace(/^https?:\/\/[^/]+\/?/,"").replace(/^(forever|classic)\/?/,"").replace(/^(ko|en)\/?/,"");
+      if (!path || !/=\d/.test(path)) { a.textContent = path ? "와우헤드 "+decodeURIComponent(path).slice(0,40) : "와우헤드 포에버"; a.dataset.whRenameLink="false"; }
+      else { a.dataset.whRenameLink="true"; a.textContent="와우헤드 "+decodeURIComponent(path).slice(0,40); }
     }
     frag.appendChild(a); last=m.index+consumed;
   }
@@ -940,8 +944,8 @@ function attachMention(input, allowEmote){
     items.forEach((it,i)=>{ const b=document.createElement("button"); b.type="button"; b.className="mi"+(i===sel?" on":"");
       const n=document.createElement("span"); n.style.fontWeight="700";
       const d=document.createElement("span"); d.className="md";
-      if (tok.type==="link"){ n.textContent=`[${it.name}]`; n.style.color=QUALITY_COLOR[it.quality]||"#7fb6ff";
-        d.textContent=KIND_LABEL[it.type]||it.type; d.style.color="var(--muted)"; }
+      if (tok.type==="link"){ n.textContent=`[${it.name}]`; n.style.color=QUALITY_COLOR[it.quality]||(it.type==="quest"?"#ffd100":"#7fb6ff");
+        d.textContent=(KIND_LABEL[it.type]||it.type)+(it.area?" · "+it.area:""); d.style.color="var(--muted)"; }
       else if (tok.type==="emote"){ n.textContent="/"+it.key; n.style.color="#ffb46b"; d.textContent=it.solo.replace("{s}님이 ",""); d.style.color="var(--muted)"; }
       else if (it.bot){ n.textContent="🤖 "+it.name; n.style.color="#7fd3ff"; d.textContent="질문하면 답해요"; d.style.color="var(--muted)"; }
       else { n.textContent=it.name; n.style.color=CLASS_COLOR[it.cls]||"";
