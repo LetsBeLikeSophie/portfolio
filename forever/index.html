@@ -132,19 +132,20 @@
   .msg{padding:5px 4px;word-break:break-word;border-radius:8px;line-height:1.5}
   .msg.tap{cursor:pointer}
   .mme{font-weight:800;color:#ffd77a;background:#ffd77a1f;border-radius:4px;padding:0 2px}
-  .msg.sel{background:#ffffff0d;position:relative;z-index:5}
+  /* 누른 글: 금색 배경과 왼쪽 금색 줄, 나머지 글은 흐리게 */
+  .msg.sel{background:#e6c36a24;box-shadow:inset 3px 0 0 var(--gold),0 0 0 1px #e6c36a59;position:relative;z-index:5;opacity:1!important}
+  .picking .msg:not(.sel),.picking .rmore,.picking .sys{opacity:.35;transition:opacity .15s}
   /* 글을 누르면 글 위 오른쪽에 떠 있는 아이콘 메뉴 */
   .mact{position:absolute;right:6px;bottom:calc(100% - 6px);display:flex;gap:2px;padding:3px;
     background:var(--panel2);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 18px #000a;cursor:default}
   .mact.below{bottom:auto;top:calc(100% - 6px)}
-  .mact>button{border:0;background:none;color:var(--gold);border-radius:9px;width:38px;height:34px;padding:0;
-    display:inline-flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;font-size:12.5px;white-space:nowrap}
+  .mact>button{border:0;background:none;color:var(--gold);border-radius:9px;min-width:52px;height:46px;padding:0 6px;
+    display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;font-size:11px;white-space:nowrap}
   .mact>button:hover,.mact>button:focus-visible{background:#ffffff12;outline:none}
-  .mact>button svg{width:19px;height:19px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-  .mact>button span{display:none}
+  .mact>button svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
   .mact>button.warn{color:#ff9a8c}
-  .mact>button.confirm{width:auto;padding:0 10px;background:#4a1a16;color:#ffd0c8}
-  .mact>button.confirm span{display:inline}
+  .mact>button.off{color:#6d6354}
+  .mact>button.confirm{flex-direction:row;padding:0 10px;background:#4a1a16;color:#ffd0c8;font-size:12.5px}
   .mact .emotes{position:absolute;right:0;top:calc(100% + 4px);width:min(300px,82vw);margin:0;max-height:30vh;padding:8px;
     background:var(--panel2);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 18px #000a}
   .mblk{padding:1px 0}
@@ -843,18 +844,23 @@ let actFor=null;
 function closeActions(){
   document.querySelectorAll(".mact").forEach(x=>x.remove());
   document.querySelectorAll(".msg.sel").forEach(x=>x.classList.remove("sel")); actFor=null;
+  document.querySelectorAll(".picking").forEach(x=>x.classList.remove("picking"));
 }
 function toggleActions(m, el){
   const same = actFor===m.id; closeActions(); if (same) return;
-  actFor=m.id; el.classList.add("sel");
+  actFor=m.id; el.classList.add("sel"); el.closest("#list,#tList")?.classList.add("picking");
   const bar=document.createElement("div"); bar.className="mact";
   bar.onclick=(e)=>e.stopPropagation();
   const btn=(label, svg, fn, cls)=>{ const b=document.createElement("button"); b.type="button"; if (cls) b.className=cls;
     b.innerHTML=svg; b.title=label; b.setAttribute("aria-label", label);
     const sp=document.createElement("span"); sp.textContent=label; b.appendChild(sp); b.onclick=()=>fn(b, sp); return b; };
   const other = m.player_id!==me.id && m.tag!=="bot";
+  // 세 아이콘은 늘 같은 자리에. 쓸 수 없는 글이면 흐리게 두고 누르면 이유를 알려 준다
+  const offBtn=(label, svg, why)=>btn(label, svg, ()=>toast(why), "off");
+  const mineWhy = m.tag==="bot" ? "봇 글에는 할 수 없어요" : "내 글에는 할 수 없어요";
   bar.appendChild(btn("답글", SVG.reply, ()=>startReply(m)));
-  if (other) bar.appendChild(btn("감정 표현", SVG.emote, async (b)=>{
+  if (!other) bar.appendChild(offBtn("감정", SVG.emote, mineWhy));
+  else bar.appendChild(btn("감정", SVG.emote, async (b)=>{
     let box=bar.querySelector(".emotes");
     if (box){ box.remove(); return; }
     await loadEmotes(); box=document.createElement("div"); box.className="emotes";
@@ -862,7 +868,9 @@ function toggleActions(m, el){
       x.onclick=async()=>{ if (await sendEmote(e.key, m.sender_name)) closeActions(); }; box.appendChild(x); });
     bar.appendChild(box); box.scrollIntoView({ block:"nearest" });
   }));
-  if (other && !m.foreign_lang) bar.appendChild(btn("신고", SVG.report, async (b, sp)=>{
+  if (!other) bar.appendChild(offBtn("신고", SVG.report, mineWhy));
+  else if (m.foreign_lang) bar.appendChild(offBtn("신고", SVG.report, "다른 진영 말은 읽을 수 없어서 신고할 수 없어요"));
+  else bar.appendChild(btn("신고", SVG.report, async (b, sp)=>{
     if (!b.classList.contains("confirm")){ b.classList.add("confirm"); sp.textContent="한 번 더 누르면 신고";
       setTimeout(()=>{ if (b.isConnected){ b.classList.remove("confirm"); sp.textContent="신고"; } }, 3500); return; }
     const { error } = await sb.rpc("wow_report", { p_token: me.token, p_message_id: m.id });
@@ -874,7 +882,7 @@ function toggleActions(m, el){
   el.appendChild(bar);
   // 글이 목록 맨 위에 붙어 있으면 메뉴가 잘리니 글 아래로 내린다
   const list=el.closest("#list,#tList");
-  if (list && el.getBoundingClientRect().top - list.getBoundingClientRect().top < 48) bar.classList.add("below");
+  if (list && el.getBoundingClientRect().top - list.getBoundingClientRect().top < 60) bar.classList.add("below");
 }
 document.addEventListener("click", (e)=>{ if (actFor && !e.target.closest(".mact,.msg.sel")) closeActions(); });
 function removeMsg(id, parentId){
