@@ -433,6 +433,28 @@
   .grab{width:40px;height:5px;border-radius:3px;background:#ffffff38;margin:0 auto 8px}
   .sheetv header .top .shx{width:52px;text-align:right;font-size:18px;color:var(--muted)}
   #sheetBack{position:fixed;inset:0;background:#000a;z-index:7}
+  /* 내 글: 왼쪽 금색 줄 + 아주 옅은 바탕 */
+  .msg.mine:not(.sel){box-shadow:inset 2px 0 0 #e6c36a8c;background:#e6c36a0b}
+  .msg .time.end{margin:0 0 0 7px}
+  /* 제목 줄 접속자 수 */
+  .top .srv{margin-right:0}
+  .top .me{min-width:0;flex-shrink:1} .top .bell,.top .srv,.top .title{flex:none}
+  .onl{flex:none;margin-right:auto;background:none;border:0;color:#7bd17b;font-size:12px;font-weight:700;padding:3px 4px;cursor:pointer;white-space:nowrap}
+  /* 상대 진영 보기: 진영 이름 + 눈 */
+  .sw .eye{display:inline-flex;color:var(--muted)}
+  .sw.horde[aria-checked="true"] .eye{color:#ffb0a6} .sw.alliance[aria-checked="true"] .eye{color:#a9c8ff}
+  .sw[aria-checked="false"]{opacity:.75}
+  /* 여기부터 새 글 */
+  .newsep{display:flex;align-items:center;gap:8px;color:#ff9a8c;font-size:12px;font-weight:700;margin:10px 4px 6px}
+  .newsep::before,.newsep::after{content:"";flex:1;height:1px;background:#ff9a8c66}
+  /* 글 복사 창 */
+  #copyCard{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:11}
+  #copyCard .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+  #copyCard .cph{display:flex;align-items:center;justify-content:space-between;font-size:16px;color:var(--gold)}
+  #copyCard .cpall{display:inline-flex;align-items:center;gap:6px;background:#e6c36a1f;border:1px solid var(--gold-dim);color:var(--gold);
+    border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer}
+  #copyCard textarea{width:100%;box-sizing:border-box;background:#0a0806;border:1px solid var(--line);border-radius:9px;padding:10px 11px;
+    font:inherit;font-size:16px;line-height:1.5;color:var(--text);resize:none;-webkit-user-select:text;user-select:text}
   .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
@@ -478,6 +500,7 @@
     <div class="top">
       <div class="title">FOREVER</div>
       <span class="srv" id="srvBadge"></span>
+      <button type="button" class="onl" id="onlBtn" title="접속자">● 0</button>
       <button class="bell" id="bellBtn" type="button" aria-label="알림"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bdot hidden" id="bellDot"></span></button>
       <button class="bell" id="dmBtn" type="button" aria-label="귓속말"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span class="bdot hidden" id="dmDot"></span></button>
       <button class="me" id="meBtn" type="button"><span class="icons" id="meIcons"></span><span id="meName"></span></button>
@@ -485,11 +508,11 @@
     <div class="chiprow">
       <div class="chips" id="chips"></div>
       <button type="button" class="sw" id="enemySw" role="switch" aria-checked="true">
-        <span id="enemyLbl"></span><span class="track"><span class="knob"></span></span>
+        <span id="enemyLbl"></span><span class="eye" id="enemyEye"></span>
       </button>
     </div>
   </header>
-  <div class="online" id="online">접속 중…</div>
+  <div class="online hidden" id="online">접속 중…</div>
   <div id="list"></div>
   <div id="tipBar" class="hidden"><span class="tl">👾 이렇게 물어보세요</span></div>
   <div id="replyBar" class="hidden"><span>↩ <b id="replyTo"></b> 님 글에 답글</span><button type="button" id="replyX" aria-label="답글 취소">✕</button></div>
@@ -595,6 +618,16 @@
   </div>
 </div>
 
+<div id="copyCard" class="hidden">
+  <div class="card">
+    <div class="cph"><b>글 복사</b>
+      <button type="button" class="cpall" id="cpAll"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>전체 복사</button></div>
+    <p class="note" style="margin:4px 0 8px">원하는 부분만 길게 눌러 골라서 복사할 수도 있어요.</p>
+    <textarea id="cpText" readonly rows="5"></textarea>
+    <button class="btn ghost sm" id="cpClose" type="button">닫기</button>
+  </div>
+</div>
+
 <div id="qcard" class="hidden">
   <div class="card">
     <div class="qt" id="qTitle"></div>
@@ -664,7 +697,7 @@ function classIcon(cls, bot, level){ const i=document.createElement("span"); i.c
 const LANG = { alliance: "공용어", horde: "오크어" };
 const TAGS = [
   { id: "chat", label: "잡담" }, { id: "question", label: "질문" }, { id: "trade", label: "거래" },
-  { id: "guild", label: "길드 모집" }, { id: "party", label: "파티·공대" },
+  { id: "guild", label: "길드" }, { id: "party", label: "파티" },
 ];
 const TAG_LABEL = Object.fromEntries(TAGS.map(t => [t.id, t.label]));
 
@@ -837,13 +870,13 @@ function renderMsg(m, inThread){
     const el=document.createElement("div"); el.className="msg gone"; el.dataset.id=m.id;
     const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
     const tx=document.createElement("span"); tx.textContent="🚫 신고가 여러 번 들어와 숨긴 글이에요";
-    el.append(t, tx); return el;
+    t.classList.add("end"); el.append(tx, t); return el;
   }
   if (m.tag==="emote"){
     const el=document.createElement("div"); el.className="msg emote"; el.dataset.id=m.id;
     const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
     const tx=document.createElement("span"); tx.className="etext"; tx.textContent=m.body;
-    el.append(t, tx); return el;
+    t.classList.add("end"); el.append(tx, t); return el;
   }
   if (m.tag==="bot"){
     // 봇 글은 답글·감정·신고를 쓸 수 없으니 메뉴 대신 봇 설명 카드를 연다
@@ -865,7 +898,10 @@ function renderMsg(m, inThread){
   who.title=`${m.sender_level?("Lv."+m.sender_level+" "):""}${m.sender_race} ${m.sender_class}`;
   who.style.cursor="pointer";
   who.onclick=(e)=>{ e.stopPropagation(); openProfile(m); };
-  el.append(t, classIcon(m.sender_class, false, m.sender_level), who);
+  const ic=classIcon(m.sender_class, false, m.sender_level); ic.style.cursor="pointer";
+  ic.onclick=(e)=>{ e.stopPropagation(); openProfile(m); };
+  if (me && m.player_id===me.id) el.classList.add("mine");
+  el.append(t, ic, who);
   if (m.sender_level){ const l=document.createElement("span"); l.className="lv"; l.textContent="Lv."+m.sender_level; el.appendChild(l); }
   const colon=document.createElement("span"); colon.className="colon"; colon.textContent=": "; el.appendChild(colon);
   if (m.tag && m.tag!=="chat" && !m.parent_id){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag; el.appendChild(g); }
@@ -960,7 +996,8 @@ function renderReplies(id, b){
 const SVG = {
   reply:'<svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>',
   emote:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01" stroke-width="3"/></svg>',
-  report:'<svg viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg>' };
+  report:'<svg viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg>',
+  copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>' };
 let actFor=null;
 function closeActions(){
   document.querySelectorAll(".mact").forEach(x=>x.remove());
@@ -989,6 +1026,8 @@ function toggleActions(m, el){
       x.onclick=async()=>{ if (await sendEmote(e.key, m.sender_name)) closeActions(); }; box.appendChild(x); });
     bar.appendChild(box); box.scrollIntoView({ block:"nearest" });
   }));
+  if (m.foreign_lang) bar.appendChild(offBtn("복사", SVG.copy, "다른 진영 말은 복사할 수 없어요"));
+  else bar.appendChild(btn("복사", SVG.copy, ()=>{ closeActions(); openCopy(m); }));
   if (!other) bar.appendChild(offBtn("신고", SVG.report, mineWhy));
   else if (m.foreign_lang) bar.appendChild(offBtn("신고", SVG.report, "다른 진영 말은 읽을 수 없어서 신고할 수 없어요"));
   else if (reported.has(m.id)) bar.appendChild(offBtn("신고함", SVG.report, "이미 신고한 글이에요. 여러 명이 신고하면 모두에게 가려져요"));
@@ -1058,7 +1097,7 @@ function syncComposer(){
   $("send").classList.toggle("botmode", botMode && !replyCtx);
   if (replyCtx) return;
   const inTab = filterTag!=="all";
-  $("msgInput").placeholder = botMode ? "포에버봇에게 물어보기" : inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : "잡담 쓰기 · 파티·거래는 위 탭에서";
+  $("msgInput").placeholder = botMode ? "포에버봇에게 물어보기" : inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : "잡담 쓰기 (파티는 위 탭)";
 }
 // 봇 단추: 켜 두면 쓰는 글이 모두 포에버봇에게 가는 질문이 됨 (다시 누르면 꺼짐)
 var botMode = false;
@@ -1128,6 +1167,7 @@ function setupTipBar(){
   const x=document.createElement("button"); x.type="button"; x.className="x"; x.setAttribute("aria-label","닫기"); x.textContent="✕";
   x.onclick=()=>{ ls.set("wowchat_tip_bot","1"); bar.classList.add("hidden"); }; bar.appendChild(x);
   bar.classList.remove("hidden");
+  ls.set("wowchat_tip_bot","1"); // 처음 들어왔을 때만 보여 줌 (봇 단추와 봇 카드에 예시가 있어서)
 }
 function showTyping(){
   const l=$("list"); if (l.querySelector(".typing")) return;
@@ -1292,7 +1332,18 @@ function swipeClose(id){
   card.addEventListener("touchend", end); card.addEventListener("touchcancel", end);
   ov.addEventListener("touchmove", (e)=>{ if (!card.contains(e.target)) e.preventDefault(); }, { passive:false });
 }
-["botcard","qcard","prof","sheet"].forEach(swipeClose);
+// 글 복사 창: 글자를 골라서 복사하거나, 전체 복사 단추로 한 번에
+const plainBody = (b) => String(b||"").replace(/\[\[(?:quest|item|npc|spell|achievement):\d+:[A-Z_]*:([^\]\n]{1,60})\]\]/g, "$1");
+function openCopy(m){ $("cpText").value = plainBody(m.body); $("copyCard").classList.remove("hidden"); }
+$("cpAll").onclick = async () => {
+  const t=$("cpText").value; let ok=false;
+  try { await navigator.clipboard.writeText(t); ok=true; } catch {}
+  if (!ok){ const ta=$("cpText"); ta.focus(); ta.select(); try { ok=document.execCommand("copy"); } catch {} }
+  toast(ok ? "복사했어요" : "길게 눌러서 직접 복사해 주세요"); if (ok) $("copyCard").classList.add("hidden");
+};
+$("cpClose").onclick = () => $("copyCard").classList.add("hidden");
+$("copyCard").onclick = (e) => { if (e.target.id==="copyCard") $("copyCard").classList.add("hidden"); };
+["botcard","qcard","prof","sheet","copyCard"].forEach(swipeClose);
 // 키보드가 올라오면 채팅 화면을 보이는 영역 크기에 맞추고, 맨 아래를 보고 있었으면 계속 맨 아래로
 (function fitViewport(){
   const vv=window.visualViewport; if (!vv) return;
@@ -1437,9 +1488,14 @@ $("pMute").onclick = () => {
 
 /* 새 메시지 알림 */
 $("newBar").onclick = () => { const l=$("list"); l.scrollTop=l.scrollHeight; $("newBar").classList.add("hidden"); };
-$("list").addEventListener("scroll", () => { if (nearBottom($("list"))) $("newBar").classList.add("hidden"); });
+$("list").addEventListener("scroll", () => { if (nearBottom($("list"))){ $("newBar").classList.add("hidden");
+  const sp=$("list").querySelector(".newsep"); if (sp && $("list").scrollHeight - $("list").scrollTop - $("list").clientHeight < 8){ const last=cache[cache.length-1]; if (last) ls.set(readKey(), String(last.id)); } } });
 function nearBottom(l){ return l.scrollHeight - l.scrollTop - l.clientHeight < 120; }
 
+// 다시 들어왔을 때 어디까지 읽었는지: 마지막으로 본 글 번호를 서버(채널)별로 기억
+let newFrom=0, jumpNew=false;
+const readKey = () => "wowchat_read_"+channel;
+function markSeen(){ const last=cache[cache.length-1]; if (last && !$("list").querySelector(".newsep")) ls.set(readKey(), String(last.id)); }
 function renderAll(){
   const l=$("list"); l.innerHTML="";
   const arr=cache.filter(visible);
@@ -1450,10 +1506,14 @@ function renderAll(){
     l.appendChild(e); return;
   }
   const frag=document.createDocumentFragment(); let prev=null;
+  const firstNew = newFrom ? arr.find(x=>x.id>=newFrom) : null; let sep=null;
   arr.forEach(m=>{ if (!prev || dayKey(prev.created_at)!==dayKey(m.created_at)) frag.appendChild(daySep(m.created_at));
+    if (m===firstNew){ sep=document.createElement("div"); sep.className="newsep"; sep.textContent="여기부터 새 글"; frag.appendChild(sep); }
     frag.appendChild(renderBlock(m, prev)); prev=m; });
   l.appendChild(frag);
   l.scrollTop=l.scrollHeight;
+  if (sep && jumpNew){ jumpNew=false; l.scrollTop=Math.max(0, sep.offsetTop - l.offsetTop - 40); }
+  if (!sep) markSeen();
 }
 function pingIfMentioned(m){
   if (!me || m.foreign_lang || m.player_id===me.id || muted.has(m.player_id)) return;
@@ -1487,7 +1547,7 @@ function addMsg(m){
   if (!prev || dayKey(prev.created_at)!==dayKey(m.created_at)) l.appendChild(daySep(m.created_at));
   l.appendChild(renderBlock(m, prev));
   const ty=l.querySelector(".typing"); if (ty) l.appendChild(ty);
-  if (stick) l.scrollTop=l.scrollHeight; else $("newBar").classList.remove("hidden");
+  if (stick){ l.scrollTop=l.scrollHeight; markSeen(); } else $("newBar").classList.remove("hidden");
 }
 function updateReplyCount(id, count){
   const m = cache.find(x=>x.id===id); if (m) m.reply_count = count;
@@ -1500,8 +1560,14 @@ function renderSwitch(){
   sw.setAttribute("aria-checked", myFactionOnly ? "false" : "true");
   sw.title = (enemy==="alliance"?"얼라이언스":"호드")+" 채팅 "+(myFactionOnly?"숨김":"보임");
   $("enemyLbl").textContent = enemy==="alliance" ? "얼라" : "호드";
+  $("enemyEye").innerHTML = myFactionOnly ? EYE_OFF : EYE_ON;
+  sw.title = sw.ariaLabel = `${enemy==="alliance"?"얼라이언스":"호드"} 글 ${myFactionOnly?"숨김 (누르면 보여요)":"보임 (누르면 숨겨요)"}`;
 }
-$("enemySw").onclick = () => { myFactionOnly=!myFactionOnly; ls.set("wowchat_hide_enemy", myFactionOnly?"1":"0"); renderSwitch(); renderAll(); };
+$("enemySw").onclick = () => { myFactionOnly=!myFactionOnly; ls.set("wowchat_hide_enemy", myFactionOnly?"1":"0"); renderSwitch(); renderAll();
+  const en = me.faction==="alliance" ? "호드" : "얼라이언스"; toast(myFactionOnly ? `${en} 글을 숨겼어요` : `${en} 글도 보여요`); };
+$("onlBtn").onclick = () => toast($("onlBtn").dataset.info || "접속자를 세는 중이에요");
+const EYE_ON = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17.7 17.7 0 0 1-3.2 4.1M6.6 6.6C3.9 8.3 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
 function buildChips(){
   renderSwitch();
   const c=$("chips"); c.innerHTML="";
@@ -1520,6 +1586,8 @@ async function loadHistory(){
   const map = new Map(cache.map(x=>[x.id,x]));
   data.forEach(m=>map.set(m.id,m));
   cache = [...map.values()].sort((a,b)=>a.id-b.id);
+  if (jumpNew && !newFrom){ const seen=Number(ls.get(readKey())||0);
+    const f = seen ? cache.find(x=>x.id>seen && x.player_id!==me.id) : null; newFrom = f ? f.id : 0; if (!newFrom) jumpNew=false; }
   renderAll();
 }
 
@@ -1546,14 +1614,15 @@ async function subscribe(){
       if (p.faction==="alliance") a++; else h++;
       if (p.id && p.name && p.id!==me.id) onlineUsers.set(p.id, p); });
     $("online").innerHTML = `<b>●</b> ${me.realm||"일반"} 서버 접속 ${a+h}명 · 얼라이언스 ${a} · 호드 ${h}`;
+    $("onlBtn").textContent = `● ${a+h}`; $("onlBtn").title = `접속 ${a+h}명`; $("onlBtn").dataset.info = `${me.realm||"일반"} 서버 접속 ${a+h}명 · 얼라이언스 ${a} · 호드 ${h}`;
   }).subscribe(async (s)=>{ if (s==="SUBSCRIBED") await presence.track({ id: me.id, faction: me.faction, name: me.name, cls: me.class }); });
 }
 
 function enterChat(player){
   me = player; channel = chOf(me.realm);
-  cache = []; filterTag = "all";
+  cache = []; filterTag = "all"; newFrom = 0; jumpNew = true;
   show("chat");
-  $("srvBadge").textContent = `${me.realm||"일반"} 서버`;
+  $("srvBadge").textContent = me.realm||"일반"; $("srvBadge").title = `${me.realm||"일반"} 서버`;
   $("srvBadge").className = "srv"+(me.realm==="PvP"?" pvp":"");
   const fi=document.createElement("span"); fi.className="icons"; fi.id="meIcons";
   fi.appendChild(iconEl("faction", me.faction, me.faction));
