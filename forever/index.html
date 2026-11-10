@@ -487,6 +487,9 @@
   #qcard .qd{margin-bottom:6px;font-size:13.5px;color:#cfc3ad}
   #qcard .qd.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   #qcard .qmore{background:none;border:0;color:var(--gold);font-size:13px;font-weight:700;padding:2px 0 12px;cursor:pointer}
+  #toBottom{position:fixed;right:14px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:5;width:42px;height:42px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;background:#2a1f12ee;border:1px solid var(--gold-dim);color:var(--gold);
+    box-shadow:0 6px 18px #000b;cursor:pointer}
   .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
@@ -686,6 +689,7 @@
 </div>
 
 <button id="newBar" class="hidden" type="button">새 메시지 ↓</button>
+<button id="toBottom" class="hidden" type="button" aria-label="맨 아래로"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5.5 12.5 12 19l6.5-6.5"/></svg></button>
 
 <div id="iosGuide" class="hidden">
   <div class="card">
@@ -914,12 +918,14 @@ function renderMsg(m, inThread){
   if (m.tag==="bot"){
     // 봇 글은 답글·감정·신고를 쓸 수 없으니 메뉴 대신 봇 설명 카드를 연다
     const el=document.createElement("div"); el.className="msg bot"; el.dataset.id=m.id;
-    el.style.cursor="pointer"; el.onclick=(e)=>{ if (e.target.closest("a,.mnt,.mme,.qlink,[data-q]")) return; openBotCard(); };
+    el.classList.add("tap"); el.onclick=(e)=>{ if (e.target.closest("a,.mnt,.mme,.qlink,[data-q]")) return; toggleActions(m, el); };
     const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
     const who=document.createElement("span"); who.className="who"; who.textContent=BOT_NAME;
     const tx=document.createElement("span"); tx.className="text"; tx.appendChild(linkify(m.body)); markMe(tx);
     const co=document.createElement("span"); co.className="colon"; co.textContent=": ";
-    el.append(t, classIcon(null, true), who, co, tx);
+    const bic=classIcon(null, true);
+    [bic, who].forEach(x=>{ x.style.cursor="pointer"; x.onclick=(e)=>{ e.stopPropagation(); openBotCard(); }; });
+    el.append(t, bic, who, co, tx);
     return el;
   }
   const el=document.createElement("div");
@@ -1053,6 +1059,10 @@ function toggleActions(m, el){
   const btn=(label, svg, fn, cls)=>{ const b=document.createElement("button"); b.type="button"; if (cls) b.className=cls;
     b.innerHTML=svg; b.title=label; b.setAttribute("aria-label", label);
     const sp=document.createElement("span"); sp.textContent=label; b.appendChild(sp); b.onclick=()=>fn(b, sp); return b; };
+  const placeBar=()=>{ el.appendChild(bar); const list=el.closest("#list,#tList");
+    if (list && el.getBoundingClientRect().top - list.getBoundingClientRect().top < 60) bar.classList.add("below"); };
+  // 봇 답변은 답글·복사만 (봇 설명은 이름이나 아이콘을 누르면)
+  if (m.tag==="bot"){ bar.append(btn("답글", SVG.reply, ()=>startReply(m)), btn("복사", SVG.copy, ()=>{ closeActions(); openCopy(m); })); placeBar(); return; }
   const other = m.player_id!==me.id && m.tag!=="bot";
   // 세 아이콘은 늘 같은 자리에. 쓸 수 없는 글이면 흐리게 두고 누르면 이유를 알려 준다
   const offBtn=(label, svg, why)=>btn(label, svg, ()=>toast(why), "off");
@@ -1552,6 +1562,11 @@ $("pMute").onclick = () => {
 
 /* 새 메시지 알림 */
 $("newBar").onclick = () => { const l=$("list"); l.scrollTop=l.scrollHeight; $("newBar").classList.add("hidden"); };
+// 위로 올라가 있으면 오른쪽 아래 '맨 아래로' 단추
+function syncToBottom(){ const l=$("list"); const far = l.scrollHeight - l.scrollTop - l.clientHeight > 320;
+  $("toBottom").classList.toggle("hidden", !far || !$("newBar").classList.contains("hidden") || $("chat").classList.contains("hidden")); }
+$("toBottom").onclick = () => { const l=$("list"); l.scrollTo({ top:l.scrollHeight, behavior:"smooth" }); };
+$("list").addEventListener("scroll", syncToBottom, { passive:true });
 $("list").addEventListener("scroll", () => { if (nearBottom($("list"))){ $("newBar").classList.add("hidden");
   const sp=$("list").querySelector(".newsep"); if (sp && $("list").scrollHeight - $("list").scrollTop - $("list").clientHeight < 8){ const last=cache[cache.length-1]; if (last) ls.set(readKey(), String(last.id)); } } });
 function nearBottom(l){ return l.scrollHeight - l.scrollTop - l.clientHeight < 120; }
@@ -1606,6 +1621,7 @@ function addMsg(m){
   l.appendChild(renderBlock(m, prev));
   const ty=l.querySelector(".typing"); if (ty) l.appendChild(ty);
   if (stick){ l.scrollTop=l.scrollHeight; markSeen(); } else $("newBar").classList.remove("hidden");
+  syncToBottom();
 }
 function updateReplyCount(id, count){
   const m = cache.find(x=>x.id===id); if (m) m.reply_count = count;
