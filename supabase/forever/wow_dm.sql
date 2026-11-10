@@ -152,3 +152,11 @@ create or replace function public.wow_blocked(p_token uuid)
 returns setof uuid language sql stable security definer set search_path = '' as $$
   select b.blocked_id from wow.blocks b join wow.players p on p.id = b.blocker_id where p.token = p_token;
 $$;
+
+-- 다른 wow_* 함수처럼 PUBLIC은 빼고 anon/authenticated에만 실행 권한
+revoke all on function public.wow_dm_topic(uuid), public.wow_dm_send(uuid, uuid, text), public.wow_dm_list(uuid),
+  public.wow_dm_thread(uuid, uuid, integer), public.wow_dm_read(uuid, uuid), public.wow_block(uuid, uuid, boolean),
+  public.wow_blocked(uuid) from public;
+grant execute on function public.wow_dm_topic(uuid), public.wow_dm_send(uuid, uuid, text), public.wow_dm_list(uuid),
+  public.wow_dm_thread(uuid, uuid, integer), public.wow_dm_read(uuid, uuid), public.wow_block(uuid, uuid, boolean),
+  public.wow_blocked(uuid) to anon, authenticated;
