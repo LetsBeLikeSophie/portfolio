@@ -522,6 +522,14 @@
   #botcard .kbv{border:1px solid var(--line);background:#0006;color:var(--text);border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer}
   #botcard .kbv.on{border-color:var(--gold);color:var(--gold);background:#e6c36a1a}
   #botcard .kbv:disabled{opacity:.45;cursor:default}
+  /* 누르는 곳은 말풍선만: 누르면 살짝 밝아지고, 고르면 말풍선에 금색 테두리 (줄 전체가 칠해지던 것 없앰) */
+  .msg.tap{cursor:default}
+  .msg.tap:active{background:none}
+  .msg.tap .text{cursor:pointer;transition:filter .12s,box-shadow .12s}
+  .msg.tap .text:active{filter:brightness(1.18)}
+  .msg.sel{background:none!important;box-shadow:none!important}
+  .msg.sel .text{box-shadow:0 0 0 2px #e6c36acc;filter:brightness(1.12)}
+  .mblk>.msg.sel:not(.mine) .mact{right:auto;left:38px}
   .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
@@ -957,7 +965,7 @@ function renderMsg(m, inThread){
   if (m.tag==="bot"){
     // 봇 글은 답글·감정·신고를 쓸 수 없으니 메뉴 대신 봇 설명 카드를 연다
     const el=document.createElement("div"); el.className="msg bot"; el.dataset.id=m.id;
-    el.classList.add("tap"); el.onclick=(e)=>{ if (e.target.closest("a,.mnt,.mme,.qlink,[data-q]")) return; toggleActions(m, el); };
+    el.classList.add("tap"); el.onclick=(e)=>{ if (!e.target.closest(".text") || e.target.closest("a,.mnt,.mme,.qlink,[data-q]")) return; toggleActions(m, el); };
     const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
     const who=document.createElement("span"); who.className="who"; who.textContent=BOT_NAME;
     const tx=document.createElement("span"); tx.className="text"; tx.appendChild(linkify(m.body)); markMe(tx);
@@ -993,7 +1001,8 @@ function renderMsg(m, inThread){
   if (m.foreign_lang){ const l=document.createElement("span"); l.className="lang"; l.textContent=`[${LANG[m.sender_faction]}]`; el.appendChild(l); }
   const tx=document.createElement("span"); tx.className="text";
   if (m.foreign_lang) tx.textContent=m.body; else { tx.appendChild(linkify(m.body)); markMe(tx); } el.appendChild(tx);
-  if (!inThread || inThread==="reply") el.onclick = () => toggleActions(m, el);
+  // 말풍선(글)만 누르면 메뉴. 이름·아이콘은 프로필, 인용은 원래 글, 링크는 링크
+  if (!inThread || inThread==="reply") el.onclick = (e) => { if (!e.target.closest(".text") || e.target.closest("a,.mnt,.mme,.qlink,[data-q]")) return; toggleActions(m, el); };
   return el;
 }
 // @이름: 나는 굵게(팀즈처럼), 다른 사람은 누르면 프로필
