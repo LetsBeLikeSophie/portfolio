@@ -566,9 +566,9 @@ const RACES = {
 const CLASSES = ["전사","성기사","사냥꾼","도적","사제","주술사","마법사","흑마법사","드루이드"];
 const CLASS_COLOR = { "전사":"#C69B6D","성기사":"#F48CBA","사냥꾼":"#AAD372","도적":"#FFF468","사제":"#FFFFFF",
   "주술사":"#0070DD","마법사":"#3FC7EB","흑마법사":"#8788EE","드루이드":"#FF7C0A" };
-// 이름 앞 직업 아이콘(동그라미 + 직업 색 테두리). 봇은 금색 글자
+// 이름 앞 직업 아이콘(동그라미 + 직업 색 테두리). 봇은 금색 로봇 그림
 function classIcon(cls, bot){ const i=document.createElement("span"); i.className="cico"+(bot?" bot":"");
-  if (bot){ i.textContent="봇"; return i; }
+  if (bot){ i.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3"/><circle cx="12" cy="2.6" r="1" fill="currentColor" stroke="none"/><rect x="4.5" y="6.5" width="15" height="12" rx="3.5"/><circle cx="9.3" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="14.7" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M9.5 15.6h5"/><path d="M2.5 11v3M21.5 11v3"/></svg>'; i.title="포에버봇"; return i; }
   i.style.setProperty("--cc", CLASS_COLOR[cls]||"#ddd"); i.appendChild(iconEl("class", cls)); return i; }
 const LANG = { alliance: "공용어", horde: "오크어" };
 const TAGS = [
@@ -755,10 +755,9 @@ function renderMsg(m, inThread){
     const el=document.createElement("div"); el.className="msg bot"; el.dataset.id=m.id;
     const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
     const who=document.createElement("span"); who.className="who"; who.textContent=BOT_NAME;
-    const bb=document.createElement("span"); bb.className="botb"; bb.textContent="BOT";
     const tx=document.createElement("span"); tx.className="text"; tx.appendChild(linkify(m.body)); markMe(tx);
     const co=document.createElement("span"); co.className="colon"; co.textContent=": ";
-    el.append(t, classIcon(null, true), who, bb, co, tx);
+    el.append(t, classIcon(null, true), who, co, tx);
     return el;
   }
   const el=document.createElement("div");
