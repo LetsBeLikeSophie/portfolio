@@ -982,8 +982,15 @@ function startReply(m){
   input.focus();
 }
 function cancelReply(){
-  replyCtx=null; $("replyBar").classList.add("hidden"); $("tagSel").classList.remove("hidden");
-  $("msgInput").placeholder = `${me?.realm||"일반"} 서버에 메시지`;
+  replyCtx=null; $("replyBar").classList.add("hidden"); syncComposer();
+}
+// 말머리 탭은 방처럼: '전체'에서는 말머리를 골라 쓰고, '파티' 같은 탭에서는 그 말머리로만 쓴다
+function syncComposer(){
+  if (replyCtx) return;
+  const inTab = filterTag!=="all";
+  $("tagSel").classList.toggle("hidden", inTab);
+  if (!inTab) $("tagSel").value = "chat";
+  $("msgInput").placeholder = inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : `${me?.realm||"일반"} 서버에 메시지`;
 }
 $("replyX").onclick = () => { cancelReply(); $("msgInput").focus(); };
 /* ---------- 게임 링크: [[종류:번호:등급:이름]] 토큰, 와우헤드 주소 → 툴팁 링크 ---------- */
@@ -1310,7 +1317,7 @@ function renderAll(){
   const arr=cache.filter(visible);
   if (!arr.length){
     const e=document.createElement("div"); e.className="empty";
-    e.textContent = cache.length ? "이 필터에 맞는 메시지가 없어요" : `${me.realm||"일반"} 서버의 첫 메시지를 남겨 보세요`;
+    e.textContent = cache.length ? (filterTag==="all" ? "보이는 메시지가 없어요" : `아직 ${TAG_LABEL[filterTag]} 글이 없어요. 첫 글을 써 보세요`) : `${me.realm||"일반"} 서버의 첫 메시지를 남겨 보세요`;
     if (!cache.length){ const ex=document.createElement("div"); ex.className="exs"; EXAMPLES.forEach(q=>ex.appendChild(exBtn(q))); e.appendChild(ex); }
     l.appendChild(e); return;
   }
@@ -1373,7 +1380,7 @@ function buildChips(){
   const all=[{id:"all",label:"전체"}, ...TAGS];
   all.forEach(t=>{
     const b=document.createElement("button"); b.type="button"; b.className="chip"+(filterTag===t.id?" on":"");
-    b.textContent=t.label; b.onclick=()=>{ filterTag=t.id; buildChips(); renderAll(); };
+    b.textContent=t.label; b.onclick=()=>{ filterTag=t.id; buildChips(); renderAll(); syncComposer(); };
     c.appendChild(b);
   });
 
@@ -1425,7 +1432,7 @@ function enterChat(player){
   $("meIcons").replaceWith(fi);
   $("meName").textContent = me.name;
   $("meName").style.color = CLASS_COLOR[me.class] || "";
-  $("msgInput").placeholder = `${me.realm||"일반"} 서버에 메시지`;
+  syncComposer();
   $("list").innerHTML = '<div class="empty">불러오는 중…</div>';
   buildChips();
   subscribe();
@@ -1448,7 +1455,7 @@ $("send").onsubmit = async (ev) => {
     input.focus(); return;
   }
   // 봇에게 하는 질문은 말머리를 무조건 '질문'으로
-  const tag = replyCtx ? "chat" : forBot(body) ? "question" : $("tagSel").value;
+  const tag = replyCtx ? "chat" : forBot(body) ? "question" : filterTag!=="all" ? filterTag : $("tagSel").value;
   const parent = replyCtx ? replyCtx.parent : null;
   const sendBody = applyLinks(body);
   if (sendBody.length > 300) { toast("링크가 많아서 300자를 넘었어요. 조금 줄여 주세요"); return; }
@@ -1457,7 +1464,11 @@ $("send").onsubmit = async (ev) => {
   if (error) { toast(errMsg(error)); if (!input.value) input.value=body; return; }
   if (replyCtx) cancelReply();
   if (forBot(body)) callBot(newId);
-  $("tagSel").value = "chat";
+  // 지금 탭에서 안 보이는 글(예: 파티 탭에서 봇에게 질문)이면 전체로 옮겨서 바로 보이게
+  if (!parent && filterTag!=="all" && !visible({ tag, player_id: me.id, sender_faction: me.faction, id: newId })){
+    filterTag="all"; buildChips(); renderAll(); syncComposer(); toast(`${TAG_LABEL[tag]||"잡담"} 글이라 전체에서 보여 드려요`);
+  }
+  if (filterTag==="all") $("tagSel").value = "chat";
   input.focus();
 };
 
