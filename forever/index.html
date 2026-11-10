@@ -414,6 +414,7 @@
   #botcard textarea{width:100%;box-sizing:border-box;background:#0a0806;border:1px solid var(--line);border-radius:9px;padding:9px 11px;
     font:inherit;font-size:16px;color:inherit;resize:vertical;margin-top:6px}
   #botcard textarea:focus{outline:none;border-color:var(--gold-dim)}
+  .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
 <body>
@@ -564,9 +565,9 @@
     <div class="batinfo" id="bcInfo">불러오는 중…</div>
     <a class="btn charge" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">⚡ 배터리 충전하기 (커피 한 잔)</a>
     <p class="note">충전해 주신 금액의 70%는 포에버봇 AI 사용료로, 30%는 만든 사람 수고비로 써요. 직접 확인한 뒤 배터리에 더해져서 조금 걸릴 수 있어요.</p>
-    <h4>✉️ 문의 남기기</h4>
-    <p class="note" style="margin:0">봇이 틀린 답을 했거나, 바라는 기능이나 불편한 점이 있으면 남겨 주세요. 만든 사람만 읽어요.</p>
-    <textarea id="bcAsk" maxlength="1000" rows="3" placeholder="예: 포에버봇이 퀘스트 위치를 잘못 알려줘요"></textarea>
+    <h4>✉️ 만든 사람에게 문의</h4>
+    <p class="note" style="margin:0">포에버 채팅을 쓰면서 불편한 점, 있었으면 하는 기능, 고장 난 곳을 알려 주세요. 만든 사람만 읽어요.</p>
+    <textarea id="bcAsk" maxlength="1000" rows="3" placeholder="예: 귓속말이 오면 소리로도 알려 주면 좋겠어요"></textarea>
     <button class="btn sm" id="bcAskSend" type="button">문의 보내기</button>
     <button class="btn ghost sm" id="bcClose" type="button">닫기</button>
   </div>
@@ -812,6 +813,13 @@ async function handleBnetReturn(params){
 function fmtTime(iso){ return new Date(iso).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",hour12:false}); }
 
 function renderMsg(m, inThread){
+  if (m.hidden){
+    // 여러 명이 신고해서 모두에게 가려진 글: 자리만 남기고 내용은 안 보여 줌
+    const el=document.createElement("div"); el.className="msg gone"; el.dataset.id=m.id;
+    const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
+    const tx=document.createElement("span"); tx.textContent="🚫 신고가 여러 번 들어와 숨긴 글이에요";
+    el.append(t, tx); return el;
+  }
   if (m.tag==="emote"){
     const el=document.createElement("div"); el.className="msg emote"; el.dataset.id=m.id;
     const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
@@ -891,7 +899,7 @@ const sameGroup = (a, b) => a && b && a.player_id===b.player_id && a.tag!=="emot
   && !(a.reply_count>0) && dayKey(a.created_at)===dayKey(b.created_at) && (new Date(b.created_at)-new Date(a.created_at)) < 5*60*1000;
 function renderBlock(m, prev){
   const b=document.createElement("div"); b.className="mblk"; b.dataset.id=m.id;
-  const el=renderMsg(m); if (sameGroup(prev, m)) el.classList.add("cont");
+  const el=renderMsg(m); if (!m.hidden && !prev?.hidden && sameGroup(prev, m)) el.classList.add("cont");
   b.appendChild(el);
   if (m.tag!=="emote"){
     const more=document.createElement("button"); more.type="button"; more.className="rmore";
@@ -979,6 +987,22 @@ function toggleActions(m, el){
   if (list && el.getBoundingClientRect().top - list.getBoundingClientRect().top < 60) bar.classList.add("below");
 }
 document.addEventListener("click", (e)=>{ if (actFor && !e.target.closest(".mact,.msg.sel")) closeActions(); });
+// 신고로 모두에게 숨겨진 글: 지우지 않고 '신고로 숨긴 글' 자리로 바꿈 (답글은 그대로)
+function markHidden(id, parentId){
+  const mark=(arr)=>{ const x=arr?.find(y=>y.id===id); if (x){ x.hidden=true; x.body=null; } return !!x; };
+  if (parentId){
+    mark(repliesMap.get(parentId));
+    const b=blockOf(parentId); if (b && expanded.has(parentId)) renderReplies(parentId, b);
+    if (mark(threadMsgs) && threadParent===parentId) renderThread();
+    return;
+  }
+  const m=cache.find(x=>x.id===id); if (!m) return;
+  m.hidden=true; m.body=null;
+  const blk=blockOf(id), msg=blk?.querySelector(":scope > .msg"); if (msg) msg.replaceWith(renderMsg(m));
+  // 바로 다음 글이 이 글에 이어 붙어 이름이 빠져 있었으면 다시 이름을 보여 줌
+  const nx=blk?.nextElementSibling; if (nx?.classList.contains("mblk")) nx.querySelector(":scope > .msg")?.classList.remove("cont");
+  if (threadParent===id && mark(threadMsgs)) renderThread();
+}
 function removeMsg(id, parentId){
   if (parentId){
     const arr=repliesMap.get(parentId); if (arr) repliesMap.set(parentId, arr.filter(x=>x.id!==id));
@@ -1475,7 +1499,7 @@ async function subscribe(){
   msgSub = sb.channel(topic)
     .on("broadcast", { event:"msg" }, ({ payload })=>{ if (payload && payload.channel===channel) addMsg(payload); })
     .on("broadcast", { event:"count" }, ({ payload })=>{ if (payload) updateReplyCount(payload.id, payload.reply_count); })
-    .on("broadcast", { event:"hide" }, ({ payload })=>{ if (payload) removeMsg(payload.id, payload.parent_id); })
+    .on("broadcast", { event:"hide" }, ({ payload })=>{ if (payload) markHidden(payload.id, payload.parent_id); })
     .subscribe((status)=>{
       if (status==="SUBSCRIBED") loadHistory();
       if (status==="CHANNEL_ERROR" || status==="TIMED_OUT") toast("연결이 끊겨서 다시 연결하는 중…");
