@@ -2,6 +2,7 @@
 //  GET  ?action=login_url&redirect_uri=...&state=...   배틀넷 로그인 주소
 //  POST ?action=exchange  {code, redirect_uri}         로그인 코드 → 계정 저장 + 내 포에버 캐릭터 목록
 //  GET  ?action=search&q=검색어                        [ 자동완성 (퀘스트·아이템·NPC·주문·업적)
+//  GET  ?action=quest&id=번호                          퀘스트 간단 정보 (지역, 조건, 선행 퀘스트, 보상) - 퀘스트 카드용
 //  POST ?action=bot  {token, message_id}               @포에버봇 질문에 AI로 답하기
 //  POST ?action=bmc&key=...                            Buy Me a Coffee 웹훅 → 포에버봇 배터리 충전 (key는 wow.bot_settings.webhook_key)
 //  GET  ?name=이름-성 / ?rulesets=1 / ?realm_id=번호 / ?media=이름-성   진단용
@@ -203,6 +204,7 @@ const BOT_SYSTEM = `너는 "와우 포에버(World of Warcraft: Forever)" 한국
 가장 중요한 규칙:
 - 게임 플레이 정보(퀘스트, 위치, 보상, 레벨, 드랍, 일정, 수치)는 반드시 도구로 찾은 자료에만 근거해. 네가 원래 알던 와우 지식은 포에버와 다를 수 있으니 이런 건 지어내지 마.
 - 인물·종족·지역의 배경 이야기(예: "쓰랄은 누구예요", "언데드는 왜 호드예요")는 네 와우 세계관 지식으로 짧게 답해도 돼. 이때는 바닐라(오리지널) 시점 기준으로 말하고, 관련 퀘스트를 찾았으면 링크도 붙여.
+- 퀘스트 설명(대사)을 그대로 옮기지 말고, 할 일·장소·조건·보상만 짧게 뽑아서 말해. 레벨 조건이 자료에 없으면 "필요 레벨은 퀘스트 링크에서 확인해 주세요"처럼 한 마디로만.
 - 블리자드 데이터에는 NPC·몬스터 좌표가 없어. 지역과 설명 속 단서까지만 말하고, 정확한 위치는 퀘스트 링크를 누르면 와우헤드 지도에서 볼 수 있다고 해.
 - 자료로 답할 수 없는 게임 플레이 질문(서버 분위기, 직업 추천, 사람 경험담 같은 것)이나 못 찾은 질문은 지어내지 말고 딱 한 문장으로 "확인된 정보가 없어요. 질문 말머리로 올리면 채팅방 분들이 답해 주실 거예요!"라고만 답해.
 - 질문과 관계없는 검색 결과는 아예 언급하지 마. 네가 무엇을 찾았거나 찾지 않았는지에 대한 설명, 되묻기는 하지 마. 질문에 대한 답만 해.
@@ -515,6 +517,13 @@ Deno.serve(async (req) => {
     if (action === "search") {
       const results = await searchGame(url.searchParams.get("q") ?? "", host, region, token);
       return json({ ok: true, results }, 200, true);
+    }
+
+    if (action === "quest") {
+      const qid = Number(url.searchParams.get("id"));
+      if (!Number.isInteger(qid) || qid <= 0) return json({ ok: false, reason: "bad_request" }, 400);
+      const d: any = await questDetail(qid, host, region, token).catch((e) => ({ error: String(e) }));
+      return json({ ok: !d.error, quest: d }, 200, !d.error);
     }
 
     if (action === "bot") {
