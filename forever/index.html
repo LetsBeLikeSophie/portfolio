@@ -217,6 +217,11 @@
   #tList .msg:first-child{background:#ffffff08;border:1px solid var(--line);margin-bottom:8px;padding:8px}
 
   /* 프로필 카드 */
+  #qcard{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:11}
+  #qcard .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:80vh;overflow-y:auto}
+  #qcard .qt{font-size:17px;font-weight:700;color:#ffd100;margin-bottom:4px}
+  #qcard .qm{font-size:12.5px;color:var(--muted);margin-bottom:10px}
+  #qcard .qd{font-size:14px;line-height:1.6;white-space:pre-wrap;color:#e8dcc4;margin-bottom:14px}
   #prof{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:9}
   #prof .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}
   .ph{display:flex;align-items:center;gap:12px}
@@ -382,6 +387,16 @@
     <a class="btn ghost sm" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">☕ 서버비 후원</a>
     <button class="btn ghost sm" id="logoutBtn" type="button">로그아웃</button>
     <button class="btn ghost sm" id="closeSheet" type="button">닫기</button>
+  </div>
+</div>
+
+<div id="qcard" class="hidden">
+  <div class="card">
+    <div class="qt" id="qTitle"></div>
+    <div class="qm" id="qMeta"></div>
+    <div class="qd" id="qDesc"></div>
+    <a class="btn ghost sm" id="qWh" target="_blank" rel="noopener noreferrer">와우헤드 지도에서 보기</a>
+    <p class="note">포에버에 새로 생긴 퀘스트는 와우헤드에 아직 영어로만 나올 수 있어요.</p>
   </div>
 </div>
 
@@ -660,7 +675,7 @@ function setMore(b, m){
   const more=b?.querySelector(":scope > .rmore"); if (!more) return;
   const n=m.reply_count||0, open=expanded.has(m.id);
   more.classList.toggle("hidden", !n);
-  more.textContent = open ? "답글 숨기기" : `── 답글 ${n}개 보기`;
+  more.textContent = open ? "답글 숨기기" : `답글 ${n}개 보기`;
 }
 async function toggleReplies(id, forceOpen){
   const m=cache.find(x=>x.id===id); const b=blockOf(id);
@@ -763,7 +778,12 @@ function linkify(text){
     const a=document.createElement("a"); a.className="whl"; a.target="_blank"; a.rel="noopener noreferrer";
     a.onclick=(e)=>e.stopPropagation();
     let consumed=m[0].length;
-    if (m[1]) {
+    if (m[1]==="quest") {
+      // 포에버 전용 퀘스트는 와우헤드에 한글이 없을 수 있어서, 블리자드 한글 데이터로 만든 카드를 띄움
+      a.href=`#quest-${m[2]}`; a.removeAttribute("target"); a.className="whl tok qlink";
+      a.textContent=`[${m[4]}]`; a.style.color="#ffd100";
+      a.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); openQuest(Number(m[2]), m[4]); };
+    } else if (m[1]) {
       a.href=`https://www.wowhead.com/forever/ko/${m[1]}=${m[2]}`;
       a.textContent=`[${m[4]}]`; a.dataset.whRenameLink="false"; a.dataset.whIconSize="small";
       a.classList.add("tok"); if (QUALITY_COLOR[m[3]]) a.style.color=QUALITY_COLOR[m[3]]; else if (m[1]==="quest") a.style.color="#ffd100";
@@ -877,6 +897,17 @@ $("pEmote").onclick = async () => {
   box.classList.toggle("hidden");
   $("pEmote").classList.toggle("on", !box.classList.contains("hidden"));
 };
+async function openQuest(id, name){
+  $("qTitle").textContent = name || "퀘스트"; $("qMeta").textContent = "불러오는 중…"; $("qDesc").textContent = "";
+  $("qWh").href = `https://www.wowhead.com/forever/ko/quest=${id}`;
+  $("qcard").classList.remove("hidden");
+  const { data } = await sb.rpc("wow_quest_info", { p_id: id });
+  if (!data) { $("qMeta").textContent = "자세한 정보가 없어요"; return; }
+  $("qTitle").textContent = data.title;
+  $("qMeta").textContent = [data.area, data.faction ? data.faction+" 전용" : null, data.min_level ? `${data.min_level}레벨부터` : null].filter(Boolean).join(" · ");
+  $("qDesc").textContent = (data.description || "").replace(/\r/g, "").trim() || "설명이 없어요";
+}
+$("qcard").onclick = (e) => { if (e.target.id==="qcard") $("qcard").classList.add("hidden"); };
 const cardMemo = new Map();
 async function loadCard(id){
   if (!id || id==="bot") return null;
