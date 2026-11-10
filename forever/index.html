@@ -476,6 +476,17 @@
   .mblk>.msg.mine .rq{order:3;margin:0 0 3px;text-align:right}
   .msg.flash{animation:flashMsg 1.6s ease-out}
   @keyframes flashMsg{0%,35%{background:#e6c36a38}100%{background:transparent}}
+  /* 퀘스트 카드 간단 정보 */
+  #qcard .qfacts{margin:6px 0 12px;padding:8px 10px;border-radius:10px;background:#ffffff08;border:1px solid var(--line)}
+  #qcard .qf{display:flex;gap:10px;padding:4px 0;font-size:13.5px;line-height:1.45}
+  #qcard .qf+.qf{border-top:1px solid #ffffff0d}
+  #qcard .qf>span{flex:none;width:84px;color:var(--muted)}
+  #qcard .qf>b{font-weight:500;color:#efe5d2}
+  #qcard .qf.wait{color:var(--muted);font-size:12.5px}
+  #qcard .qdh{font-size:12.5px;color:var(--gold-dim);font-weight:700;margin-bottom:4px}
+  #qcard .qd{margin-bottom:6px;font-size:13.5px;color:#cfc3ad}
+  #qcard .qd.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  #qcard .qmore{background:none;border:0;color:var(--gold);font-size:13px;font-weight:700;padding:2px 0 12px;cursor:pointer}
   .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
@@ -651,8 +662,10 @@
 <div id="qcard" class="hidden">
   <div class="card">
     <div class="qt" id="qTitle"></div>
-    <div class="qm" id="qMeta"></div>
-    <div class="qd" id="qDesc"></div>
+    <div class="qfacts" id="qMeta"></div>
+    <div class="qdh">퀘스트 이야기</div>
+    <div class="qd clamp" id="qDesc"></div>
+    <button type="button" class="qmore hidden" id="qMore">이야기 더 보기</button>
     <a class="btn ghost sm" id="qWh" target="_blank" rel="noopener noreferrer">와우헤드 지도에서 보기</a>
     <p class="note">포에버에 새로 생긴 퀘스트는 와우헤드에 아직 영어로만 나올 수 있어요.</p>
   </div>
@@ -1290,16 +1303,40 @@ $("pEmote").onclick = async () => {
   box.classList.toggle("hidden");
   $("pEmote").classList.toggle("on", !box.classList.contains("hidden"));
 };
+// 퀘스트 카드: 위에 간단 정보(지역·조건·선행·보상), 아래 이야기는 3줄만 보이고 '더 보기'
+const moneyKo = (c) => { c=Number(c)||0; const g=Math.floor(c/10000), s=Math.floor(c%10000/100), k=c%100;
+  return [g?`${g}골드`:"", s?`${s}실버`:"", k?`${k}코퍼`:""].filter(Boolean).join(" "); };
+function questFacts(db, q){
+  const rq=q?.requirements||{}, rw=q?.rewards||{};
+  const who=[...(rq.races||[]), ...(rq.classes||[]), rq.faction||db?.faction].filter(Boolean);
+  const level = rq.level || db?.min_level;
+  const rewards=[rw.experience?`경험치 ${Number(rw.experience).toLocaleString("ko-KR")}`:null, rw.money?moneyKo(rw.money):null,
+    ...(rw.items||[]), ...(rw.reputations||[]).map(r=>"평판 "+r)].filter(Boolean);
+  return [["지역", q?.zone || db?.area], ["필요 레벨", level ? `${level}레벨부터` : null], ["대상", who.length ? who.join(", ")+" 전용" : null],
+    ["먼저 할 퀘스트", rq.previous?.name || null], ["보상", rewards.length ? rewards.join(" · ") : null]].filter(r=>r[1]);
+}
+function renderFacts(rows, loading){
+  const box=$("qMeta"); box.innerHTML="";
+  rows.forEach(([k,v])=>{ const r=document.createElement("div"); r.className="qf"; const a=document.createElement("span"); a.textContent=k;
+    const b=document.createElement("b"); b.textContent=v; r.append(a,b); box.appendChild(r); });
+  if (loading){ const r=document.createElement("div"); r.className="qf wait"; r.textContent="보상·조건 불러오는 중…"; box.appendChild(r); }
+  if (!rows.length && !loading){ const r=document.createElement("div"); r.className="qf wait"; r.textContent="간단 정보가 없어요"; box.appendChild(r); }
+}
 async function openQuest(id, name){
-  $("qTitle").textContent = name || "퀘스트"; $("qMeta").textContent = "불러오는 중…"; $("qDesc").textContent = "";
+  $("qTitle").textContent = name || "퀘스트"; renderFacts([], true); $("qDesc").textContent = ""; $("qDesc").classList.add("clamp"); $("qMore").classList.add("hidden");
   $("qWh").href = `https://www.wowhead.com/forever/ko/quest=${id}`;
   $("qcard").classList.remove("hidden");
+  const live = fetch(`${FN_URL}?action=quest&id=${id}`, { headers:{ apikey: SUPABASE_KEY } }).then(r=>r.json()).then(d=>d?.ok ? d.quest : null).catch(()=>null);
   const { data } = await sb.rpc("wow_quest_info", { p_id: id });
-  if (!data) { $("qMeta").textContent = "자세한 정보가 없어요"; return; }
-  $("qTitle").textContent = data.title;
-  $("qMeta").textContent = [data.area, data.faction ? data.faction+" 전용" : null, data.min_level ? `${data.min_level}레벨부터` : null].filter(Boolean).join(" · ");
-  $("qDesc").textContent = (data.description || "").replace(/\r/g, "").trim() || "설명이 없어요";
+  if (data) $("qTitle").textContent = data.title;
+  renderFacts(questFacts(data, null), true);
+  const desc = (data?.description || "").replace(/\r/g, "").trim();
+  $("qDesc").textContent = desc || "이야기가 없어요";
+  requestAnimationFrame(()=>{ const d=$("qDesc"); $("qMore").classList.toggle("hidden", d.scrollHeight <= d.clientHeight + 2); });
+  const q = await live;
+  if (!$("qcard").classList.contains("hidden")) renderFacts(questFacts(data, q), false);
 }
+$("qMore").onclick = () => { const d=$("qDesc"); const open=d.classList.toggle("clamp"); $("qMore").textContent = open ? "이야기 더 보기" : "이야기 접기"; };
 $("qcard").onclick = (e) => { if (e.target.id==="qcard") $("qcard").classList.add("hidden"); };
 const BOT_EXAMPLES = ["@포에버봇 힐러 구하는 파티 있어?", "@포에버봇 가시멧돼지 어디 있어요?", "@포에버봇 스랄은 누구예요?"];
 const agoShort = (iso) => { const m=Math.max(0, Math.round((Date.now()-new Date(iso))/60000));
