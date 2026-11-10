@@ -109,7 +109,8 @@
     padding:4px 10px 4px 5px;border-radius:999px;cursor:pointer;max-width:58%}
   .me span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
   .chiprow{display:flex;align-items:center;gap:8px;margin-top:9px}
-  .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;flex:1;min-width:0}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;flex:1;min-width:0;
+    -webkit-mask-image:linear-gradient(to right,#000 82%,transparent);mask-image:linear-gradient(to right,#000 82%,transparent);padding-right:24px}
   .sw{flex:none;display:flex;align-items:center;gap:6px;background:none;border:0;padding:0 2px;cursor:pointer;
     font-size:13px;font-weight:700;color:var(--muted)}
   .sw .track{width:34px;height:20px;border-radius:999px;background:#3a2f22;position:relative;transition:background .15s}
@@ -193,6 +194,11 @@
   form.send{display:flex;gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));
     border-top:1px solid var(--line);background:#120e0a}
   form.send input{flex:1;min-width:0}
+  form.send textarea{flex:1;min-width:0;resize:none;line-height:1.4;max-height:104px;overflow-y:auto;
+    background:#0a0806;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font:inherit;color:inherit;font-size:16px;align-self:stretch}
+  form.send textarea:focus{outline:none;border-color:var(--gold-dim)}
+  form.send{align-items:flex-end}
+  form.send select,form.send > button{height:42px}
   form.send select{width:auto;padding:0 8px;font-size:13px;color:var(--gold)}
   form.send button{border:1px solid #8a6a26;border-radius:9px;padding:0 14px;flex:none;
     background:linear-gradient(180deg,#c9a24c,#8c6b25);color:#1a1205;font-weight:700;cursor:pointer}
@@ -230,7 +236,10 @@
   .acts button span{color:var(--muted)}
   .acts button.warn{color:#ff9a8c}
   .acts button.on{border-color:var(--gold-dim)}
-  .portrait{position:relative;width:64px;height:64px;flex:none}
+  .portrait{position:relative;width:64px;height:64px;flex:none;display:inline-block}
+  .portrait.sm{width:46px;height:46px}
+  .portrait.sm .face{width:46px;height:46px;border-radius:11px}
+  .portrait.sm .badge{width:20px;height:20px;right:-5px;bottom:-5px}
   .portrait .face{width:64px;height:64px;border-radius:14px;border:2px solid var(--line);object-fit:cover;display:flex;
     align-items:center;justify-content:center;font-size:26px;box-sizing:border-box}
   .portrait .badge{position:absolute;right:-6px;bottom:-6px;width:26px;height:26px;border-radius:50%;
@@ -239,6 +248,27 @@
   .ph{margin-bottom:4px}
   .ph .nmrow{display:flex;align-items:center;gap:6px}
   .ph .nmrow .ic{width:18px;height:18px}
+  /* 연속 메시지 묶기 */
+  .msg.cont{padding-top:0;padding-left:46px}
+  .msg.cont .time,.msg.cont .who,.msg.cont .lv,.msg.cont .colon{display:none}
+  /* 날짜 구분 */
+  .dsep{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:12px 4px 6px}
+  .dsep::before,.dsep::after{content:"";flex:1;height:1px;background:var(--line)}
+  /* 봇이 찾는 중 */
+  .typing{color:#7fd3ff;font-size:13.5px;padding:6px 4px;opacity:.9}
+  .typing .dots span{display:inline-block;animation:blink 1.2s infinite both}
+  .typing .dots span:nth-child(2){animation-delay:.2s}.typing .dots span:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+  /* 예시 질문 */
+  #tipBar{display:flex;align-items:center;gap:6px;padding:7px 6px 7px 10px;border-top:1px solid var(--line);background:#14100b}
+  #tipBar .exw{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+  #tipBar .tl{font-size:12px;color:#7fd3ff;white-space:nowrap}
+  #tipBar .ex,.empty .ex{border:1px solid #7fd3ff44;background:#7fd3ff12;color:#bfe9ff;border-radius:999px;padding:5px 10px;font-size:12.5px;white-space:nowrap;cursor:pointer}
+  #tipBar .x{flex:none;background:none;border:0;color:var(--muted);font-size:16px;cursor:pointer;padding:0 4px}
+  .empty .exs{display:flex;flex-direction:column;align-items:center;gap:7px;margin-top:14px}
+  /* 다른 사람 @이름 */
+  .mnt{color:#cfe3ff;font-weight:600;cursor:pointer}
+  details.more{margin-top:6px}
   /* 포에버봇 */
   .msg.bot .who{color:#7fd3ff}
   .msg.bot .text{white-space:pre-wrap}
@@ -314,8 +344,13 @@
 
     <button class="btn ghost sm installBtn hidden" type="button">📲 홈 화면에 추가</button>
     <a class="btn ghost sm" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">☕ 서버비 후원</a>
-    <p class="note">다른 진영 사람이 쓴 채팅은 게임처럼 <b>공용어 / 오크어</b>로 바뀌어 보여요. 원문은 같은 진영에게만 전달되고, 메시지는 3일 뒤 지워져요.<br>감정 표현(<b>/인사</b>, <b>/춤</b> 등)은 상대 진영에게도 보여요.</p>
-    <p class="note" style="font-size:12px">월드 오브 워크래프트: 포에버 한국 서버 플레이어를 위한 채팅이에요. 일반 서버와 PvP 서버가 나뉘어 있고, 파티·공대 모집, 거래, 길드 모집, 질문 글을 말머리로 모아볼 수 있어요.</p>
+    <p class="note" style="text-align:center">상대 진영 채팅은 게임처럼 <b>공용어 / 오크어</b>로 보여요</p>
+    <details class="more">
+      <summary>자세히</summary>
+      <p class="note">원문은 같은 진영에게만 전달되고, 메시지는 3일 뒤 지워져요. 감정 표현(<b>/인사</b>, <b>/춤</b> 등)은 상대 진영에게도 보여요.</p>
+      <p class="note">궁금한 건 <b>@포에버봇</b>에게 물어보세요. 퀘스트·몬스터 위치를 블리자드 공식 데이터로 찾아줘요.</p>
+      <p class="note" style="font-size:12px">월드 오브 워크래프트: 포에버 한국 서버 플레이어를 위한 채팅이에요. 일반 서버와 PvP 서버가 나뉘어 있고, 파티·공대 모집, 거래, 길드 모집, 질문 글을 말머리로 모아볼 수 있어요.</p>
+    </details>
     <p class="legal">비공식 팬 사이트예요. World of Warcraft와 게임 이미지는 Blizzard Entertainment의 자산이며, 이 사이트는 블리자드와 관계없어요.</p>
   </div>
 </section>
@@ -338,10 +373,11 @@
   </header>
   <div class="online" id="online">접속 중…</div>
   <div id="list"></div>
+  <div id="tipBar" class="hidden"><span class="tl">👾 이렇게 물어보세요</span></div>
   <div id="replyBar" class="hidden"><span>↩ <b id="replyTo"></b> 님 글에 답글</span><button type="button" id="replyX" aria-label="답글 취소">✕</button></div>
   <form class="send" id="send" autocomplete="off">
     <select id="tagSel" aria-label="말머리"></select>
-    <input id="msgInput" maxlength="300" placeholder="메시지 입력" enterkeyhint="send">
+    <textarea id="msgInput" maxlength="300" rows="1" placeholder="메시지 입력" enterkeyhint="send"></textarea>
     <button type="submit">전송</button>
   </form>
 </section>
@@ -466,6 +502,20 @@ function iconEl(kind, key, faction, big){
     f.style.cssText += img.style.cssText; img.replaceWith(f); };
   return img;
 }
+function portraitEl(o, size, gender){
+  const p=document.createElement("span"); p.className="portrait"+(size==="sm"?" sm":"");
+  const g = gender || o.gender;
+  let face;
+  if (g==="FEMALE" && RACE_ICON[o.race]) {
+    face=document.createElement("img"); face.className="ic lg face"; face.alt=o.race; face.referrerPolicy="no-referrer";
+    face.src=ICON(RACE_ICON[o.race].replace(/_male$/,"_female"));
+    face.onerror=()=>{ const f=iconEl("race", o.race, o.faction, true); f.classList.add("face"); f.style.borderColor=face.style.borderColor; face.replaceWith(f); };
+  } else { face=iconEl("race", o.race, o.faction, true); face.classList.add("face"); }
+  face.style.borderColor = CLASS_COLOR[o.class] || "";
+  const badge=iconEl("class", o.class, o.faction, true); badge.classList.add("badge");
+  p.append(face, badge);
+  return p;
+}
 function iconSet(o, big){
   const w=document.createElement("span"); w.className="icons";
   w.append(iconEl("faction", o.faction, o.faction, big), iconEl("race", o.race, o.faction, big), iconEl("class", o.class, o.faction, big));
@@ -536,7 +586,7 @@ function showPicker(acc){
     srvEl.className = "srv"+(c.realm==="PvP"?" pvp":"")+(c.realm?"":" unk");
     srvEl.textContent = c.realm || "서버 확인 중";
     if (!c.realm) b.classList.add("off");
-    b.append(iconSet(c, true), who, srvEl);
+    b.append(portraitEl(c, "sm"), who, srvEl);
     const go = async () => {
       if (b.dataset.busy) return; b.dataset.busy = "1";
       $("pickErr").textContent = "";
@@ -603,7 +653,7 @@ function renderMsg(m, inThread){
     const el=document.createElement("div"); el.className="msg bot"+(!inThread?" tap":"")
       ; el.dataset.id=m.id;
     const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
-    const who=document.createElement("span"); who.className="who"; who.textContent="🤖 "+BOT_NAME;
+    const who=document.createElement("span"); who.className="who"; who.textContent="👾 "+BOT_NAME;
     const bb=document.createElement("span"); bb.className="botb"; bb.textContent="BOT";
     const tx=document.createElement("span"); tx.className="text"; tx.appendChild(linkify(m.body)); markMe(tx);
     el.append(t, who, bb, document.createTextNode(": "), tx);
@@ -621,7 +671,7 @@ function renderMsg(m, inThread){
   who.onclick=(e)=>{ e.stopPropagation(); openProfile(m); };
   el.append(t, who);
   if (m.sender_level){ const l=document.createElement("span"); l.className="lv"; l.textContent="Lv."+m.sender_level; el.appendChild(l); }
-  el.appendChild(document.createTextNode(": "));
+  const colon=document.createElement("span"); colon.className="colon"; colon.textContent=": "; el.appendChild(colon);
   if (m.tag && m.tag!=="chat" && !m.parent_id){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag; el.appendChild(g); }
   if (m.foreign_lang){ const l=document.createElement("span"); l.className="lang"; l.textContent=`[${LANG[m.sender_faction]}]`; el.appendChild(l); }
   const tx=document.createElement("span"); tx.className="text";
@@ -629,22 +679,51 @@ function renderMsg(m, inThread){
   if (!inThread || inThread==="reply") el.onclick = () => toggleActions(m, el);
   return el;
 }
-// 나를 부른 @이름은 굵게 (팀즈처럼)
+// @이름: 나는 굵게(팀즈처럼), 다른 사람은 누르면 프로필
+function knownPeople(){
+  const map=new Map();
+  for (const m of cache) if (m.tag!=="bot" && m.sender_name) map.set(m.sender_name, m);
+  for (const arr of repliesMap.values()) for (const m of arr) if (m.sender_name && !map.has(m.sender_name)) map.set(m.sender_name, m);
+  return map;
+}
 function markMe(root){
-  if (!me) return; const key="@"+me.name;
+  if (!me) return;
+  const people=knownPeople(); const names=[me.name, ...[...people.keys()].filter(n=>n!==me.name)].sort((a,b)=>b.length-a.length);
   const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const nodes=[];
-  while (w.nextNode()) if (w.currentNode.nodeValue.includes(key) && !w.currentNode.parentElement.closest("a")) nodes.push(w.currentNode);
-  nodes.forEach(n=>{ const parts=n.nodeValue.split(key); const f=document.createDocumentFragment();
-    parts.forEach((pt,i)=>{ if (i){ const b=document.createElement("b"); b.className="mme"; b.textContent=key; f.appendChild(b); } f.appendChild(document.createTextNode(pt)); });
-    n.replaceWith(f); });
+  while (w.nextNode()) if (w.currentNode.nodeValue.includes("@") && !w.currentNode.parentElement.closest("a,b,.mnt")) nodes.push(w.currentNode);
+  nodes.forEach(n=>{
+    const text=n.nodeValue; const f=document.createDocumentFragment(); let i=0, last=0, hit=false;
+    while ((i=text.indexOf("@", i))!==-1){
+      const nm=names.find(x=>text.startsWith(x, i+1));
+      if (!nm){ i++; continue; }
+      f.appendChild(document.createTextNode(text.slice(last, i)));
+      if (nm===me.name){ const b=document.createElement("b"); b.className="mme"; b.textContent="@"+nm; f.appendChild(b); }
+      else { const sp=document.createElement("span"); sp.className="mnt"; sp.textContent="@"+nm;
+        const src=people.get(nm); sp.onclick=(e)=>{ e.stopPropagation(); openProfile(src); }; f.appendChild(sp); }
+      i+=nm.length+1; last=i; hit=true;
+    }
+    if (!hit) return;
+    f.appendChild(document.createTextNode(text.slice(last))); n.replaceWith(f);
+  });
 }
 
 /* ---------- 글 블록: 글 + 답글 N개 + 바로 아래 답글 목록 ---------- */
 const expanded = new Set(); const repliesMap = new Map();
 let reported = new Set(); try { reported = new Set(JSON.parse(ls.get("wowchat_reported")||"[]")); } catch {}
-function renderBlock(m){
+const dayKey = (iso) => { const d=new Date(iso); return d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate(); };
+function dayLabel(iso){
+  const d=new Date(iso), now=new Date(); const y=new Date(now); y.setDate(now.getDate()-1);
+  if (dayKey(iso)===dayKey(now.toISOString())) return "오늘";
+  if (dayKey(iso)===dayKey(y.toISOString())) return "어제";
+  return d.toLocaleDateString("ko-KR",{month:"long",day:"numeric",weekday:"short"});
+}
+function daySep(iso){ const d=document.createElement("div"); d.className="dsep"; d.textContent=dayLabel(iso); return d; }
+const sameGroup = (a, b) => a && b && a.player_id===b.player_id && a.tag!=="emote" && b.tag!=="emote" && a.tag!=="bot" && b.tag!=="bot"
+  && !(a.reply_count>0) && dayKey(a.created_at)===dayKey(b.created_at) && (new Date(b.created_at)-new Date(a.created_at)) < 5*60*1000;
+function renderBlock(m, prev){
   const b=document.createElement("div"); b.className="mblk"; b.dataset.id=m.id;
-  b.appendChild(renderMsg(m));
+  const el=renderMsg(m); if (sameGroup(prev, m)) el.classList.add("cont");
+  b.appendChild(el);
   if (m.tag!=="emote"){
     const more=document.createElement("button"); more.type="button"; more.className="rmore";
     more.onclick=(e)=>{ e.stopPropagation(); toggleReplies(m.id); };
@@ -660,7 +739,7 @@ function setMore(b, m){
   const more=b?.querySelector(":scope > .rmore"); if (!more) return;
   const n=m.reply_count||0, open=expanded.has(m.id);
   more.classList.toggle("hidden", !n);
-  more.textContent = open ? "답글 숨기기" : `── 답글 ${n}개 보기`;
+  more.textContent = open ? "답글 숨기기" : `답글 ${n}개 보기`;
 }
 async function toggleReplies(id, forceOpen){
   const m=cache.find(x=>x.id===id); const b=blockOf(id);
@@ -796,10 +875,33 @@ const visible = (m) => (filterTag==="all" || m.tag===filterTag || (filterTag==="
 /* ---------- 포에버봇 ---------- */
 const BOT_NAME = "포에버봇";
 const forBot = (b) => b.startsWith("!") || b.includes("@"+BOT_NAME) || /(^|\s)@봇(\s|$)/.test(b);
+const EXAMPLES = ["@포에버봇 가시멧돼지 어디 있어요?", "@포에버봇 멀록 지느러미 어디서 구해요?", "@포에버봇 스랄은 누구예요?"];
+function exBtn(q){ const b=document.createElement("button"); b.type="button"; b.className="ex"; b.textContent=q.replace("@포에버봇 ","");
+  b.onclick=()=>{ const i=$("msgInput"); i.value=q; autoGrow(i); i.focus(); }; return b; }
+function setupTipBar(){
+  const bar=$("tipBar"); if (ls.get("wowchat_tip_bot")) { bar.classList.add("hidden"); return; }
+  bar.querySelectorAll(".exw,.x").forEach(x=>x.remove());
+  const w=document.createElement("div"); w.className="exw";
+  EXAMPLES.forEach(q=>{ const b=exBtn(q); const go=b.onclick; b.onclick=()=>{ go(); ls.set("wowchat_tip_bot","1"); bar.classList.add("hidden"); }; w.appendChild(b); });
+  bar.appendChild(w);
+  const x=document.createElement("button"); x.type="button"; x.className="x"; x.setAttribute("aria-label","닫기"); x.textContent="✕";
+  x.onclick=()=>{ ls.set("wowchat_tip_bot","1"); bar.classList.add("hidden"); }; bar.appendChild(x);
+  bar.classList.remove("hidden");
+}
+function showTyping(){
+  const l=$("list"); if (l.querySelector(".typing")) return;
+  const t=document.createElement("div"); t.className="typing"; t.innerHTML='👾 포에버봇이 찾는 중<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
+  l.appendChild(t); if (nearBottom(l) || true) l.scrollTop=l.scrollHeight;
+  clearTimeout(showTyping._t); showTyping._t=setTimeout(clearTyping, 40000);
+}
+function clearTyping(){ $("list").querySelector(".typing")?.remove(); }
 function callBot(id){
   if (!id) return;
+  showTyping();
   fetch(`${FN_URL}?action=bot`, { method:"POST", headers:{ apikey: SUPABASE_KEY, "Content-Type":"application/json" },
-    body: JSON.stringify({ token: me.token, message_id: id }) }).catch(()=>{});
+    body: JSON.stringify({ token: me.token, message_id: id }) })
+    .then(r=>r.json()).then(d=>{ if (!d?.ok || d?.skipped) clearTyping(); else setTimeout(clearTyping, 1500); })
+    .catch(clearTyping);
 }
 
 /* ---------- 감정 표현 보글보글 ---------- */
@@ -953,7 +1055,7 @@ function attachMention(input, allowEmote){
       if (tok.type==="link"){ n.textContent=`[${it.name}]`; n.style.color=QUALITY_COLOR[it.quality]||(it.type==="quest"?"#ffd100":"#7fb6ff");
         d.textContent=(KIND_LABEL[it.type]||it.type)+(it.area?" · "+it.area:""); d.style.color="var(--muted)"; }
       else if (tok.type==="emote"){ n.textContent="/"+it.key; n.style.color="#ffb46b"; d.textContent=it.solo.replace("{s}님이 ",""); d.style.color="var(--muted)"; }
-      else if (it.bot){ n.textContent="🤖 "+it.name; n.style.color="#7fd3ff"; d.textContent="질문하면 답해요"; d.style.color="var(--muted)"; }
+      else if (it.bot){ n.textContent="👾 "+it.name; n.style.color="#7fd3ff"; d.textContent="질문하면 답해요"; d.style.color="var(--muted)"; }
       else { n.textContent=it.name; n.style.color=CLASS_COLOR[it.cls]||"";
         d.textContent=(it.faction!==me.faction ? (it.faction==="alliance"?"얼라 ":"호드 ") : "")+(it.online?"● 접속 중":""); }
       b.append(n,d); b.onmousedown=(e)=>{ e.preventDefault(); pick(it); }; box.appendChild(b); });
@@ -984,6 +1086,12 @@ function attachMention(input, allowEmote){
   input.addEventListener("blur", ()=>setTimeout(close, 150));
 }
 attachMention($("msgInput"), true); attachMention($("tInput"), false);
+function autoGrow(t){ t.style.height="auto"; t.style.height=Math.min(t.scrollHeight+2, 104)+"px"; }
+$("msgInput").addEventListener("input", (e)=>autoGrow(e.target));
+$("msgInput").addEventListener("keydown", (e)=>{
+  if (e.key!=="Enter" || e.shiftKey || e.isComposing || e.keyCode===229 || e.defaultPrevented) return;
+  e.preventDefault(); $("send").requestSubmit();
+});
 
 $("pMute").onclick = () => {
   const id = profFor.player_id;
@@ -1004,9 +1112,13 @@ function renderAll(){
   if (!arr.length){
     const e=document.createElement("div"); e.className="empty";
     e.textContent = cache.length ? "이 필터에 맞는 메시지가 없어요" : `${me.realm||"일반"} 서버의 첫 메시지를 남겨 보세요`;
+    if (!cache.length){ const ex=document.createElement("div"); ex.className="exs"; EXAMPLES.forEach(q=>ex.appendChild(exBtn(q))); e.appendChild(ex); }
     l.appendChild(e); return;
   }
-  const frag=document.createDocumentFragment(); arr.forEach(m=>frag.appendChild(renderBlock(m))); l.appendChild(frag);
+  const frag=document.createDocumentFragment(); let prev=null;
+  arr.forEach(m=>{ if (!prev || dayKey(prev.created_at)!==dayKey(m.created_at)) frag.appendChild(daySep(m.created_at));
+    frag.appendChild(renderBlock(m, prev)); prev=m; });
+  l.appendChild(frag);
   l.scrollTop=l.scrollHeight;
 }
 function pingIfMentioned(m){
@@ -1031,12 +1143,16 @@ function addMsg(m){
     return;
   }
   if (cache.some(x=>x.id===m.id)) return;
+  const prev=[...cache].reverse().find(visible);
   cache.push(m); if (cache.length>400) cache.splice(0, cache.length-400);
   if (!visible(m)) return;
   if (m.tag==="emote" && m.emote_key) floatEmoji(m.emote_key);
   const l=$("list"); const stick=nearBottom(l) || m.player_id===me.id;
   l.querySelector(".empty")?.remove();
-  l.appendChild(renderBlock(m));
+  if (m.tag==="bot") clearTyping();
+  if (!prev || dayKey(prev.created_at)!==dayKey(m.created_at)) l.appendChild(daySep(m.created_at));
+  l.appendChild(renderBlock(m, prev));
+  const ty=l.querySelector(".typing"); if (ty) l.appendChild(ty);
   if (stick) l.scrollTop=l.scrollHeight; else $("newBar").classList.remove("hidden");
 }
 function updateReplyCount(id, count){
@@ -1116,6 +1232,7 @@ function enterChat(player){
   subscribe();
   loadNotifs();
   loadEmotes();
+  setupTipBar();
   if (!ls.get("wowchat_tip_reply")) { ls.set("wowchat_tip_reply","1"); setTimeout(()=>toast("글을 누르면 답글을 달 수 있어요"), 1800); }
 }
 
@@ -1135,7 +1252,7 @@ $("send").onsubmit = async (ev) => {
   const parent = replyCtx ? replyCtx.parent : null;
   const sendBody = applyLinks(body);
   if (sendBody.length > 300) { toast("링크가 많아서 300자를 넘었어요. 조금 줄여 주세요"); return; }
-  input.value="";
+  input.value=""; autoGrow(input);
   const { data: newId, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: sendBody, p_tag: tag, p_parent: parent });
   if (error) { toast(errMsg(error)); if (!input.value) input.value=body; return; }
   if (replyCtx) cancelReply();
@@ -1232,7 +1349,8 @@ $("meBtn").onclick = () => {
   const box=$("sheetInfo"); box.innerHTML="";
   const head=document.createElement("div"); head.style.cssText="display:flex;align-items:center;gap:10px;margin-bottom:8px";
   const nm=document.createElement("b"); nm.textContent=me.name; nm.style.color=CLASS_COLOR[me.class]||""; nm.style.fontSize="17px";
-  head.append(iconSet(me, true), nm);
+  const pic=portraitEl(me, "sm"); head.append(pic, nm);
+  loadCard(me.id).then(c=>{ if (c?.gender==="FEMALE" || c?.avatar) { const np=portraitEl(me, "sm", c.gender); if (c.avatar){ const f=np.querySelector(".face"); const im=document.createElement("img"); im.className="ic lg face"; im.src=c.avatar; im.referrerPolicy="no-referrer"; im.style.borderColor=CLASS_COLOR[me.class]||""; f.replaceWith(im); } pic.replaceWith(np); } });
   box.appendChild(head);
   [["서버", me.realm || "-"], ["종족·직업", `${me.race} ${me.class}`], ["레벨", me.level || "-"],
    ["진영", me.faction==="alliance" ? "얼라이언스 (공용어)" : "호드 (오크어)"]].forEach(([k,v])=>{
