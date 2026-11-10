@@ -166,7 +166,7 @@
   .msg .who{font-weight:700}
   .msg .lv{color:#6d6354;font-size:11px;margin-left:3px}
   .msg .lang{color:var(--muted);font-style:italic;margin-right:4px}
-  .msg .text{color:var(--body)}
+  .msg .text{color:#ddd4c4}
   .msg.foreign .text{font-style:italic;color:#a99e8a}
   .msg.emote{color:#ff9f45;font-style:normal}
   .msg.emote .etext{color:#ff9f45}
@@ -191,11 +191,13 @@
     color:#e6c36a!important;top:calc(14px + env(safe-area-inset-top))!important;right:14px!important}
   #wowhead-tooltip-screen-close *, .wowhead-tooltip-screen-close *{color:#e6c36a!important}
   .wowhead-tooltip table, .wowhead-tooltip th, .wowhead-tooltip td{font-family:"Noto Sans KR",system-ui,sans-serif!important}
-  .tag{display:inline-block;font-size:11px;font-weight:700;padding:0 6px;border-radius:5px;margin-right:5px;vertical-align:1px}
-  .tag.question{background:#183a4a;color:#8fd6f5}
-  .tag.trade{background:#3d3412;color:#f0d36b}
-  .tag.guild{background:#2a1f45;color:#c7b1ff}
-  .tag.party{background:#173a22;color:#8ee6a6}
+  /* 말머리: 색 땅 대신 작은 색 점 + 글자 */
+  .tag{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:500;margin-right:5px;white-space:nowrap}
+  .tag::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+  .tag.question{color:#8fd6f5}
+  .tag.trade{color:#f0d36b}
+  .tag.guild{color:#c7b1ff}
+  .tag.party{color:#8ee6a6}
   .sys{color:#e0b34a;font-size:13px;text-align:center;padding:8px 0;opacity:.85}
   .empty{color:var(--muted);text-align:center;margin-top:40px;font-size:14px;line-height:1.6}
 
@@ -261,9 +263,22 @@
   .ph{margin-bottom:4px}
   .ph .nmrow{display:flex;align-items:center;gap:6px}
   .ph .nmrow .ic{width:18px;height:18px}
-  /* 연속 메시지 묶기 */
-  .msg.cont{padding-top:0;padding-left:46px}
-  .msg.cont .time,.msg.cont .who,.msg.cont .lv,.msg.cont .colon{display:none}
+  /* 읽기 쉽게: 이름(+말머리·시간) 한 줄, 본문은 그 아래. 답글 펼침 안은 한 줄 그대로 */
+  .msg .lv{display:none}
+  .mblk>.msg:not(.emote),#tList>.msg:not(.emote){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:6px;padding:7px 8px 3px}
+  .mblk>.msg:not(.emote) .colon,#tList>.msg:not(.emote) .colon{display:none}
+  .mblk>.msg:not(.emote) .who,#tList>.msg:not(.emote) .who{order:1;font-size:14px}
+  .mblk>.msg:not(.emote) .botb,#tList>.msg:not(.emote) .botb{order:2;margin-left:0}
+  .mblk>.msg:not(.emote) .tag,#tList>.msg:not(.emote) .tag{order:3;margin-right:0}
+  .mblk>.msg:not(.emote) .lang,#tList>.msg:not(.emote) .lang{order:4}
+  .mblk>.msg:not(.emote) .time,#tList>.msg:not(.emote) .time{order:5;margin:0;font-size:11px}
+  .mblk>.msg:not(.emote) .text,#tList>.msg:not(.emote) .text{order:6;flex-basis:100%;margin-top:1px}
+  .mblk{margin-top:6px}
+  /* 같은 사람이 5분 안에 이어 쓴 글: 이름 줄 없이 본문만 */
+  .mblk:has(>.msg.cont){margin-top:0}
+  .mblk>.msg.cont{padding-top:1px}
+  .msg.cont .time,.msg.cont .who,.msg.cont .lv,.msg.cont .colon,.msg.cont .botb{display:none!important}
+  .msg.cont .text{margin-top:0}
   /* 날짜 구분 */
   .dsep{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:12px 4px 6px}
   .dsep::before,.dsep::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -731,7 +746,8 @@ function renderMsg(m, inThread){
     const who=document.createElement("span"); who.className="who"; who.textContent=BOT_NAME;
     const bb=document.createElement("span"); bb.className="botb"; bb.textContent="BOT";
     const tx=document.createElement("span"); tx.className="text"; tx.appendChild(linkify(m.body)); markMe(tx);
-    el.append(t, who, bb, document.createTextNode(": "), tx);
+    const co=document.createElement("span"); co.className="colon"; co.textContent=": ";
+    el.append(t, who, bb, co, tx);
     if (!inThread || inThread==="reply"){ el.classList.add("tap"); el.onclick=()=>toggleActions(m, el); }
     return el;
   }
