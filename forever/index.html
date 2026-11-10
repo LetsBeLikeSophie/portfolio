@@ -205,9 +205,37 @@
   .ph .nm{font-size:19px;font-weight:700}
   .ph .meta2{font-size:13px;color:var(--muted);margin-top:2px}
   .acts{display:flex;gap:8px;margin-top:14px}
-  .acts button{flex:1;border:1px solid var(--line);background:#0006;border-radius:9px;padding:9px 4px;
-    font-size:13px;color:var(--gold);cursor:pointer}
+  .acts button{flex:1;border:1px solid var(--line);background:#0006;border-radius:12px;padding:10px 4px 8px;
+    font-size:11px;color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px}
+  .acts button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .acts button span{color:var(--muted)}
   .acts button.warn{color:#ff9a8c}
+  .acts button.on{border-color:var(--gold-dim)}
+  .portrait{position:relative;width:64px;height:64px;flex:none}
+  .portrait .face{width:64px;height:64px;border-radius:14px;border:2px solid var(--line);object-fit:cover;display:flex;
+    align-items:center;justify-content:center;font-size:26px;box-sizing:border-box}
+  .portrait .badge{position:absolute;right:-6px;bottom:-6px;width:26px;height:26px;border-radius:50%;
+    border:2px solid var(--panel);display:flex;align-items:center;justify-content:center;font-size:11px;box-sizing:border-box}
+  .portrait .face,.portrait .badge{margin:0}
+  .ph{margin-bottom:4px}
+  .ph .nmrow{display:flex;align-items:center;gap:6px}
+  .ph .nmrow .ic{width:18px;height:18px}
+  /* 포에버봇 */
+  .msg.bot .who{color:#7fd3ff}
+  .msg.bot .text{white-space:pre-wrap}
+  .botb{display:inline-block;margin-left:4px;padding:0 5px;border-radius:5px;background:#7fd3ff22;color:#7fd3ff;
+    font-size:10px;font-weight:700;vertical-align:1px}
+  /* 감정 표현 보글보글 */
+  #floaty{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:20}
+  #floaty span{position:absolute;bottom:70px;font-size:28px;will-change:transform,opacity;
+    animation:floatUp var(--d,2.2s) cubic-bezier(.25,.6,.4,1) both}
+  @keyframes floatUp{
+    0%{transform:translate(0,0) scale(.4);opacity:0}
+    12%{opacity:1;transform:translate(calc(var(--sx)*.2),-6vh) scale(var(--s,1))}
+    50%{transform:translate(var(--sx),-30vh) scale(var(--s,1))}
+    100%{transform:translate(calc(var(--sx)*-.5),-62vh) scale(calc(var(--s,1)*.8));opacity:0}}
+  @media (prefers-reduced-motion: reduce){ #floaty span{animation-duration:1.2s} }
+  a.btn{display:block;text-align:center;text-decoration:none;box-sizing:border-box}
   .recent{margin-top:14px;border-top:1px solid var(--line);padding-top:8px}
   .recent h4{margin:4px 0 6px;font-size:12px;color:var(--muted);font-weight:500}
   .recent .msg{font-size:14px}
@@ -266,6 +294,7 @@
     </div>
 
     <button class="btn ghost sm installBtn hidden" type="button">📲 홈 화면에 추가</button>
+    <a class="btn ghost sm" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">☕ 서버비 후원</a>
     <p class="note">다른 진영 사람이 쓴 채팅은 게임처럼 <b>공용어 / 오크어</b>로 바뀌어 보여요. 원문은 같은 진영에게만 전달되고, 메시지는 3일 뒤 지워져요.<br>감정 표현(<b>/인사</b>, <b>/춤</b> 등)은 상대 진영에게도 보여요.</p>
     <p class="note" style="font-size:12px">월드 오브 워크래프트: 포에버 한국 서버 플레이어를 위한 채팅이에요. 일반 서버와 PvP 서버가 나뉘어 있고, 파티·공대 모집, 거래, 길드 모집, 질문 글을 말머리로 모아볼 수 있어요.</p>
     <p class="legal">비공식 팬 사이트예요. World of Warcraft와 게임 이미지는 Blizzard Entertainment의 자산이며, 이 사이트는 블리자드와 관계없어요.</p>
@@ -330,6 +359,7 @@
     <div id="sheetInfo" style="font-size:15px;line-height:1.8"></div>
     <button class="btn" id="switchBtn" type="button">캐릭터 바꾸기</button>
     <button class="btn ghost sm installBtn hidden" type="button">📲 홈 화면에 추가</button>
+    <a class="btn ghost sm" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">☕ 서버비 후원</a>
     <button class="btn ghost sm" id="logoutBtn" type="button">로그아웃</button>
     <button class="btn ghost sm" id="closeSheet" type="button">닫기</button>
   </div>
@@ -339,9 +369,9 @@
   <div class="card">
     <div class="ph" id="pHead"></div>
     <div class="acts">
-      <button type="button" id="pEmote">감정 표현</button>
-      <button type="button" id="pCopy">이름 복사</button>
-      <button type="button" id="pMute" class="warn">채팅 숨기기</button>
+      <button type="button" id="pReply" aria-label="이 글에 답글"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>답글</span></button>
+      <button type="button" id="pEmote" aria-label="감정 표현"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01" stroke-width="3"/></svg><span>감정 표현</span></button>
+      <button type="button" id="pMute" class="warn" aria-label="채팅 숨기기"><svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c5 0 9 4.5 10 7a13 13 0 0 1-3 4.1M6.6 6.6A13 13 0 0 0 2 12c1 2.5 5 7 10 7a9.6 9.6 0 0 0 4.4-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg><span id="pMuteLbl">숨기기</span></button>
     </div>
     <div class="emotes hidden" id="pEmotes"></div>
     <button class="btn ghost sm" id="pClose" type="button">닫기</button>
@@ -412,7 +442,8 @@ function iconEl(kind, key, faction, big){
   const img=document.createElement("img"); img.className="ic"+(big?" lg":""); img.alt=key||""; img.loading="lazy";
   img.title = kind==="faction" ? (key==="alliance"?"얼라이언스":"호드") : key;
   img.referrerPolicy="no-referrer"; img.src=ICON(name);
-  img.onerror=()=>img.replaceWith(fallback());
+  img.onerror=()=>{ const f=fallback(); img.classList.forEach(c=>{ if (c!=="ic" && c!=="lg") f.classList.add(c); });
+    f.style.cssText += img.style.cssText; img.replaceWith(f); };
   return img;
 }
 function iconSet(o, big){
@@ -548,6 +579,18 @@ function renderMsg(m, inThread){
     const tx=document.createElement("span"); tx.className="etext"; tx.textContent=m.body;
     el.append(t, tx); return el;
   }
+  if (m.tag==="bot"){
+    const el=document.createElement("div"); el.className="msg bot"+(!inThread?" tap":"")
+      +(me && (m.body||"").includes("@"+me.name) ? " ment" : ""); el.dataset.id=m.id;
+    const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
+    const who=document.createElement("span"); who.className="who"; who.textContent="🤖 "+BOT_NAME;
+    const bb=document.createElement("span"); bb.className="botb"; bb.textContent="BOT";
+    const tx=document.createElement("span"); tx.className="text"; tx.appendChild(linkify(m.body));
+    el.append(t, who, bb, document.createTextNode(": "), tx);
+    if (!inThread){ const r=document.createElement("span"); r.className="replies"; r.textContent=m.reply_count?`💬 ${m.reply_count}`:"";
+      el.appendChild(r); el.onclick=()=>openThread(m); }
+    return el;
+  }
   const el=document.createElement("div");
   el.className="msg"+(m.foreign_lang?" foreign":"")+(!inThread?" tap":"")
     +(me && !m.foreign_lang && m.player_id!==me.id && (m.body||"").includes("@"+me.name) ? " ment" : "");
@@ -608,27 +651,76 @@ function scheduleWhRefresh(){ clearTimeout(whTimer); whTimer=setTimeout(()=>{
   try { window.WH?.Tooltips?.refreshLinks?.(); } catch {} }, 150); }
 
 let muted = new Set(); try { muted = new Set(JSON.parse(ls.get("wowchat_muted")||"[]")); } catch {}
-const visible = (m) => (filterTag==="all" || m.tag===filterTag || (filterTag==="chat" && m.tag==="emote")) && (!myFactionOnly || m.sender_faction===me.faction)
+const visible = (m) => (filterTag==="all" || m.tag===filterTag || (filterTag==="chat" && m.tag==="emote")
+    || (m.tag==="bot" && (filterTag==="chat" || filterTag==="question")))
+  && (!myFactionOnly || m.sender_faction===me.faction || m.tag==="bot")
   && !muted.has(m.player_id);
+
+/* ---------- 포에버봇 ---------- */
+const BOT_NAME = "포에버봇";
+const forBot = (b) => b.startsWith("!") || b.includes("@"+BOT_NAME) || /(^|\s)@봇(\s|$)/.test(b);
+function callBot(id){
+  if (!id) return;
+  fetch(`${FN_URL}?action=bot`, { method:"POST", headers:{ apikey: SUPABASE_KEY, "Content-Type":"application/json" },
+    body: JSON.stringify({ token: me.token, message_id: id }) }).catch(()=>{});
+}
+
+/* ---------- 감정 표현 보글보글 ---------- */
+const EMOTE_EMOJI = { "가리킴":"👉","감사":"🙏","감탄":"🤩","갸웃":"🤔","건배":"🍻","겁":"😱","경례":"🫡","고마워":"🙏",
+  "궁금":"❓","근육":"💪","기다려":"✋","기도":"🙏","기쁨":"😆","꼬꼬":"🐔","끄덕":"👍","낄낄":"🤭","노래":"🎵","놀람":"😲",
+  "당황":"😅","도리도리":"🙅","도발":"😤","돌격":"⚔️","따라와":"👣","마나":"💧","멍":"😶","메롱":"😜","명상":"🧘","목말라":"🥤",
+  "무릎":"🧎","미소":"😊","미안":"🙇","박수":"👏","반가워":"👋","배고파":"🍖","부끄":"☺️","비웃음":"😏","뽀뽀":"💋","뽐냄":"😎",
+  "삐짐":"😒","사과":"🙇","사랑":"❤️","생각":"💭","손짓":"🤙","쉿":"🤫","슬픔":"😢","싫어":"🙅","쓰담":"🤚","안녕":"👋",
+  "안아":"🤗","야유":"👎","어이없음":"🙄","울음":"😭","웃음":"😄","위로":"🫂","위협":"😠","윙크":"😉","으르렁":"🐺","으쓱":"🤷",
+  "응원":"📣","인사":"🙇","절":"🙇","졸림":"😴","준비":"✊","지루":"🥱","째림":"😑","최고":"👍","축하":"🎉","춤":"💃",
+  "칭찬":"👍","콕":"👉","토닥":"🫶","트림":"💨","포효":"🦁","폭소":"🤣","하이파이브":"🙌","한숨":"😮‍💨","항복":"🏳️","헉":"😨",
+  "화남":"😡","환호":"🙌","후퇴":"🏃","훌쩍":"🥲","휘파람":"🎶","힐":"✨" };
+function floatEmoji(key){
+  const emo = EMOTE_EMOJI[key]; if (!emo) return;
+  let wrap=$("floaty"); if (!wrap){ wrap=document.createElement("div"); wrap.id="floaty"; document.body.appendChild(wrap); }
+  if (wrap.childElementCount > 40) return;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const n = reduce ? 1 : 9;
+  for (let i=0;i<n;i++){
+    const s=document.createElement("span"); s.textContent=emo;
+    s.style.right = (16 + Math.random()*70) + "px";
+    s.style.setProperty("--sx", ((Math.random()-.5)*90).toFixed(0)+"px");
+    s.style.setProperty("--s", (0.7 + Math.random()*0.8).toFixed(2));
+    s.style.setProperty("--d", (1.8 + Math.random()*1.2).toFixed(2)+"s");
+    s.style.animationDelay = (i*0.09 + Math.random()*0.1).toFixed(2)+"s";
+    s.addEventListener("animationend", ()=>s.remove());
+    wrap.appendChild(s);
+  }
+}
 
 /* ---------- 프로필 카드 ---------- */
 let profFor = null;
 function openProfile(m){
   profFor = m;
   const head=$("pHead"); head.innerHTML="";
+  const color = CLASS_COLOR[m.sender_class]||"";
+  // 캐릭터 사진: 블리자드가 포에버 캐릭터 이미지를 주지 않아 종족 초상 + 직업 배지로 대신해요
+  const pic=document.createElement("div"); pic.className="portrait";
+  const face=iconEl("race", m.sender_race, m.sender_faction, true); face.classList.add("face"); face.style.borderColor=color||"";
+  const badge=iconEl("class", m.sender_class, m.sender_faction, true); badge.classList.add("badge");
+  pic.append(face, badge);
   const who=document.createElement("div");
-  const nm=document.createElement("div"); nm.className="nm"; nm.style.color=CLASS_COLOR[m.sender_class]||"";
+  const row=document.createElement("div"); row.className="nmrow";
+  const nm=document.createElement("div"); nm.className="nm"; nm.style.color=color;
   nm.textContent=m.sender_name;
+  row.append(iconEl("faction", m.sender_faction, m.sender_faction), nm);
   const meta=document.createElement("div"); meta.className="meta2";
   meta.textContent=[m.sender_level?`Lv.${m.sender_level}`:null, `${m.sender_race} ${m.sender_class}`,
-    m.sender_faction==="alliance"?"얼라이언스":"호드", m.sender_realm?`${m.sender_realm} 서버`:null].filter(Boolean).join(" · ");
-  who.append(nm, meta);
-  head.append(iconSet({faction:m.sender_faction, race:m.sender_race, class:m.sender_class}, true), who);
+    m.sender_realm?`${m.sender_realm} 서버`:null].filter(Boolean).join(" · ");
+  who.append(row, meta);
+  head.append(pic, who);
   const self = m.player_id===me.id;
+  $("pReply").classList.toggle("hidden", !!threadParent || !m.id || m.tag==="emote");
   $("pEmote").classList.toggle("hidden", self);
+  $("pEmote").classList.remove("on");
   $("pEmotes").classList.add("hidden");
   $("pMute").classList.toggle("hidden", self);
-  $("pMute").textContent = muted.has(m.player_id) ? "채팅 보이기" : "채팅 숨기기";
+  $("pMuteLbl").textContent = muted.has(m.player_id) ? "보이기" : "숨기기";
   $("prof").classList.remove("hidden");
 }
 $("pClose").onclick = () => $("prof").classList.add("hidden");
@@ -639,7 +731,9 @@ $("pEmote").onclick = async () => {
     b.onclick=async()=>{ if (await sendEmote(e.key, profFor.sender_name)) $("prof").classList.add("hidden"); };
     box.appendChild(b); });
   box.classList.toggle("hidden");
+  $("pEmote").classList.toggle("on", !box.classList.contains("hidden"));
 };
+$("pReply").onclick = () => { const m=profFor; $("prof").classList.add("hidden"); openThread(m); };
 $("prof").onclick = (e) => { if (e.target.id==="prof") $("prof").classList.add("hidden"); };
 /* ---------- 감정 표현 ---------- */
 let EMOTES = [];
@@ -674,8 +768,9 @@ function mentionCandidates(q, allFactions){
   const ql=q.toLowerCase();
   const match=(n)=> !ql || n.toLowerCase().split(" ").some(w=>w.startsWith(ql)) || n.toLowerCase().startsWith(ql) || n.toLowerCase().includes(ql);
   const okF=(f)=> allFactions || f===me.faction;
+  if (!allFactions && (!ql || BOT_NAME.startsWith(q) || "봇".startsWith(q))) push({ id:"bot", name:BOT_NAME, cls:"", faction:me.faction, bot:true });
   [...onlineUsers.values()].filter(u=>okF(u.faction) && match(u.name)).forEach(u=>push({ ...u, online:true }));
-  [...cache].reverse().forEach(m=>{ if (m.tag!=="emote" && okF(m.sender_faction) && match(m.sender_name)) push({ id:m.player_id, name:m.sender_name, cls:m.sender_class, faction:m.sender_faction }); });
+  [...cache].reverse().forEach(m=>{ if (m.tag!=="emote" && m.tag!=="bot" && okF(m.sender_faction) && match(m.sender_name)) push({ id:m.player_id, name:m.sender_name, cls:m.sender_class, faction:m.sender_faction }); });
   return out.slice(0, 6);
 }
 function attachMention(input, allowEmote){
@@ -708,6 +803,7 @@ function attachMention(input, allowEmote){
       if (tok.type==="link"){ n.textContent=`[${it.name}]`; n.style.color=QUALITY_COLOR[it.quality]||"#7fb6ff";
         d.textContent=KIND_LABEL[it.type]||it.type; d.style.color="var(--muted)"; }
       else if (tok.type==="emote"){ n.textContent="/"+it.key; n.style.color="#ffb46b"; d.textContent=it.solo.replace("{s}님이 ",""); d.style.color="var(--muted)"; }
+      else if (it.bot){ n.textContent="🤖 "+it.name; n.style.color="#7fd3ff"; d.textContent="질문하면 답해요"; d.style.color="var(--muted)"; }
       else { n.textContent=it.name; n.style.color=CLASS_COLOR[it.cls]||"";
         d.textContent=(it.faction!==me.faction ? (it.faction==="alliance"?"얼라 ":"호드 ") : "")+(it.online?"● 접속 중":""); }
       b.append(n,d); b.onmousedown=(e)=>{ e.preventDefault(); pick(it); }; box.appendChild(b); });
@@ -739,10 +835,6 @@ function attachMention(input, allowEmote){
 }
 attachMention($("msgInput"), true); attachMention($("tInput"), false);
 
-$("pCopy").onclick = async () => {
-  try { await navigator.clipboard.writeText(profFor.sender_name); toast("이름을 복사했어요. 게임에서 /귓 뒤에 붙여넣으세요"); }
-  catch { toast(profFor.sender_name); }
-};
 $("pMute").onclick = () => {
   const id = profFor.player_id;
   if (muted.has(id)) { muted.delete(id); toast(`${profFor.sender_name} 님 채팅이 다시 보여요`); }
@@ -785,6 +877,7 @@ function addMsg(m){
   if (cache.some(x=>x.id===m.id)) return;
   cache.push(m); if (cache.length>400) cache.splice(0, cache.length-400);
   if (!visible(m)) return;
+  if (m.tag==="emote" && m.emote_key) floatEmoji(m.emote_key);
   const l=$("list"); const stick=nearBottom(l) || m.player_id===me.id;
   l.querySelector(".empty")?.remove();
   l.appendChild(renderMsg(m));
@@ -867,6 +960,7 @@ function enterChat(player){
   subscribe();
   loadNotifs();
   loadEmotes();
+  if (!ls.get("wowchat_tip_reply")) { ls.set("wowchat_tip_reply","1"); setTimeout(()=>toast("글을 누르면 답글을 달 수 있어요"), 1800); }
 }
 
 $("send").onsubmit = async (ev) => {
@@ -883,8 +977,9 @@ $("send").onsubmit = async (ev) => {
   const sendBody = applyLinks(body);
   if (sendBody.length > 300) { toast("링크가 많아서 300자를 넘었어요. 조금 줄여 주세요"); return; }
   input.value="";
-  const { error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: sendBody, p_tag: tag, p_parent: null });
+  const { data: newId, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: sendBody, p_tag: tag, p_parent: null });
   if (error) { toast(errMsg(error)); if (!input.value) input.value=body; return; }
+  if (forBot(body)) callBot(newId);
   $("tagSel").value = "chat";
   input.focus();
 };
