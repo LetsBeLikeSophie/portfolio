@@ -419,6 +419,9 @@
   form.send > .botbtn{width:40px}
   #tagSel{max-width:72px;padding:0 4px 0 7px;font-size:12.5px;text-overflow:ellipsis}
   form.send{gap:5px}
+  #botcard .fans{margin-top:10px;padding:8px 10px;border-radius:10px;background:#e6c36a12;border:1px solid #e6c36a33;font-size:13px;line-height:1.7;color:#e8dcc4}
+  #botcard .fans .fh{font-size:12px;color:var(--gold-dim);font-weight:700}
+  #botcard .fans b{color:var(--gold)}
   .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
@@ -568,6 +571,7 @@
     <h4>🔋 이번 달 배터리</h4>
     <div class="bat" id="bcBat"><div class="cell"><div class="fill" style="width:0"></div></div><span class="pct">…</span></div>
     <div class="batinfo" id="bcInfo">불러오는 중…</div>
+    <div class="fans hidden" id="bcFans"></div>
     <a class="btn charge" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">☕ 커피 한 잔 사 주고 배터리 채우기</a>
     <p class="note">보내 주신 커피로 배터리를 충전해 둘게요. 직접 확인하고 채우느라 조금 걸릴 수 있어요.</p>
     <h4>✉️ 만든 사람에게 문의</h4>
@@ -1223,6 +1227,8 @@ async function openQuest(id, name){
 }
 $("qcard").onclick = (e) => { if (e.target.id==="qcard") $("qcard").classList.add("hidden"); };
 const BOT_EXAMPLES = ["@포에버봇 힐러 구하는 파티 있어?", "@포에버봇 가시멧돼지 어디 있어요?", "@포에버봇 스랄은 누구예요?"];
+const agoShort = (iso) => { const m=Math.max(0, Math.round((Date.now()-new Date(iso))/60000));
+  return m<60 ? `${m||1}분 전` : m<1440 ? `${Math.floor(m/60)}시간 전` : `${Math.floor(m/1440)}일 전`; };
 async function openBotCard(){
   const ic=$("bcIcon"); if (!ic.firstChild) ic.appendChild(classIcon(null, true));
   const ex=$("bcEx"); if (!ex.firstChild) BOT_EXAMPLES.forEach(q=>{ const b=exBtn(q); const go=b.onclick;
@@ -1231,16 +1237,26 @@ async function openBotCard(){
   const bat=$("bcBat"), info=$("bcInfo");
   let st=null; try { ({ data:st } = await sb.rpc("wow_bot_status")); } catch {}
   if (!st){ info.textContent="배터리 상태를 불러오지 못했어요"; return; }
-  const left=Math.max(0, st.monthly_cap - st.month_used), pct=st.monthly_cap ? Math.floor(left*100/st.monthly_cap) : 0;
+  const bal=Math.max(0, st.charge_balance||0), base=Math.max(0, st.monthly_cap - st.month_used);
+  const left=base+bal, total=st.monthly_cap+bal, pct=total ? Math.floor(left*100/total) : 0;
   bat.className="bat"+(pct<=15?" low":pct<=40?" mid":"");
   bat.querySelector(".fill").style.width=pct+"%"; bat.querySelector(".pct").textContent=pct+"%";
   const n=(x)=>Number(x).toLocaleString("ko-KR");
   info.innerHTML="";
-  [`이번 달 AI 답변 ${n(st.monthly_cap)}번 중 <b>${n(left)}번</b> 남았어요`,
+  [`이번 달 AI 답변 ${n(st.monthly_cap)}번 중 <b>${n(base)}번</b> 남았어요`,
+   ...(bal ? [`☕ 충전된 배터리 <b>${n(bal)}번</b>이 더 있어요 (이번 달 걸 다 쓰면 꺼내 쓰고, 달이 바뀌어도 남아요)`] : []),
    `오늘 ${n(st.today_used)}번 썼어요 (하루 최대 ${n(st.daily_cap)}번)`,
    `한 사람당 ${st.cooldown_sec}초에 한 번 물어볼 수 있고, 매달 1일에 다시 가득 차요`,
    `예전에 답한 비슷한 질문은 배터리를 쓰지 않고 바로 답해요`]
    .forEach(t=>{ const d=document.createElement("div"); d.innerHTML="· "+t; info.appendChild(d); });
+  // 최근 충전해 준 사람 (후원할 때 적은 이름)
+  const fans=$("bcFans"); fans.innerHTML="";
+  (st.charges||[]).forEach(c=>{ const d=document.createElement("div"); d.className="fan";
+    const nm=document.createElement("b"); nm.textContent=c.name||"익명";
+    const t=document.createElement("span"); t.textContent=` 님이 +${n(c.calls)}번 충전 · ${agoShort(c.at)}`;
+    d.append("☕ ", nm, t); fans.appendChild(d); });
+  if (fans.childElementCount){ const h=document.createElement("div"); h.className="fh"; h.textContent="고마운 분들"; fans.prepend(h); }
+  fans.classList.toggle("hidden", !fans.childElementCount);
 }
 $("bcClose").onclick = () => $("botcard").classList.add("hidden");
 $("botBtn").innerHTML = classIcon(null, true).innerHTML;
