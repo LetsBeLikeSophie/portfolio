@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>포에버 채팅 – 와우 포에버 실시간 채팅 (WoW Forever 일반·PvP 서버)</title>
 <meta name="description" content="와우 포에버(월드 오브 워크래프트: 포에버) 한국 서버 실시간 채팅. 배틀넷 로그인으로 내 캐릭터로 입장하고, 일반·PvP 서버별로 파티·공대 모집, 거래, 길드 모집, 질문을 나눠요. 상대 진영 채팅은 게임처럼 오크어·공용어로 보여요.">
 <meta name="keywords" content="와우 포에버, WoW Forever, 월드 오브 워크래프트 포에버, 와우 포에버 채팅, 와우 포에버 파티, 와우 포에버 공대, 와우 포에버 거래, 와우 포에버 길드, 와우 포에버 PvP">
@@ -397,6 +397,23 @@
   /* 시트 */
   #sheet{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:8}
   #sheet .card{border-radius:14px 14px 0 0;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
+  /* 키보드가 올라오면 화면을 보이는 영역에 맞춤 (아이폰은 화면 전체가 밀려 올라가서 스크롤이 꼬였음) */
+  #chat,#thread,#notif,#dm,#dmChat{top:var(--vvTop,0px);bottom:auto;height:var(--vvH,100%)}
+  html,body{overscroll-behavior:none}
+  #botcard .card,#qcard .card,#prof .card,#sheet .card{overscroll-behavior:contain}
+  /* 토스트는 위쪽(머리글 위)에: 아래에 두면 방금 올라온 글을 가렸음 */
+  .toast{top:calc(var(--vvTop,0px) + env(safe-area-inset-top) + 10px);bottom:auto;transform:translate(-50%,-6px);transition:opacity .2s,transform .2s;
+    box-shadow:0 6px 20px #000c}
+  .toast.show{transform:translate(-50%,0)}
+  /* 입력창 왼쪽 봇 단추: 켜면 포에버봇에게 묻기 */
+  form.send .botbtn{width:42px;padding:0;background:#0006;border:1px solid var(--line);color:var(--muted);display:inline-flex;align-items:center;justify-content:center}
+  form.send .botbtn svg{width:24px;height:24px;opacity:.55;filter:grayscale(.6)}
+  form.send .botbtn[aria-pressed="true"]{background:#e6c36a26;border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+  form.send .botbtn[aria-pressed="true"] svg{opacity:1;filter:none}
+  form.send.botmode textarea{border-color:var(--gold-dim);background:#16110a}
+  #botcard textarea{width:100%;box-sizing:border-box;background:#0a0806;border:1px solid var(--line);border-radius:9px;padding:9px 11px;
+    font:inherit;font-size:16px;color:inherit;resize:vertical;margin-top:6px}
+  #botcard textarea:focus{outline:none;border-color:var(--gold-dim)}
 </style>
 </head>
 <body>
@@ -457,6 +474,7 @@
   <div id="tipBar" class="hidden"><span class="tl">👾 이렇게 물어보세요</span></div>
   <div id="replyBar" class="hidden"><span>↩ <b id="replyTo"></b> 님 글에 답글</span><button type="button" id="replyX" aria-label="답글 취소">✕</button></div>
   <form class="send" id="send" autocomplete="off">
+    <button type="button" class="botbtn" id="botBtn" aria-pressed="false" aria-label="포에버봇에게 묻기" title="포에버봇에게 묻기"></button>
     <select id="tagSel" aria-label="말머리"></select>
     <textarea id="msgInput" maxlength="300" rows="1" placeholder="메시지 입력" enterkeyhint="send"></textarea>
     <button type="submit">전송</button>
@@ -539,13 +557,17 @@
       <li data-i="💬">채팅방 글 찾기<small>최근 올라온 파티·거래·길드 글을 찾아 정리해요 (같은 진영 글만)</small></li>
       <li data-i="📜">세계관 이야기<small>인물·종족·지역 배경을 짧게 알려줘요</small></li>
     </ul>
-    <p class="note" style="margin-top:6px">글에 <b>@포에버봇</b>을 붙이거나 <b>!</b>로 시작하면 답해요. 확인된 자료로만 답하고, 모르면 모른다고 해요.</p>
+    <p class="note" style="margin-top:6px">입력창 왼쪽 <b>로봇 단추</b>를 켜고 쓰면 포에버봇에게 물어봐요. 글에 <b>@포에버봇</b>을 붙여도 돼요. 확인된 자료로만 답하고, 모르면 모른다고 해요.</p>
     <div class="exs" id="bcEx"></div>
     <h4>🔋 이번 달 배터리</h4>
     <div class="bat" id="bcBat"><div class="cell"><div class="fill" style="width:0"></div></div><span class="pct">…</span></div>
     <div class="batinfo" id="bcInfo">불러오는 중…</div>
     <a class="btn charge" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">⚡ 배터리 충전하기 (커피 한 잔)</a>
     <p class="note">충전해 주신 금액의 70%는 포에버봇 AI 사용료로, 30%는 만든 사람 수고비로 써요. 직접 확인한 뒤 배터리에 더해져서 조금 걸릴 수 있어요.</p>
+    <h4>✉️ 문의 남기기</h4>
+    <p class="note" style="margin:0">봇이 틀린 답을 했거나, 바라는 기능이나 불편한 점이 있으면 남겨 주세요. 만든 사람만 읽어요.</p>
+    <textarea id="bcAsk" maxlength="1000" rows="3" placeholder="예: 포에버봇이 퀘스트 위치를 잘못 알려줘요"></textarea>
+    <button class="btn sm" id="bcAskSend" type="button">문의 보내기</button>
     <button class="btn ghost sm" id="bcClose" type="button">닫기</button>
   </div>
 </div>
@@ -986,12 +1008,17 @@ function cancelReply(){
 }
 // 말머리 탭은 방처럼: '전체'에서는 말머리를 골라 쓰고, '파티' 같은 탭에서는 그 말머리로만 쓴다
 function syncComposer(){
+  $("botBtn").setAttribute("aria-pressed", botMode?"true":"false");
+  $("send").classList.toggle("botmode", botMode && !replyCtx);
   if (replyCtx) return;
   const inTab = filterTag!=="all";
-  $("tagSel").classList.toggle("hidden", inTab);
+  $("tagSel").classList.toggle("hidden", inTab || botMode);
   if (!inTab) $("tagSel").value = "chat";
-  $("msgInput").placeholder = inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : `${me?.realm||"일반"} 서버에 메시지`;
+  $("msgInput").placeholder = botMode ? "포에버봇에게 물어보기" : inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : `${me?.realm||"일반"} 서버에 메시지`;
 }
+// 봇 단추: 켜 두면 쓰는 글이 모두 포에버봇에게 가는 질문이 됨 (다시 누르면 꺼짐)
+var botMode = false;
+function setBotMode(on){ botMode = !!on; syncComposer(); }
 $("replyX").onclick = () => { cancelReply(); $("msgInput").focus(); };
 /* ---------- 게임 링크: [[종류:번호:등급:이름]] 토큰, 와우헤드 주소 → 툴팁 링크 ---------- */
 const QUALITY_COLOR = { POOR:"#9d9d9d", COMMON:"#ffffff", UNCOMMON:"#1eff00", RARE:"#0070dd", EPIC:"#a335ee",
@@ -1047,7 +1074,7 @@ const BOT_NAME = "포에버봇";
 const forBot = (b) => b.startsWith("!") || b.includes("@"+BOT_NAME) || /(^|\s)@봇(\s|$)/.test(b);
 const EXAMPLES = ["@포에버봇 가시멧돼지 어디 있어요?", "@포에버봇 힐러 구하는 파티 있어?", "@포에버봇 스랄은 누구예요?"];
 function exBtn(q){ const b=document.createElement("button"); b.type="button"; b.className="ex"; b.textContent=q.replace("@포에버봇 ","");
-  b.onclick=()=>{ const i=$("msgInput"); i.value=q; autoGrow(i); i.focus(); }; return b; }
+  b.onclick=()=>{ const i=$("msgInput"); setBotMode(true); i.value=q.replace("@"+BOT_NAME+" ",""); autoGrow(i); i.focus(); }; return b; }
 function setupTipBar(){
   const bar=$("tipBar"); if (ls.get("wowchat_tip_bot")) { bar.classList.add("hidden"); return; }
   bar.querySelectorAll(".exw,.x").forEach(x=>x.remove());
@@ -1184,6 +1211,51 @@ async function openBotCard(){
    .forEach(t=>{ const d=document.createElement("div"); d.innerHTML="· "+t; info.appendChild(d); });
 }
 $("bcClose").onclick = () => $("botcard").classList.add("hidden");
+$("botBtn").innerHTML = classIcon(null, true).innerHTML;
+$("botBtn").onclick = () => { setBotMode(!botMode); toast(botMode ? "포에버봇에게 묻기 켰어요" : "포에버봇에게 묻기 껐어요"); $("msgInput").focus(); };
+$("bcAskSend").onclick = async () => {
+  const t=$("bcAsk"), body=t.value.trim(); if (body.length<2){ toast("문의 내용을 적어 주세요"); t.focus(); return; }
+  const btn=$("bcAskSend"); btn.disabled=true;
+  const { error } = await sb.rpc("wow_inquiry", { p_token: me.token, p_body: body });
+  btn.disabled=false;
+  if (error){ toast(errMsg(error)); return; }
+  t.value=""; toast("문의를 보냈어요. 고마워요!");
+};
+// 아래 시트(봇 카드, 퀘스트, 프로필, 내 정보)는 아래로 쓸어내리면 닫힘. 새로고침으로 넘어가지 않게 막음
+function swipeClose(id){
+  const ov=$(id), card=ov?.querySelector(".card"); if (!card) return;
+  let y0=null, dy=0;
+  card.addEventListener("touchstart", (e)=>{ if (e.target.closest("textarea,input,select")) { y0=null; return; }
+    y0 = card.scrollTop<=0 ? e.touches[0].clientY : null; dy=0; card.style.transition="none"; }, { passive:true });
+  card.addEventListener("touchmove", (e)=>{ if (y0===null) return; dy=e.touches[0].clientY-y0;
+    if (dy<=0){ card.style.transform=""; if (dy<-6) y0=null; return; }
+    e.preventDefault(); card.style.transform=`translateY(${dy}px)`; }, { passive:false });
+  const end=()=>{ if (y0===null) return; y0=null; card.style.transition="transform .18s ease-out";
+    if (dy>80){ card.style.transform="translateY(100%)"; setTimeout(()=>{ ov.classList.add("hidden"); card.style.transition=""; card.style.transform=""; }, 180); }
+    else card.style.transform=""; };
+  card.addEventListener("touchend", end); card.addEventListener("touchcancel", end);
+  ov.addEventListener("touchmove", (e)=>{ if (!card.contains(e.target)) e.preventDefault(); }, { passive:false });
+}
+["botcard","qcard","prof","sheet"].forEach(swipeClose);
+// 키보드가 올라오면 채팅 화면을 보이는 영역 크기에 맞추고, 맨 아래를 보고 있었으면 계속 맨 아래로
+(function fitViewport(){
+  const vv=window.visualViewport; if (!vv) return;
+  const r=document.documentElement.style; let raf=0;
+  const fit=()=>{ raf=0;
+    const lists=["list","tList","dmMsgs"].map(id=>$(id)).filter(l=>l && l.offsetParent).map(l=>[l, nearBottom(l)]);
+    r.setProperty("--vvH", vv.height+"px"); r.setProperty("--vvTop", Math.max(0, vv.offsetTop)+"px");
+    lists.forEach(([l,b])=>{ if (b) l.scrollTop=l.scrollHeight; }); };
+  const q=()=>{ if (!raf) raf=requestAnimationFrame(fit); };
+  vv.addEventListener("resize", q); vv.addEventListener("scroll", q); fit();
+})();
+// 전송·봇 단추를 눌러도 입력창 포커스(키보드)가 그대로 남게
+document.querySelectorAll("form.send button").forEach(b=>b.addEventListener("mousedown", (e)=>e.preventDefault()));
+// 아이폰 한글 자판은 글자 조합 중 엔터가 줄바꿈으로 들어갈 수 있음 → 줄바꿈 대신 보내기 (Shift+엔터는 줄바꿈)
+function enterSends(el, form){ let shift=false;
+  el.addEventListener("keydown", (e)=>{ shift=e.shiftKey; });
+  el.addEventListener("beforeinput", (e)=>{ if ((e.inputType==="insertLineBreak"||e.inputType==="insertParagraph") && !shift){ e.preventDefault(); form.requestSubmit(); } });
+}
+enterSends($("msgInput"), $("send")); enterSends($("dmInput"), $("dmSend"));
 $("botcard").onclick = (e) => { if (e.target.id==="botcard") $("botcard").classList.add("hidden"); };
 const cardMemo = new Map();
 async function loadCard(id){
@@ -1445,7 +1517,8 @@ function enterChat(player){
 
 $("send").onsubmit = async (ev) => {
   ev.preventDefault();
-  const input=$("msgInput"); const body=input.value.trim(); if (!body) return;
+  const input=$("msgInput"); let body=input.value.trim(); if (!body) return;
+  if (botMode && !replyCtx && !body.startsWith("/") && !forBot(body)) body = "@"+BOT_NAME+" "+body;
   if (body.startsWith("/") && replyCtx){ toast("감정 표현은 답글로 못 해요. ✕를 눌러 답글을 취소해 주세요"); return; }
   if (body.startsWith("/")){
     const m=body.match(/^\/(\S+)\s*(.*)$/); const key=m?.[1]||""; const target=(m?.[2]||"").replace(/^@/,"").trim();
