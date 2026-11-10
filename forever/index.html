@@ -35,6 +35,8 @@
  "description":"와우 포에버(월드 오브 워크래프트: 포에버) 한국 서버 유저를 위한 비공식 실시간 채팅. 일반·PvP 서버별 파티·공대 모집, 거래, 길드 모집.",
  "offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}
 </script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://ztxzqvnybiemgbhtrwiw.supabase.co" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <script>const whTooltips = { colorLinks: true, iconizeLinks: true, renameLinks: true };</script>
@@ -418,7 +420,6 @@
   /* 입력창 넓게: 전송은 화살표 단추, 말머리 고르기는 좁게 */
   form.send > .sendbtn{width:44px;padding:0;display:inline-flex;align-items:center;justify-content:center}
   form.send > .botbtn{width:40px}
-  #tagSel{max-width:72px;padding:0 4px 0 7px;font-size:12.5px;text-overflow:ellipsis}
   form.send{gap:5px}
   #botcard .fans{margin-top:10px;padding:8px 10px;border-radius:10px;background:#e6c36a12;border:1px solid #e6c36a33;font-size:13px;line-height:1.7;color:#e8dcc4}
   #botcard .fans .fh{font-size:12px;color:var(--gold-dim);font-weight:700}
@@ -485,7 +486,6 @@
   <div id="replyBar" class="hidden"><span>↩ <b id="replyTo"></b> 님 글에 답글</span><button type="button" id="replyX" aria-label="답글 취소">✕</button></div>
   <form class="send" id="send" autocomplete="off">
     <button type="button" class="botbtn" id="botBtn" aria-pressed="false" aria-label="포에버봇에게 묻기" title="포에버봇에게 묻기"></button>
-    <select id="tagSel" aria-label="말머리"></select>
     <textarea id="msgInput" maxlength="300" rows="1" placeholder="메시지 입력" enterkeyhint="send"></textarea>
     <button type="submit" class="sendbtn" aria-label="전송" title="전송"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5.5 11.5 12 5l6.5 6.5"/></svg></button>
   </form>
@@ -627,7 +627,7 @@
 <div class="toast" id="toast"></div>
 
 <script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
 
 const SUPABASE_URL = "https://ztxzqvnybiemgbhtrwiw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7";
@@ -723,9 +723,6 @@ let msgSub = null, presence = null;
 let threadParent = null, threadMsgs = [];
 
 /* ---------- 입장: 직접 ---------- */
-(function fill(){
-  TAGS.forEach(t=>{ const o=document.createElement("option"); o.value=t.id; o.textContent=t.label; $("tagSel").appendChild(o); });
-})();
 
 /* ---------- 입장: 배틀넷 ---------- */
 async function startBnet(btn){
@@ -1034,7 +1031,7 @@ function startReply(m){
   replyCtx = { parent, name: m.sender_name };
   closeActions();
   $("replyTo").textContent = (cache.find(x=>x.id===parent)?.sender_name) || m.sender_name;
-  $("replyBar").classList.remove("hidden"); $("tagSel").classList.add("hidden");
+  $("replyBar").classList.remove("hidden");
   const input=$("msgInput"); input.placeholder="답글 입력";
   if (m.parent_id && m.player_id!==me.id && !input.value.includes("@"+m.sender_name)) input.value = "@"+m.sender_name+" "+input.value;
   if (!expanded.has(parent)) toggleReplies(parent, true);
@@ -1043,15 +1040,13 @@ function startReply(m){
 function cancelReply(){
   replyCtx=null; $("replyBar").classList.add("hidden"); syncComposer();
 }
-// 말머리 탭은 방처럼: '전체'에서는 말머리를 골라 쓰고, '파티' 같은 탭에서는 그 말머리로만 쓴다
+// 말머리는 위쪽 탭이 정한다 (디스코드 채널처럼): '전체'에서 쓰면 잡담, '파티' 탭에서 쓰면 파티 글
 function syncComposer(){
   $("botBtn").setAttribute("aria-pressed", botMode?"true":"false");
   $("send").classList.toggle("botmode", botMode && !replyCtx);
   if (replyCtx) return;
   const inTab = filterTag!=="all";
-  $("tagSel").classList.toggle("hidden", inTab || botMode);
-  if (!inTab) $("tagSel").value = "chat";
-  $("msgInput").placeholder = botMode ? "포에버봇에게 물어보기" : inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : `${me?.realm||"일반"} 서버에 메시지`;
+  $("msgInput").placeholder = botMode ? "포에버봇에게 물어보기" : inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : "잡담 쓰기 · 파티·거래는 위 탭에서";
 }
 // 봇 단추: 켜 두면 쓰는 글이 모두 포에버봇에게 가는 질문이 됨 (다시 누르면 꺼짐)
 var botMode = false;
@@ -1577,7 +1572,7 @@ $("send").onsubmit = async (ev) => {
     input.focus(); return;
   }
   // 봇에게 하는 질문은 말머리를 무조건 '질문'으로
-  const tag = replyCtx ? "chat" : forBot(body) ? "question" : filterTag!=="all" ? filterTag : $("tagSel").value;
+  const tag = replyCtx ? "chat" : forBot(body) ? "question" : filterTag!=="all" ? filterTag : "chat";
   const parent = replyCtx ? replyCtx.parent : null;
   const sendBody = applyLinks(body);
   if (sendBody.length > 300) { toast("링크가 많아서 300자를 넘었어요. 조금 줄여 주세요"); return; }
@@ -1590,7 +1585,6 @@ $("send").onsubmit = async (ev) => {
   if (!parent && filterTag!=="all" && !visible({ tag, player_id: me.id, sender_faction: me.faction, id: newId })){
     filterTag="all"; buildChips(); renderAll(); syncComposer(); toast(`${TAG_LABEL[tag]||"잡담"} 글이라 전체에서 보여 드려요`);
   }
-  if (filterTag==="all") $("tagSel").value = "chat";
   input.focus();
 };
 
