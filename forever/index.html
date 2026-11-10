@@ -130,7 +130,23 @@
   #list,#tList{flex:1;overflow-y:auto;padding:6px 10px;-webkit-overflow-scrolling:touch;font-size:15px;line-height:1.5}
   .msg{padding:5px 4px;word-break:break-word;border-radius:8px}
   .msg.tap{cursor:pointer}
-  .msg.ment{background:#3a2c1455;box-shadow:inset 3px 0 0 var(--gold)}
+  .mme{font-weight:800;color:#ffd77a;background:#ffd77a1f;border-radius:4px;padding:0 2px}
+  .msg.sel{background:#ffffff0d}
+  .mact{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px 4px}
+  .mact>button{border:1px solid var(--line);background:#0006;color:var(--gold);border-radius:999px;padding:5px 11px;
+    font-size:12.5px;display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+  .mact>button svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .mact>button.warn{color:#ff9a8c}
+  .mact>button.confirm{background:#4a1a16;border-color:#7a2f2a;color:#ffd0c8}
+  .mact .emotes{width:100%;margin-top:2px;max-height:26vh}
+  .rmore{display:block;margin:-2px 0 4px 30px;font-size:12px;color:var(--gold-dim);background:none;border:0;cursor:pointer;padding:2px 0}
+  .rwrap{margin:0 0 6px 26px;border-left:2px solid var(--line);padding-left:8px}
+  .rwrap .msg{font-size:14px;padding:3px 4px}
+  .rwrap .rload{font-size:12px;color:var(--muted);padding:4px}
+  #replyBar{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#1f1a14;border-top:1px solid var(--line);
+    font-size:13px;color:var(--muted)}
+  #replyBar b{color:var(--gold)}
+  #replyBar button{margin-left:auto;background:none;border:0;color:var(--muted);font-size:17px;cursor:pointer;padding:0 4px}
   .msg.tap:active{background:#ffffff08}
   .msg .time{color:#6d6354;font-size:11px;margin-right:5px}
   .msg .who{font-weight:700}
@@ -166,8 +182,6 @@
   .tag.trade{background:#3d3412;color:#f0d36b}
   .tag.guild{background:#2a1f45;color:#c7b1ff}
   .tag.party{background:#173a22;color:#8ee6a6}
-  .replies:empty{display:none}
-  .replies{display:inline-block;margin-left:6px;font-size:12px;color:var(--gold-dim);white-space:nowrap}
   .sys{color:#e0b34a;font-size:13px;text-align:center;padding:8px 0;opacity:.85}
   .empty{color:var(--muted);text-align:center;margin-top:40px;font-size:14px;line-height:1.6}
 
@@ -319,6 +333,7 @@
   </header>
   <div class="online" id="online">접속 중…</div>
   <div id="list"></div>
+  <div id="replyBar" class="hidden"><span>↩ <b id="replyTo"></b> 님 글에 답글</span><button type="button" id="replyX" aria-label="답글 취소">✕</button></div>
   <form class="send" id="send" autocomplete="off">
     <select id="tagSel" aria-label="말머리"></select>
     <input id="msgInput" maxlength="300" placeholder="메시지 입력" enterkeyhint="send">
@@ -369,7 +384,6 @@
   <div class="card">
     <div class="ph" id="pHead"></div>
     <div class="acts">
-      <button type="button" id="pReply" aria-label="이 글에 답글"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>답글</span></button>
       <button type="button" id="pEmote" aria-label="감정 표현"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01" stroke-width="3"/></svg><span>감정 표현</span></button>
       <button type="button" id="pMute" class="warn" aria-label="채팅 숨기기"><svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c5 0 9 4.5 10 7a13 13 0 0 1-3 4.1M6.6 6.6A13 13 0 0 0 2 12c1 2.5 5 7 10 7a9.6 9.6 0 0 0 4.4-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg><span id="pMuteLbl">숨기기</span></button>
     </div>
@@ -581,19 +595,17 @@ function renderMsg(m, inThread){
   }
   if (m.tag==="bot"){
     const el=document.createElement("div"); el.className="msg bot"+(!inThread?" tap":"")
-      +(me && (m.body||"").includes("@"+me.name) ? " ment" : ""); el.dataset.id=m.id;
+      ; el.dataset.id=m.id;
     const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
     const who=document.createElement("span"); who.className="who"; who.textContent="🤖 "+BOT_NAME;
     const bb=document.createElement("span"); bb.className="botb"; bb.textContent="BOT";
-    const tx=document.createElement("span"); tx.className="text"; tx.appendChild(linkify(m.body));
+    const tx=document.createElement("span"); tx.className="text"; tx.appendChild(linkify(m.body)); markMe(tx);
     el.append(t, who, bb, document.createTextNode(": "), tx);
-    if (!inThread){ const r=document.createElement("span"); r.className="replies"; r.textContent=m.reply_count?`💬 ${m.reply_count}`:"";
-      el.appendChild(r); el.onclick=()=>openThread(m); }
+    if (!inThread || inThread==="reply"){ el.classList.add("tap"); el.onclick=()=>toggleActions(m, el); }
     return el;
   }
   const el=document.createElement("div");
-  el.className="msg"+(m.foreign_lang?" foreign":"")+(!inThread?" tap":"")
-    +(me && !m.foreign_lang && m.player_id!==me.id && (m.body||"").includes("@"+me.name) ? " ment" : "");
+  el.className="msg"+(m.foreign_lang?" foreign":"")+(!inThread || inThread==="reply"?" tap":"");
   el.dataset.id = m.id;
   const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
   const who=document.createElement("span"); who.className="who"; who.style.color=CLASS_COLOR[m.sender_class]||"#ddd";
@@ -607,15 +619,130 @@ function renderMsg(m, inThread){
   if (m.tag && m.tag!=="chat"){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag; el.appendChild(g); }
   if (m.foreign_lang){ const l=document.createElement("span"); l.className="lang"; l.textContent=`[${LANG[m.sender_faction]}]`; el.appendChild(l); }
   const tx=document.createElement("span"); tx.className="text";
-  if (m.foreign_lang) tx.textContent=m.body; else tx.appendChild(linkify(m.body)); el.appendChild(tx);
-  if (!inThread){
-    const r=document.createElement("span"); r.className="replies";
-    r.textContent = m.reply_count ? `💬 ${m.reply_count}` : "";
-    el.appendChild(r);
-    el.onclick = () => openThread(m);
-  }
+  if (m.foreign_lang) tx.textContent=m.body; else { tx.appendChild(linkify(m.body)); markMe(tx); } el.appendChild(tx);
+  if (!inThread || inThread==="reply") el.onclick = () => toggleActions(m, el);
   return el;
 }
+// 나를 부른 @이름은 굵게 (팀즈처럼)
+function markMe(root){
+  if (!me) return; const key="@"+me.name;
+  const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const nodes=[];
+  while (w.nextNode()) if (w.currentNode.nodeValue.includes(key) && !w.currentNode.parentElement.closest("a")) nodes.push(w.currentNode);
+  nodes.forEach(n=>{ const parts=n.nodeValue.split(key); const f=document.createDocumentFragment();
+    parts.forEach((pt,i)=>{ if (i){ const b=document.createElement("b"); b.className="mme"; b.textContent=key; f.appendChild(b); } f.appendChild(document.createTextNode(pt)); });
+    n.replaceWith(f); });
+}
+
+/* ---------- 글 블록: 글 + 답글 N개 + 바로 아래 답글 목록 ---------- */
+const expanded = new Set(); const repliesMap = new Map();
+let reported = new Set(); try { reported = new Set(JSON.parse(ls.get("wowchat_reported")||"[]")); } catch {}
+function renderBlock(m){
+  const b=document.createElement("div"); b.className="mblk"; b.dataset.id=m.id;
+  b.appendChild(renderMsg(m));
+  if (m.tag!=="emote"){
+    const more=document.createElement("button"); more.type="button"; more.className="rmore";
+    more.onclick=(e)=>{ e.stopPropagation(); toggleReplies(m.id); };
+    const rw=document.createElement("div"); rw.className="rwrap hidden";
+    b.append(more, rw);
+    setMore(b, m);
+    if (expanded.has(m.id)) renderReplies(m.id, b);
+  }
+  return b;
+}
+const blockOf = (id) => $("list").querySelector(`.mblk[data-id="${id}"]`);
+function setMore(b, m){
+  const more=b?.querySelector(":scope > .rmore"); if (!more) return;
+  const n=m.reply_count||0, open=expanded.has(m.id);
+  more.classList.toggle("hidden", !n);
+  more.textContent = open ? "답글 숨기기" : `── 답글 ${n}개 보기`;
+}
+async function toggleReplies(id, forceOpen){
+  const m=cache.find(x=>x.id===id); const b=blockOf(id);
+  if (expanded.has(id) && !forceOpen){ expanded.delete(id); b?.querySelector(".rwrap")?.classList.add("hidden"); if (m) setMore(b, m); return; }
+  expanded.add(id); if (m) setMore(b, m);
+  if (!repliesMap.has(id)){
+    const rw=b?.querySelector(".rwrap"); if (rw){ rw.innerHTML='<div class="rload">불러오는 중…</div>'; rw.classList.remove("hidden"); }
+    const { data, error } = await sb.rpc("wow_thread", { p_token: me.token, p_parent: id });
+    if (error) { toast(errMsg(error)); return; }
+    repliesMap.set(id, (data||[]).filter(x=>x.parent_id===id));
+  }
+  renderReplies(id, blockOf(id));
+}
+function renderReplies(id, b){
+  const rw=b?.querySelector(".rwrap"); if (!rw) return;
+  rw.innerHTML="";
+  (repliesMap.get(id)||[]).filter(r=>!muted.has(r.player_id) && !reported.has(r.id)).forEach(r=>rw.appendChild(renderMsg(r, "reply")));
+  rw.classList.toggle("hidden", !rw.childElementCount);
+}
+
+/* ---------- 글을 누르면: 답글 · 감정 표현 · 신고 ---------- */
+const SVG = {
+  reply:'<svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>',
+  emote:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01" stroke-width="3"/></svg>',
+  report:'<svg viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg>' };
+let actFor=null;
+function closeActions(){
+  document.querySelectorAll(".mact").forEach(x=>x.remove());
+  document.querySelectorAll(".msg.sel").forEach(x=>x.classList.remove("sel")); actFor=null;
+}
+function toggleActions(m, el){
+  const same = actFor===m.id; closeActions(); if (same) return;
+  actFor=m.id; el.classList.add("sel");
+  const bar=document.createElement("div"); bar.className="mact";
+  bar.onclick=(e)=>e.stopPropagation();
+  const btn=(label, svg, fn, cls)=>{ const b=document.createElement("button"); b.type="button"; if (cls) b.className=cls;
+    b.innerHTML=svg; const sp=document.createElement("span"); sp.textContent=label; b.appendChild(sp); b.onclick=()=>fn(b, sp); return b; };
+  const other = m.player_id!==me.id && m.tag!=="bot";
+  bar.appendChild(btn("답글", SVG.reply, ()=>startReply(m)));
+  if (other) bar.appendChild(btn("감정 표현", SVG.emote, async (b)=>{
+    let box=bar.querySelector(".emotes");
+    if (box){ box.remove(); return; }
+    await loadEmotes(); box=document.createElement("div"); box.className="emotes";
+    EMOTES.forEach(e=>{ const x=document.createElement("button"); x.type="button"; x.textContent="/"+e.key;
+      x.onclick=async()=>{ if (await sendEmote(e.key, m.sender_name)) closeActions(); }; box.appendChild(x); });
+    bar.appendChild(box);
+  }));
+  if (other && !m.foreign_lang) bar.appendChild(btn("신고", SVG.report, async (b, sp)=>{
+    if (!b.classList.contains("confirm")){ b.classList.add("confirm"); sp.textContent="한 번 더 누르면 신고";
+      setTimeout(()=>{ if (b.isConnected){ b.classList.remove("confirm"); sp.textContent="신고"; } }, 3500); return; }
+    const { error } = await sb.rpc("wow_report", { p_token: me.token, p_message_id: m.id });
+    if (error) { toast(errMsg(error)); return; }
+    reported.add(m.id); ls.set("wowchat_reported", JSON.stringify([...reported].slice(-300)));
+    closeActions(); removeMsg(m.id, m.parent_id);
+    toast("신고했어요. 내 화면에서 가렸고, 여러 명이 신고하면 모두에게 가려져요");
+  }, "warn"));
+  el.after(bar);
+}
+document.addEventListener("click", (e)=>{ if (actFor && !e.target.closest(".mact,.msg.sel")) closeActions(); });
+function removeMsg(id, parentId){
+  if (parentId){
+    const arr=repliesMap.get(parentId); if (arr) repliesMap.set(parentId, arr.filter(x=>x.id!==id));
+    const b=blockOf(parentId); if (b && expanded.has(parentId)) renderReplies(parentId, b);
+    threadMsgs = threadMsgs.filter(x=>x.id!==id); if (threadParent===parentId) renderThread();
+    return;
+  }
+  cache = cache.filter(x=>x.id!==id); blockOf(id)?.remove();
+  if (threadParent===id){ $("thread").classList.add("hidden"); threadParent=null; }
+}
+
+/* ---------- 답글 쓰기: 아래 입력창 하나로 ---------- */
+let replyCtx=null;
+function startReply(m){
+  const parent = m.parent_id || m.id;
+  replyCtx = { parent, name: m.sender_name };
+  closeActions();
+  $("replyTo").textContent = (cache.find(x=>x.id===parent)?.sender_name) || m.sender_name;
+  $("replyBar").classList.remove("hidden"); $("tagSel").classList.add("hidden");
+  const input=$("msgInput"); input.placeholder="답글 입력";
+  if (m.parent_id && m.player_id!==me.id && !input.value.includes("@"+m.sender_name)) input.value = "@"+m.sender_name+" "+input.value;
+  if (!expanded.has(parent)) toggleReplies(parent, true);
+  input.focus();
+}
+function cancelReply(){
+  replyCtx=null; $("replyBar").classList.add("hidden"); $("tagSel").classList.remove("hidden");
+  $("msgInput").placeholder = `${me?.realm||"일반"} 서버에 메시지`;
+}
+$("replyX").onclick = () => { cancelReply(); $("msgInput").focus(); };
 /* ---------- 게임 링크: [[종류:번호:등급:이름]] 토큰, 와우헤드 주소 → 툴팁 링크 ---------- */
 const QUALITY_COLOR = { POOR:"#9d9d9d", COMMON:"#ffffff", UNCOMMON:"#1eff00", RARE:"#0070dd", EPIC:"#a335ee",
   LEGENDARY:"#ff8000", ARTIFACT:"#e6cc80", HEIRLOOM:"#00ccff" };
@@ -654,7 +781,7 @@ let muted = new Set(); try { muted = new Set(JSON.parse(ls.get("wowchat_muted")|
 const visible = (m) => (filterTag==="all" || m.tag===filterTag || (filterTag==="chat" && m.tag==="emote")
     || (m.tag==="bot" && (filterTag==="chat" || filterTag==="question")))
   && (!myFactionOnly || m.sender_faction===me.faction || m.tag==="bot")
-  && !muted.has(m.player_id);
+  && !muted.has(m.player_id) && !reported.has(m.id);
 
 /* ---------- 포에버봇 ---------- */
 const BOT_NAME = "포에버봇";
@@ -680,11 +807,11 @@ function floatEmoji(key){
   let wrap=$("floaty"); if (!wrap){ wrap=document.createElement("div"); wrap.id="floaty"; document.body.appendChild(wrap); }
   if (wrap.childElementCount > 40) return;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const n = reduce ? 1 : 9;
+  const n = reduce ? 1 : 7;
   for (let i=0;i<n;i++){
     const s=document.createElement("span"); s.textContent=emo;
-    s.style.right = (16 + Math.random()*70) + "px";
-    s.style.setProperty("--sx", ((Math.random()-.5)*90).toFixed(0)+"px");
+    s.style.right = (22 + Math.random()*22) + "px";
+    s.style.setProperty("--sx", ((Math.random()-.5)*34).toFixed(0)+"px");
     s.style.setProperty("--s", (0.7 + Math.random()*0.8).toFixed(2));
     s.style.setProperty("--d", (1.8 + Math.random()*1.2).toFixed(2)+"s");
     s.style.animationDelay = (i*0.09 + Math.random()*0.1).toFixed(2)+"s";
@@ -715,7 +842,14 @@ function openProfile(m){
   who.append(row, meta);
   head.append(pic, who);
   const self = m.player_id===me.id;
-  $("pReply").classList.toggle("hidden", !!threadParent || !m.id || m.tag==="emote");
+  loadCard(m.player_id).then(c=>{
+    if (profFor!==m || !c) return;
+    const src = c.avatar || (c.gender==="FEMALE" && RACE_ICON[m.sender_race] ? ICON(RACE_ICON[m.sender_race].replace(/_male$/,"_female")) : null);
+    if (!src) return;
+    const img=document.createElement("img"); img.className="ic lg face"; img.alt=m.sender_race||""; img.referrerPolicy="no-referrer";
+    img.style.borderColor=color||""; img.onload=()=>{ const f=pic.querySelector(".face"); if (f && f!==img) f.replaceWith(img); };
+    img.src=src;
+  });
   $("pEmote").classList.toggle("hidden", self);
   $("pEmote").classList.remove("on");
   $("pEmotes").classList.add("hidden");
@@ -733,7 +867,13 @@ $("pEmote").onclick = async () => {
   box.classList.toggle("hidden");
   $("pEmote").classList.toggle("on", !box.classList.contains("hidden"));
 };
-$("pReply").onclick = () => { const m=profFor; $("prof").classList.add("hidden"); openThread(m); };
+const cardMemo = new Map();
+async function loadCard(id){
+  if (!id || id==="bot") return null;
+  if (cardMemo.has(id)) return cardMemo.get(id);
+  const p = sb.rpc("wow_player_card", { p_token: me.token, p_player: id }).then(r=>r.data||null).catch(()=>null);
+  cardMemo.set(id, p); return p;
+}
 $("prof").onclick = (e) => { if (e.target.id==="prof") $("prof").classList.add("hidden"); };
 /* ---------- 감정 표현 ---------- */
 let EMOTES = [];
@@ -856,7 +996,7 @@ function renderAll(){
     e.textContent = cache.length ? "이 필터에 맞는 메시지가 없어요" : `${me.realm||"일반"} 서버의 첫 메시지를 남겨 보세요`;
     l.appendChild(e); return;
   }
-  const frag=document.createDocumentFragment(); arr.forEach(m=>frag.appendChild(renderMsg(m))); l.appendChild(frag);
+  const frag=document.createDocumentFragment(); arr.forEach(m=>frag.appendChild(renderBlock(m))); l.appendChild(frag);
   l.scrollTop=l.scrollHeight;
 }
 function pingIfMentioned(m){
@@ -873,20 +1013,25 @@ function addMsg(m){
     if (mine && !muted.has(m.player_id)) toast(`${m.sender_name} 님이 내 글에 답글을 달았어요`);
     scheduleNotifs();
   }
-  if (m.parent_id) { addThreadMsg(m); return; }
+  if (m.parent_id) {
+    addThreadMsg(m);
+    const arr=repliesMap.get(m.parent_id);
+    if (arr && !arr.some(x=>x.id===m.id)) { arr.push(m); if (expanded.has(m.parent_id)) renderReplies(m.parent_id, blockOf(m.parent_id)); }
+    else if (!arr && m.player_id===me.id) toggleReplies(m.parent_id, true);
+    return;
+  }
   if (cache.some(x=>x.id===m.id)) return;
   cache.push(m); if (cache.length>400) cache.splice(0, cache.length-400);
   if (!visible(m)) return;
   if (m.tag==="emote" && m.emote_key) floatEmoji(m.emote_key);
   const l=$("list"); const stick=nearBottom(l) || m.player_id===me.id;
   l.querySelector(".empty")?.remove();
-  l.appendChild(renderMsg(m));
+  l.appendChild(renderBlock(m));
   if (stick) l.scrollTop=l.scrollHeight; else $("newBar").classList.remove("hidden");
 }
 function updateReplyCount(id, count){
   const m = cache.find(x=>x.id===id); if (m) m.reply_count = count;
-  const el = $("list").querySelector(`.msg[data-id="${id}"] .replies`);
-  if (el) el.textContent = count ? `💬 ${count}` : "";
+  if (m) setMore(blockOf(id), m);
 }
 
 function renderSwitch(){
@@ -926,6 +1071,7 @@ async function subscribe(){
   msgSub = sb.channel(topic)
     .on("broadcast", { event:"msg" }, ({ payload })=>{ if (payload && payload.channel===channel) addMsg(payload); })
     .on("broadcast", { event:"count" }, ({ payload })=>{ if (payload) updateReplyCount(payload.id, payload.reply_count); })
+    .on("broadcast", { event:"hide" }, ({ payload })=>{ if (payload) removeMsg(payload.id, payload.parent_id); })
     .subscribe((status)=>{
       if (status==="SUBSCRIBED") loadHistory();
       if (status==="CHANNEL_ERROR" || status==="TIMED_OUT") toast("연결이 끊겨서 다시 연결하는 중…");
@@ -966,6 +1112,7 @@ function enterChat(player){
 $("send").onsubmit = async (ev) => {
   ev.preventDefault();
   const input=$("msgInput"); const body=input.value.trim(); if (!body) return;
+  if (body.startsWith("/") && replyCtx){ toast("감정 표현은 답글로 못 해요. ✕를 눌러 답글을 취소해 주세요"); return; }
   if (body.startsWith("/")){
     const m=body.match(/^\/(\S+)\s*(.*)$/); const key=m?.[1]||""; const target=(m?.[2]||"").replace(/^@/,"").trim();
     if (!EMOTES.some(e=>e.key===key)){ toast("없는 감정 표현이에요. / 를 입력하면 목록이 나와요"); return; }
@@ -973,12 +1120,14 @@ $("send").onsubmit = async (ev) => {
     if (!(await sendEmote(key, target))) input.value=body;
     input.focus(); return;
   }
-  const tag=$("tagSel").value;
+  const tag = replyCtx ? "chat" : $("tagSel").value;
+  const parent = replyCtx ? replyCtx.parent : null;
   const sendBody = applyLinks(body);
   if (sendBody.length > 300) { toast("링크가 많아서 300자를 넘었어요. 조금 줄여 주세요"); return; }
   input.value="";
-  const { data: newId, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: sendBody, p_tag: tag, p_parent: null });
+  const { data: newId, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: sendBody, p_tag: tag, p_parent: parent });
   if (error) { toast(errMsg(error)); if (!input.value) input.value=body; return; }
+  if (replyCtx) cancelReply();
   if (forBot(body)) callBot(newId);
   $("tagSel").value = "chat";
   input.focus();
@@ -1049,6 +1198,7 @@ function renderNotifs(){
       const pid = n.parent_id || n.id;
       const p = cache.find(x=>x.id===pid);
       $("notif").classList.add("hidden");
+      if (p && blockOf(pid)) { toggleReplies(pid, true).then(()=>blockOf(pid)?.scrollIntoView({ block:"center", behavior:"smooth" })); return; }
       openThread(p || { id: pid, channel, player_id:null, sender_name:"원래 글", sender_class:"", sender_faction:me.faction,
         sender_race:"", body:"", foreign_lang:false, tag:"chat", parent_id:null, reply_count:0, created_at:n.created_at });
     };
@@ -1083,6 +1233,7 @@ $("meBtn").onclick = () => {
 $("closeSheet").onclick = () => $("sheet").classList.add("hidden");
 $("sheet").onclick = (e) => { if (e.target.id==="sheet") $("sheet").classList.add("hidden"); };
 function leaveChat(){
+  if (replyCtx) cancelReply(); expanded.clear(); repliesMap.clear(); closeActions();
   if (msgSub) sb.removeChannel(msgSub); if (presence) sb.removeChannel(presence);
   msgSub=presence=null; me=null;
   $("sheet").classList.add("hidden"); $("thread").classList.add("hidden");
