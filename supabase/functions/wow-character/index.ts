@@ -3,6 +3,7 @@
 //  POST ?action=exchange  {code, redirect_uri}         로그인 코드 → 계정 저장 + 내 포에버 캐릭터 목록
 //  GET  ?action=search&q=검색어                        [ 자동완성 (퀘스트·아이템·NPC·주문·업적)
 //  POST ?action=bot  {token, message_id}               @포에버봇 질문에 AI로 답하기
+//  POST ?action=bmc&key=...                            Buy Me a Coffee 웹훅 → 포에버봇 배터리 충전 (key는 wow.bot_settings.webhook_key)
 //  GET  ?name=이름-성 / ?rulesets=1 / ?realm_id=번호 / ?media=이름-성   진단용
 // 비밀값: BLIZZARD_CLIENT_ID, BLIZZARD_CLIENT_SECRET, FOREVER_BOT_PROD_ANTHROPIC_KEY
 // 선택: BLIZZARD_REGION(기본 kr), ALLOWED_REDIRECTS(쉼표 구분), FOREVER_BOT_MODEL(기본 claude-haiku-5-5)
@@ -492,6 +493,21 @@ Deno.serve(async (req) => {
         { p_sub: sub, p_battletag: battletag, p_characters: list.slice(0, 50), p_raw: rawSample });
       if (error) return json({ ok: false, reason: "db_error", message: "저장 실패: " + error.message });
       return json({ ok: true, account_token: accountToken, battletag });
+    }
+
+    // Buy Me a Coffee 웹훅: 후원이 들어오면 포에버봇 배터리 충전. 주소의 key가 DB의 webhook_key와 같아야 받음
+    if (action === "bmc") {
+      if (req.method !== "POST") return json({ ok: false }, 405);
+      const text = (await req.text()).slice(0, 65536);
+      let payload: unknown = null;
+      try { payload = JSON.parse(text); } catch {
+        try { payload = Object.fromEntries(new URLSearchParams(text)); } catch { payload = null; }
+      }
+      if (!payload || typeof payload !== "object") payload = { unparsed: text.slice(0, 4000) };
+      const { data, error } = await serviceClient().rpc("wow_bot_charge", { p_key: url.searchParams.get("key") ?? "", p_payload: payload });
+      if (error) return json({ ok: false, reason: "db" }, 500);
+      if (!data?.ok) return json({ ok: false }, 401);
+      return json({ ok: true });
     }
 
     const token = await getAppToken(id, secret);
