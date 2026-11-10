@@ -505,6 +505,23 @@
   #botcard .cmt .ch .del{margin-left:auto;background:none;border:0;color:var(--muted);font-size:11.5px;cursor:pointer;padding:0 2px}
   #botcard .cmt .ct{font-size:14px;line-height:1.5;color:#e8dcc4;white-space:pre-wrap;word-break:break-word;margin-top:2px}
   #botcard .cmt0{font-size:13px;color:var(--muted);padding:8px 0}
+  /* 포에버봇 가르치기 */
+  #botcard input{width:100%;box-sizing:border-box;background:#0a0806;border:1px solid var(--line);border-radius:9px;padding:9px 11px;
+    font:inherit;font-size:16px;color:inherit;margin-top:8px}
+  #botcard input:focus{outline:none;border-color:var(--gold-dim)}
+  #botcard .kbl{margin-top:10px}
+  #botcard .kb{padding:9px 10px;border-radius:10px;background:#ffffff06;border:1px solid #ffffff12;margin-bottom:8px}
+  #botcard .kb.approved{border-color:#7bd17b45}
+  #botcard .kbh{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;font-size:14px}
+  #botcard .kbs{font-size:11.5px;color:var(--gold);font-weight:700}
+  #botcard .kb.approved .kbs{color:#7bd17b}
+  #botcard .kbh b{color:#f3e8d2}
+  #botcard .kbb{font-size:13.5px;color:#d6cab4;line-height:1.5;margin-top:3px;white-space:pre-wrap;word-break:break-word}
+  #botcard .kbf{display:flex;align-items:center;gap:6px;margin-top:7px;flex-wrap:wrap}
+  #botcard .kbf small{color:var(--muted);font-size:11.5px;margin-right:auto}
+  #botcard .kbv{border:1px solid var(--line);background:#0006;color:var(--text);border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer}
+  #botcard .kbv.on{border-color:var(--gold);color:var(--gold);background:#e6c36a1a}
+  #botcard .kbv:disabled{opacity:.45;cursor:default}
   .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
@@ -653,6 +670,12 @@
     </ul>
     <p class="note" style="margin-top:6px">입력창 왼쪽 <b>로봇 단추</b>를 켜고 쓰면 포에버봇에게 물어봐요. 글에 <b>@포에버봇</b>을 붙여도 돼요. 확인된 자료로만 답하고, 모르면 모른다고 해요.</p>
     <div class="exs" id="bcEx"></div>
+    <h4>🧠 포에버봇 가르치기</h4>
+    <p class="note" style="margin:0">알고 있는 게임 정보를 알려 주세요. 포에버봇이 먼저 살펴보고 올리면, 다른 분들이 <b>맞아요</b>를 3번 눌렀을 때 포에버봇이 배워요.</p>
+    <input id="kbTopic" maxlength="60" placeholder="주제 (예: 오그리마 비행선 타는 곳)" autocomplete="off">
+    <textarea id="kbBody" maxlength="400" rows="2" placeholder="내용 (예: 정문 밖 언덕 위 비행선 탑에서 타요)"></textarea>
+    <button class="btn sm" id="kbSend" type="button">가르치기</button>
+    <div class="kbl" id="kbList"></div>
     <h4>🔋 이번 달 배터리</h4>
     <div class="bat" id="bcBat"><div class="cell"><div class="fill" style="width:0"></div></div><span class="pct">…</span></div>
     <div class="batinfo" id="bcInfo">불러오는 중…</div>
@@ -1371,7 +1394,7 @@ async function openBotCard(){
   const ic=$("bcIcon"); if (!ic.firstChild) ic.appendChild(classIcon(null, true));
   const ex=$("bcEx"); if (!ex.firstChild) BOT_EXAMPLES.forEach(q=>{ const b=exBtn(q); const go=b.onclick;
     b.onclick=()=>{ $("botcard").classList.add("hidden"); go(); }; ex.appendChild(b); });
-  $("botcard").classList.remove("hidden"); loadComments();
+  $("botcard").classList.remove("hidden"); loadComments(); loadReports();
   const bat=$("bcBat"), info=$("bcInfo");
   let st=null; try { ({ data:st } = await sb.rpc("wow_bot_status")); } catch {}
   if (!st){ info.textContent="배터리 상태를 불러오지 못했어요"; return; }
@@ -1423,6 +1446,51 @@ async function loadComments(){
   });
 }
 $("bcAsk").addEventListener("input", (e)=>autoGrow(e.target));
+// 포에버봇 가르치기: 확인 중인 제보에 맞아요/틀려요, 맞아요 3개면 배움
+async function loadReports(){
+  const box=$("kbList"); if (!me) return;
+  const { data, error } = await sb.rpc("wow_kb_report_list", { p_token: me.token, p_limit: 30 });
+  if (error){ box.innerHTML=""; return; }
+  box.innerHTML="";
+  if (!data?.length){ box.innerHTML='<div class="cmt0">아직 가르쳐 준 게 없어요. 처음으로 알려 주세요!</div>'; return; }
+  data.forEach(r=>{
+    const row=document.createElement("div"); row.className="kb "+r.status;
+    const h=document.createElement("div"); h.className="kbh";
+    const st=document.createElement("span"); st.className="kbs"; st.textContent = r.status==="approved" ? "✅ 배웠어요" : "🔎 확인 중인 제보";
+    const tt=document.createElement("b"); tt.textContent=r.topic; h.append(st, tt);
+    const bd=document.createElement("div"); bd.className="kbb"; bd.textContent=r.body;
+    const ft=document.createElement("div"); ft.className="kbf";
+    const who=document.createElement("small"); who.textContent=`${r.sender_name} · ${agoShort(r.created_at)}${r.status==="approved"?` · 맞아요 ${r.up}`:""}`;
+    ft.appendChild(who);
+    if (r.status==="pending"){
+      const mk=(v,label,n)=>{ const b=document.createElement("button"); b.type="button"; b.className="kbv"+(r.my_vote===v?" on":"");
+        b.textContent=`${label} ${n}`; b.disabled=!!r.mine; if (r.mine) b.title="내 제보에는 투표할 수 없어요";
+        b.onclick=async()=>{ const { data:res, error } = await sb.rpc("wow_kb_vote", { p_token: me.token, p_id: r.id, p_vote: r.my_vote===v ? 0 : v });
+          if (error){ toast(errMsg(error)); return; }
+          if (res?.status==="approved") toast("맞아요가 모여서 포에버봇이 배웠어요!");
+          else if (res?.status==="rejected") toast("틀려요가 많아서 이 제보는 내렸어요");
+          loadReports(); };
+        return b; };
+      ft.append(mk(1,"👍 맞아요",r.up), mk(-1,"👎 틀려요",r.down));
+    }
+    row.append(h, bd, ft); box.appendChild(row);
+  });
+}
+$("kbSend").onclick = async () => {
+  const t=$("kbTopic").value.trim(), b=$("kbBody").value.trim();
+  if (t.length<2){ toast("주제를 적어 주세요"); $("kbTopic").focus(); return; }
+  if (b.length<5){ toast("내용을 조금 더 자세히 적어 주세요"); $("kbBody").focus(); return; }
+  const btn=$("kbSend"); btn.disabled=true; btn.textContent="포에버봇이 살펴보는 중…";
+  try {
+    const r=await fetch(`${FN_URL}?action=teach`, { method:"POST", headers:{ apikey: SUPABASE_KEY, "Content-Type":"application/json" },
+      body: JSON.stringify({ token: me.token, topic: t, body: b }) });
+    const d=await r.json();
+    if (!d.ok){ toast(d.message || "보내지 못했어요"); return; }
+    if (d.passed){ $("kbTopic").value=""; $("kbBody").value=""; toast("고마워요! 확인 중인 제보로 올렸어요"); loadReports(); }
+    else toast("올리지 못했어요: " + (d.reason || "게임 정보가 아닌 것 같아요"));
+  } catch { toast("보내지 못했어요. 잠시 뒤에 다시 해 주세요"); }
+  finally { btn.disabled=false; btn.textContent="가르치기"; }
+};
 $("bcAskSend").onclick = async () => {
   const t=$("bcAsk"), body=t.value.trim(); if (body.length<2){ toast("내용을 조금 더 적어 주세요"); t.focus(); return; }
   const btn=$("bcAskSend"); btn.disabled=true;
