@@ -319,6 +319,27 @@
   .ni .b{font-size:14.5px;line-height:1.5;color:var(--body);word-break:break-word}
   .ni .b.foreign{font-style:italic;color:#a99e8a}
 
+  /* 귓속말 */
+  #dm,#dmChat{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);z-index:7}
+  #dmChat{z-index:8}
+  #dm header .top button,#dmChat header .top button{background:none;border:0;color:var(--gold);font-size:15px;cursor:pointer;padding:4px 2px}
+  #dmTitle{flex:1;text-align:center;font-weight:700;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #dmList{flex:1;overflow-y:auto;padding:6px 10px}
+  .dmi{display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px}
+  .dmi:active{background:#ffffff08}
+  .dmi .w{flex:1;min-width:0}
+  .dmi .t{display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:15px}
+  .dmi .t small{font-weight:400;font-size:11.5px;color:var(--muted);flex:none}
+  .dmi .p{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+  .dmi .n{flex:none;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--danger);color:#fff;
+    font-size:11px;font-weight:700;line-height:19px;text-align:center}
+  #dmMsgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch}
+  .dmb{max-width:78%;padding:7px 11px;border-radius:14px;font-size:15px;line-height:1.5;word-break:break-word;
+    background:#ffffff0f;color:var(--body);align-self:flex-start;border-bottom-left-radius:4px}
+  .dmb.mine{align-self:flex-end;background:#3a2c14;color:#f1e3c4;border-radius:14px;border-bottom-right-radius:4px}
+  .dmb .tm{display:block;font-size:10.5px;color:#8a7d68;margin-top:2px;text-align:right}
+  .dmnote{font-size:12px;color:var(--muted);text-align:center;margin:4px 0 8px}
+
   /* 홈 화면 추가 안내 */
   #iosGuide{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:12}
   #iosGuide .card{border-radius:14px 14px 0 0;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
@@ -374,6 +395,7 @@
       <div class="title">FOREVER</div>
       <span class="srv" id="srvBadge"></span>
       <button class="bell" id="bellBtn" type="button" aria-label="알림"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bdot hidden" id="bellDot"></span></button>
+      <button class="bell" id="dmBtn" type="button" aria-label="귓속말"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span class="bdot hidden" id="dmDot"></span></button>
       <button class="me" id="meBtn" type="button"><span class="icons" id="meIcons"></span><span id="meName"></span></button>
     </div>
     <div class="chiprow">
@@ -422,6 +444,34 @@
   <div id="nList"></div>
 </section>
 
+<!-- 귓속말 목록 -->
+<section id="dm" class="hidden">
+  <header>
+    <div class="top">
+      <button type="button" id="dmBack">‹ 채팅</button>
+      <div style="flex:1;text-align:center;color:var(--gold);font-weight:700">귓속말</div>
+      <span style="width:52px"></span>
+    </div>
+  </header>
+  <div id="dmList"></div>
+</section>
+
+<!-- 귓속말 대화 -->
+<section id="dmChat" class="hidden">
+  <header>
+    <div class="top">
+      <button type="button" id="dmcBack">‹ 목록</button>
+      <div id="dmTitle"></div>
+      <span style="width:52px"></span>
+    </div>
+  </header>
+  <div id="dmMsgs"></div>
+  <form class="send" id="dmSend" autocomplete="off">
+    <textarea id="dmInput" maxlength="300" rows="1" placeholder="귓속말 입력" enterkeyhint="send"></textarea>
+    <button type="submit">보내기</button>
+  </form>
+</section>
+
 <div id="sheet" class="hidden">
   <div class="card">
     <div id="sheetInfo" style="font-size:15px;line-height:1.8"></div>
@@ -447,8 +497,10 @@
   <div class="card">
     <div class="ph" id="pHead"></div>
     <div class="acts">
+      <button type="button" id="pDm" aria-label="귓속말"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span>귓속말</span></button>
       <button type="button" id="pEmote" aria-label="감정 표현"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01" stroke-width="3"/></svg><span>감정 표현</span></button>
       <button type="button" id="pMute" class="warn" aria-label="채팅 숨기기"><svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c5 0 9 4.5 10 7a13 13 0 0 1-3 4.1M6.6 6.6A13 13 0 0 0 2 12c1 2.5 5 7 10 7a9.6 9.6 0 0 0 4.4-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg><span id="pMuteLbl">숨기기</span></button>
+      <button type="button" id="pBlock" class="warn" aria-label="귓속말 차단"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span id="pBlockLbl">차단</span></button>
     </div>
     <div class="emotes hidden" id="pEmotes"></div>
     <button class="btn ghost sm" id="pClose" type="button">닫기</button>
@@ -998,6 +1050,9 @@ function openProfile(m){
   $("pEmotes").classList.add("hidden");
   $("pMute").classList.toggle("hidden", self);
   $("pMuteLbl").textContent = muted.has(m.player_id) ? "보이기" : "숨기기";
+  $("pDm").classList.toggle("hidden", self || m.tag==="bot" || m.sender_faction!==me.faction);
+  $("pBlock").classList.toggle("hidden", self || m.tag==="bot");
+  $("pBlockLbl").textContent = blocked.has(m.player_id) ? "차단 풀기" : "차단";
   $("prof").classList.remove("hidden");
 }
 $("pClose").onclick = () => $("prof").classList.add("hidden");
@@ -1273,6 +1328,7 @@ function enterChat(player){
   buildChips();
   subscribe();
   loadNotifs();
+  loadBlocked(); loadDmConvs(); subscribeDm();
   loadEmotes();
   setupTipBar();
   if (!ls.get("wowchat_tip_reply")) { ls.set("wowchat_tip_reply","1"); setTimeout(()=>toast("글을 누르면 답글을 달 수 있어요"), 1800); }
@@ -1386,6 +1442,118 @@ $("bellBtn").onclick = async () => {
 };
 $("nBack").onclick = () => $("notif").classList.add("hidden");
 
+/* ---------- 귓속말 (같은 진영끼리, 3일 보관, 차단 가능) ---------- */
+let dmSub = null, dmWith = null, dmMsgs = [], dmConvs = [];
+let blocked = new Set();
+// 귓속말 상대를 프로필 카드가 쓰는 모양으로
+const dmPerson = (o, pre) => ({ player_id:o[pre+"id"], sender_name:o[pre+"name"], sender_class:o[pre+"class"], sender_race:o[pre+"race"],
+  sender_faction:o[pre+"faction"], sender_level:o[pre+"level"], sender_realm:o[pre+"realm"], sender_verified:o[pre+"verified"], tag:"chat" });
+function setDmDot(){
+  const n = dmConvs.reduce((a,c)=>a+(c.unread||0), 0);
+  const d=$("dmDot"); d.textContent = n > 99 ? "99+" : n; d.classList.toggle("hidden", !n);
+}
+async function loadDmConvs(){
+  if (!me) return;
+  const { data, error } = await sb.rpc("wow_dm_list", { p_token: me.token });
+  if (error || !me) return;
+  dmConvs = data || []; setDmDot();
+  if (!$("dm").classList.contains("hidden")) renderDmConvs();
+}
+async function loadBlocked(){
+  const { data } = await sb.rpc("wow_blocked", { p_token: me.token });
+  blocked = new Set(data || []);
+}
+function renderDmConvs(){
+  const l=$("dmList"); l.innerHTML="";
+  if (!dmConvs.length){ l.innerHTML='<div class="empty">아직 귓속말이 없어요<br>채팅에서 이름을 누르면 귓속말을 보낼 수 있어요<br><small>같은 진영끼리만 주고받고, 3일 뒤 지워져요</small></div>'; return; }
+  dmConvs.forEach(c=>{
+    const o=dmPerson(c, "other_");
+    const el=document.createElement("div"); el.className="dmi";
+    const pic=portraitEl({ race:o.sender_race, class:o.sender_class, faction:o.sender_faction }, "sm");
+    const w=document.createElement("div"); w.className="w";
+    const t=document.createElement("div"); t.className="t";
+    const nm=document.createElement("span"); nm.textContent=o.sender_name; nm.style.color=CLASS_COLOR[o.sender_class]||"";
+    const tm=document.createElement("small"); tm.textContent=fmtTime(c.last_at);
+    t.append(nm, tm);
+    const pv=document.createElement("div"); pv.className="p"; pv.textContent=(c.last_from_me?"나: ":"")+plainText(c.last_body);
+    w.append(t, pv); el.append(pic, w);
+    if (c.unread){ const n=document.createElement("span"); n.className="n"; n.textContent=c.unread; el.appendChild(n); }
+    el.onclick=()=>openDm(o);
+    l.appendChild(el);
+  });
+}
+function dmBubble(d){
+  const mine = d.sender_id===me.id;
+  const el=document.createElement("div"); el.className="dmb"+(mine?" mine":"");
+  el.appendChild(linkify(d.body));
+  const tm=document.createElement("span"); tm.className="tm"; tm.textContent=fmtTime(d.created_at); el.appendChild(tm);
+  return el;
+}
+function renderDm(){
+  const l=$("dmMsgs"); l.innerHTML="";
+  const note=document.createElement("div"); note.className="dmnote"; note.textContent="귓속말은 두 사람만 볼 수 있고 3일 뒤 지워져요";
+  l.appendChild(note);
+  dmMsgs.forEach(d=>l.appendChild(dmBubble(d)));
+  l.scrollTop=l.scrollHeight;
+}
+async function openDm(person){
+  if (blocked.has(person.player_id)){ toast("차단한 사람이에요. 프로필에서 차단을 풀면 귓속말을 보낼 수 있어요"); return; }
+  dmWith = person; dmMsgs = [];
+  $("prof").classList.add("hidden");
+  $("dmTitle").textContent = person.sender_name; $("dmTitle").style.color = CLASS_COLOR[person.sender_class]||"var(--gold)";
+  $("dmMsgs").innerHTML='<div class="empty">불러오는 중…</div>';
+  $("dmChat").classList.remove("hidden");
+  const { data, error } = await sb.rpc("wow_dm_thread", { p_token: me.token, p_with: person.player_id, p_limit: 100 });
+  if (dmWith!==person) return;
+  if (error){ toast(errMsg(error)); return; }
+  dmMsgs = data || []; renderDm();
+  const c = dmConvs.find(x=>x.other_id===person.player_id); if (c){ c.unread=0; setDmDot(); }
+  $("dmInput").focus();
+}
+function closeDm(){ dmWith=null; $("dmChat").classList.add("hidden"); }
+async function subscribeDm(){
+  if (dmSub) sb.removeChannel(dmSub);
+  const { data: topic } = await sb.rpc("wow_dm_topic", { p_token: me.token });
+  if (!topic || !me) return;
+  dmSub = sb.channel(topic).on("broadcast", { event:"dm" }, ({ payload: d })=>{
+    if (!d || !me) return;
+    const other = d.sender_id===me.id ? d.recipient_id : d.sender_id;
+    if (dmWith && dmWith.player_id===other){
+      if (!dmMsgs.some(x=>x.id===d.id)){ dmMsgs.push(d); const l=$("dmMsgs"); l.appendChild(dmBubble(d)); l.scrollTop=l.scrollHeight; }
+      if (d.sender_id!==me.id) sb.rpc("wow_dm_read", { p_token: me.token, p_with: other });
+    } else if (d.sender_id!==me.id && !blocked.has(d.sender_id)){
+      toast(`${d.sender_name} 님의 귓속말: ${plainText(d.body)}`);
+    }
+    loadDmConvs();
+  }).subscribe();
+}
+$("dmBtn").onclick = () => { $("dm").classList.remove("hidden"); renderDmConvs(); loadDmConvs(); };
+$("dmBack").onclick = () => $("dm").classList.add("hidden");
+$("dmcBack").onclick = () => { closeDm(); $("dm").classList.remove("hidden"); loadDmConvs(); };
+$("dmTitle").onclick = () => { if (dmWith) openProfile(dmWith); };
+$("dmInput").addEventListener("input", (e)=>autoGrow(e.target));
+$("dmInput").addEventListener("keydown", (e)=>{
+  if (e.key==="Enter" && !e.shiftKey && !e.isComposing && e.keyCode!==229){ e.preventDefault(); $("dmSend").requestSubmit(); }
+});
+$("dmSend").onsubmit = async (ev) => {
+  ev.preventDefault();
+  const input=$("dmInput"); const body=input.value.trim(); if (!body || !dmWith) return;
+  input.value=""; autoGrow(input);
+  const { error } = await sb.rpc("wow_dm_send", { p_token: me.token, p_to: dmWith.player_id, p_body: body });
+  if (error){ toast(errMsg(error)); if (!input.value) input.value=body; return; }
+  input.focus();
+};
+$("pDm").onclick = () => { if (profFor) openDm(profFor); };
+$("pBlock").onclick = async () => {
+  const p = profFor; if (!p) return;
+  const on = !blocked.has(p.player_id);
+  const { error } = await sb.rpc("wow_block", { p_token: me.token, p_player: p.player_id, p_on: on });
+  if (error){ toast(errMsg(error)); return; }
+  if (on){ blocked.add(p.player_id); toast(`${p.sender_name} 님을 차단했어요. 서로 귓속말을 보낼 수 없어요`); if (dmWith?.player_id===p.player_id) closeDm(); }
+  else { blocked.delete(p.player_id); toast(`${p.sender_name} 님 차단을 풀었어요`); }
+  $("prof").classList.add("hidden"); loadDmConvs();
+};
+
 /* ---------- 내 정보 ---------- */
 $("meBtn").onclick = () => {
   const box=$("sheetInfo"); box.innerHTML="";
@@ -1406,7 +1574,9 @@ $("sheet").onclick = (e) => { if (e.target.id==="sheet") $("sheet").classList.ad
 function leaveChat(){
   if (replyCtx) cancelReply(); expanded.clear(); repliesMap.clear(); closeActions();
   if (msgSub) sb.removeChannel(msgSub); if (presence) sb.removeChannel(presence);
-  msgSub=presence=null; me=null;
+  if (dmSub) sb.removeChannel(dmSub);
+  msgSub=presence=dmSub=null; me=null; dmWith=null; dmConvs=[]; blocked=new Set(); $("dmDot").classList.add("hidden");
+  $("dm").classList.add("hidden"); $("dmChat").classList.add("hidden");
   $("sheet").classList.add("hidden"); $("thread").classList.add("hidden");
   $("prof").classList.add("hidden"); $("newBar").classList.add("hidden"); $("notif").classList.add("hidden");
 }
