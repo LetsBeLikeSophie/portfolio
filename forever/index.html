@@ -938,7 +938,7 @@ async function toggleReplies(id, forceOpen){
 function renderReplies(id, b){
   const rw=b?.querySelector(".rwrap"); if (!rw) return;
   rw.innerHTML="";
-  (repliesMap.get(id)||[]).filter(r=>!muted.has(r.player_id) && !reported.has(r.id)).forEach(r=>rw.appendChild(renderMsg(r, "reply")));
+  (repliesMap.get(id)||[]).filter(r=>!muted.has(r.player_id)).forEach(r=>rw.appendChild(renderMsg(r, "reply")));
   rw.classList.toggle("hidden", !rw.childElementCount);
 }
 
@@ -977,14 +977,17 @@ function toggleActions(m, el){
   }));
   if (!other) bar.appendChild(offBtn("신고", SVG.report, mineWhy));
   else if (m.foreign_lang) bar.appendChild(offBtn("신고", SVG.report, "다른 진영 말은 읽을 수 없어서 신고할 수 없어요"));
+  else if (reported.has(m.id)) bar.appendChild(offBtn("신고함", SVG.report, "이미 신고한 글이에요. 여러 명이 신고하면 모두에게 가려져요"));
   else bar.appendChild(btn("신고", SVG.report, async (b, sp)=>{
     if (!b.classList.contains("confirm")){ b.classList.add("confirm"); sp.textContent="한 번 더 누르면 신고";
       setTimeout(()=>{ if (b.isConnected){ b.classList.remove("confirm"); sp.textContent="신고"; } }, 3500); return; }
-    const { error } = await sb.rpc("wow_report", { p_token: me.token, p_message_id: m.id });
+    const { data: r, error } = await sb.rpc("wow_report", { p_token: me.token, p_message_id: m.id });
     if (error) { toast(errMsg(error)); return; }
     reported.add(m.id); ls.set("wowchat_reported", JSON.stringify([...reported].slice(-300)));
-    closeActions(); removeMsg(m.id, m.parent_id);
-    toast("신고했어요. 내 화면에서 가렸고, 여러 명이 신고하면 모두에게 가려져요");
+    closeActions();
+    // 바로 가리지 않고 신고 수를 셈. 기준(3명)을 채우면 그때 모두에게 가려짐
+    if (r?.hidden){ markHidden(m.id, m.parent_id); toast("신고했어요. 여러 명이 신고해서 이 글은 모두에게 가려졌어요"); }
+    else toast(`신고했어요 (${r?.count||1}/${r?.need||3}). ${r?.need||3}명이 신고하면 모두에게 가려져요`);
   }, "warn"));
   el.appendChild(bar);
   // 글이 목록 맨 위에 붙어 있으면 메뉴가 잘리니 글 아래로 내린다
@@ -1096,7 +1099,7 @@ let muted = new Set(); try { muted = new Set(JSON.parse(ls.get("wowchat_muted")|
 const visible = (m) => (filterTag==="all" || m.tag===filterTag || (filterTag==="chat" && m.tag==="emote")
     || (m.tag==="bot" && (filterTag==="chat" || filterTag==="question")))
   && (!myFactionOnly || m.sender_faction===me.faction || m.tag==="bot")
-  && !muted.has(m.player_id) && !reported.has(m.id);
+  && !muted.has(m.player_id);
 
 /* ---------- 포에버봇 ---------- */
 const BOT_NAME = "포에버봇";
