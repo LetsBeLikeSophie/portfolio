@@ -530,6 +530,17 @@
   .msg.sel{background:none!important;box-shadow:none!important}
   .msg.sel .text{box-shadow:0 0 0 2px #e6c36acc;filter:brightness(1.12)}
   .mblk>.msg.sel:not(.mine) .mact{right:auto;left:38px}
+  /* 봇 카드 탭 */
+  #botcard .bctabs{display:flex;gap:6px;margin:2px 0 12px}
+  #botcard .bctabs button{flex:1;border:1px solid var(--line);background:#0006;color:var(--muted);border-radius:10px;
+    padding:8px 4px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  #botcard .bctabs button.on{background:#3a2c14;border-color:var(--gold-dim);color:var(--gold)}
+  #botcard .bctabs .tc{font-size:11.5px;font-weight:500;opacity:.85}
+  #botcard .can li{padding:3px 0 3px 22px}
+  #botcard .chargeRow{display:flex;align-items:center;gap:10px;margin-top:12px}
+  #botcard .chargeBtn{flex:none;border:1px solid var(--gold-dim);color:var(--gold);background:#e6c36a14;border-radius:999px;
+    padding:7px 12px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap}
+  #botcard .chargeRow small{color:var(--muted);font-size:11.5px;line-height:1.45}
   .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
@@ -670,31 +681,45 @@
 <div id="botcard" class="hidden">
   <div class="card">
     <div class="bh"><span id="bcIcon"></span><div><div class="nm">포에버봇</div><div class="sub">와우 포에버 도우미 AI</div></div></div>
-    <h4>이런 걸 할 수 있어요</h4>
-    <ul class="can">
-      <li data-i="🗺️">퀘스트·몬스터·아이템 찾기<small>블리자드 공식 포에버 데이터로 어디 있는지, 뭘 하는지 알려줘요</small></li>
-      <li data-i="💬">채팅방 글 찾기<small>최근 올라온 파티·거래·길드 글을 찾아 정리해요 (같은 진영 글만)</small></li>
-      <li data-i="📜">세계관 이야기<small>인물·종족·지역 배경을 짧게 알려줘요</small></li>
-    </ul>
-    <p class="note" style="margin-top:6px">입력창 왼쪽 <b>로봇 단추</b>를 켜고 쓰면 포에버봇에게 물어봐요. 글에 <b>@포에버봇</b>을 붙여도 돼요. 확인된 자료로만 답하고, 모르면 모른다고 해요.</p>
-    <div class="exs" id="bcEx"></div>
-    <h4>🧠 포에버봇 가르치기</h4>
-    <p class="note" style="margin:0">알고 있는 게임 정보를 알려 주세요. 포에버봇이 먼저 살펴보고 올리면, 다른 분들이 <b>맞아요</b>를 3번 눌렀을 때 포에버봇이 배워요.</p>
-    <input id="kbTopic" maxlength="60" placeholder="주제 (예: 오그리마 비행선 타는 곳)" autocomplete="off">
-    <textarea id="kbBody" maxlength="400" rows="2" placeholder="내용 (예: 정문 밖 언덕 위 비행선 탑에서 타요)"></textarea>
-    <button class="btn sm" id="kbSend" type="button">가르치기</button>
-    <div class="kbl" id="kbList"></div>
-    <h4>🔋 이번 달 배터리</h4>
-    <div class="bat" id="bcBat"><div class="cell"><div class="fill" style="width:0"></div></div><span class="pct">…</span></div>
-    <div class="batinfo" id="bcInfo">불러오는 중…</div>
-    <div class="fans hidden" id="bcFans"></div>
-    <a class="btn charge" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">☕ 커피 한 잔 사 주고 배터리 채우기</a>
-    <p class="note">보내 주신 커피로 배터리를 충전해 둘게요. 직접 확인하고 채우느라 조금 걸릴 수 있어요.<br>평소에는 만든 사람이 사비로 운영하고, 배터리는 매달 1일에 다시 가득 차요.</p>
-    <h4>💬 포에버봇에게 한마디 <span class="ccount" id="bcCnt"></span></h4>
-    <p class="note" style="margin:0">불편한 점이나 바라는 기능을 남겨 주세요. 내 캐릭터 이름으로 모두에게 보여요.</p>
-    <div class="cmtw"><textarea id="bcAsk" maxlength="500" rows="2" placeholder="예: 귓속말이 오면 소리로도 알려 주면 좋겠어요"></textarea>
-      <button class="cmtsend" id="bcAskSend" type="button" aria-label="댓글 달기"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="M5.5 11.5 12 5l6.5 6.5"/></svg></button></div>
-    <div class="cmts" id="bcCmts"></div>
+    <div class="bctabs" role="tablist">
+      <button type="button" data-t="info" class="on">소개</button>
+      <button type="button" data-t="teach">🧠 가르치기 <span class="tc" id="kbCnt"></span></button>
+      <button type="button" data-t="talk">💬 한마디 <span class="tc" id="bcCnt"></span></button>
+    </div>
+
+    <section class="bcp" data-p="info">
+      <ul class="can">
+        <li data-i="🗺️">퀘스트·몬스터·아이템 위치</li>
+        <li data-i="💬">채팅방 파티·거래 글 찾기</li>
+        <li data-i="📜">세계관 이야기</li>
+      </ul>
+      <p class="note" style="margin:6px 0 0">입력창 왼쪽 <b>로봇 단추</b>를 켜고 물어보세요.</p>
+      <div class="exs" id="bcEx"></div>
+      <h4>🔋 이번 달 배터리</h4>
+      <div class="bat" id="bcBat"><div class="cell"><div class="fill" style="width:0"></div></div><span class="pct">…</span></div>
+      <div class="batinfo" id="bcInfo">불러오는 중…</div>
+      <div class="fans hidden" id="bcFans"></div>
+      <div class="chargeRow">
+        <a class="chargeBtn" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">☕ 커피로 충전</a>
+        <small>평소엔 만든 사람이 사비로 운영해요. 커피는 확인 후 배터리로 채워요.</small>
+      </div>
+    </section>
+
+    <section class="bcp hidden" data-p="teach">
+      <p class="note" style="margin:0">아는 게임 정보를 알려 주세요. <b>맞아요</b>가 3개 모이면 포에버봇이 배워요.</p>
+      <input id="kbTopic" maxlength="60" placeholder="주제 (예: 오그리마 비행선 타는 곳)" autocomplete="off">
+      <textarea id="kbBody" maxlength="400" rows="2" placeholder="내용 (예: 정문 밖 언덕 위 비행선 탑에서 타요)"></textarea>
+      <button class="btn sm" id="kbSend" type="button">가르치기</button>
+      <div class="kbl" id="kbList"></div>
+    </section>
+
+    <section class="bcp hidden" data-p="talk">
+      <p class="note" style="margin:0">불편한 점이나 바라는 기능을 남겨 주세요. 내 캐릭터 이름으로 보여요.</p>
+      <div class="cmtw"><textarea id="bcAsk" maxlength="500" rows="2" placeholder="예: 귓속말이 오면 소리로도 알려 주면 좋겠어요"></textarea>
+        <button class="cmtsend" id="bcAskSend" type="button" aria-label="댓글 달기"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="M5.5 11.5 12 5l6.5 6.5"/></svg></button></div>
+      <div class="cmts" id="bcCmts"></div>
+    </section>
+
     <button class="btn ghost sm" id="bcClose" type="button">닫기</button>
   </div>
 </div>
@@ -1399,10 +1424,18 @@ $("qcard").onclick = (e) => { if (e.target.id==="qcard") $("qcard").classList.ad
 const BOT_EXAMPLES = ["@포에버봇 힐러 구하는 파티 있어?", "@포에버봇 가시멧돼지 어디 있어요?", "@포에버봇 스랄은 누구예요?"];
 const agoShort = (iso) => { const m=Math.max(0, Math.round((Date.now()-new Date(iso))/60000));
   return m<60 ? `${m||1}분 전` : m<1440 ? `${Math.floor(m/60)}시간 전` : `${Math.floor(m/1440)}일 전`; };
-async function openBotCard(){
+// 봇 카드 탭: 소개 · 가르치기 · 한마디
+function bcTab(t){
+  document.querySelectorAll("#botcard .bctabs button").forEach(b=>b.classList.toggle("on", b.dataset.t===t));
+  document.querySelectorAll("#botcard .bcp").forEach(p=>p.classList.toggle("hidden", p.dataset.p!==t));
+  $("botcard").querySelector(".card").scrollTop=0;
+}
+document.querySelectorAll("#botcard .bctabs button").forEach(b=>b.onclick=()=>bcTab(b.dataset.t));
+async function openBotCard(tab){
   const ic=$("bcIcon"); if (!ic.firstChild) ic.appendChild(classIcon(null, true));
   const ex=$("bcEx"); if (!ex.firstChild) BOT_EXAMPLES.forEach(q=>{ const b=exBtn(q); const go=b.onclick;
     b.onclick=()=>{ $("botcard").classList.add("hidden"); go(); }; ex.appendChild(b); });
+  bcTab(typeof tab==="string" ? tab : "info");
   $("botcard").classList.remove("hidden"); loadComments(); loadReports();
   const bat=$("bcBat"), info=$("bcInfo");
   let st=null; try { ({ data:st } = await sb.rpc("wow_bot_status")); } catch {}
@@ -1413,12 +1446,9 @@ async function openBotCard(){
   bat.querySelector(".fill").style.width=pct+"%"; bat.querySelector(".pct").textContent=pct+"%";
   const n=(x)=>Number(x).toLocaleString("ko-KR");
   info.innerHTML="";
-  [`이번 달 AI 답변 ${n(st.monthly_cap)}번 중 <b>${n(base)}번</b> 남았어요`,
-   ...(bal ? [`☕ 충전된 배터리 <b>${n(bal)}번</b>이 더 있어요 (이번 달 걸 다 쓰면 꺼내 쓰고, 달이 바뀌어도 남아요)`] : []),
-   `오늘 ${n(st.today_used)}번 썼어요 (하루 최대 ${n(st.daily_cap)}번)`,
-   `한 사람당 ${st.cooldown_sec}초에 한 번 물어볼 수 있고, 매달 1일에 다시 가득 차요`,
-   `예전에 답한 비슷한 질문은 배터리를 쓰지 않고 바로 답해요`]
-   .forEach(t=>{ const d=document.createElement("div"); d.innerHTML="· "+t; info.appendChild(d); });
+  [`${n(st.monthly_cap)}번 중 <b>${n(base)}번</b> 남음${bal ? ` · ☕ 충전분 <b>${n(bal)}번</b>` : ""}`,
+   `오늘 ${n(st.today_used)}/${n(st.daily_cap)}번 · ${st.cooldown_sec}초에 한 번 · 매달 1일 충전`]
+   .forEach(t=>{ const d=document.createElement("div"); d.innerHTML=t; info.appendChild(d); });
   // 최근 충전해 준 사람 (후원할 때 적은 이름)
   const fans=$("bcFans"); fans.innerHTML="";
   (st.charges||[]).forEach(c=>{ const d=document.createElement("div"); d.className="fan";
@@ -1461,6 +1491,7 @@ async function loadReports(){
   const { data, error } = await sb.rpc("wow_kb_report_list", { p_token: me.token, p_limit: 30 });
   if (error){ box.innerHTML=""; return; }
   box.innerHTML="";
+  const pend=(data||[]).filter(r=>r.status==="pending").length; $("kbCnt").textContent = pend ? String(pend) : "";
   if (!data?.length){ box.innerHTML='<div class="cmt0">아직 가르쳐 준 게 없어요. 처음으로 알려 주세요!</div>'; return; }
   data.forEach(r=>{
     const row=document.createElement("div"); row.className="kb "+r.status;
