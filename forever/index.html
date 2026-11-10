@@ -433,8 +433,16 @@
   .grab{width:40px;height:5px;border-radius:3px;background:#ffffff38;margin:0 auto 8px}
   .sheetv header .top .shx{width:52px;text-align:right;font-size:18px;color:var(--muted)}
   #sheetBack{position:fixed;inset:0;background:#000a;z-index:7}
-  /* 내 글: 왼쪽 금색 줄 + 아주 옅은 바탕 */
-  .msg.mine:not(.sel){box-shadow:inset 2px 0 0 #e6c36a8c;background:#e6c36a0b}
+  /* 내 글: 카카오톡처럼 오른쪽 말풍선 (아이콘·이름 없이, 시간은 말풍선 왼쪽 아래) */
+  .mblk>.msg.mine:not(.emote),#tList>.msg.mine:not(.emote){justify-content:flex-end;align-items:flex-end;column-gap:5px;padding:5px 6px 2px 40px}
+  .mblk>.msg.mine .cico,.mblk>.msg.mine .who,.mblk>.msg.mine .lv,.mblk>.msg.mine .lang,
+  #tList>.msg.mine .cico,#tList>.msg.mine .who,#tList>.msg.mine .lv,#tList>.msg.mine .lang{display:none!important}
+  .mblk>.msg.mine .tag,#tList>.msg.mine .tag{order:4;align-self:flex-end;margin-bottom:3px}
+  .mblk>.msg.mine .time,#tList>.msg.mine .time{order:5;align-self:flex-end;margin-bottom:2px}
+  .mblk>.msg.mine .text,#tList>.msg.mine .text{order:6;flex-basis:auto;max-width:80%;margin:0;padding:7px 12px;
+    background:#3b2d15;border:1px solid #e6c36a45;border-radius:15px 15px 4px 15px;color:#f3e8d2;line-height:1.45}
+  .mblk>.msg.mine.cont{padding-top:2px}
+  .mblk>.msg.mine+.rmore{margin-left:auto;display:flex;margin-right:10px}
   .msg .time.end{margin:0 0 0 7px}
   /* 제목 줄 접속자 수 */
   .top .srv{margin-right:0}
