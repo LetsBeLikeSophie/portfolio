@@ -238,6 +238,29 @@
   #qcard .qt{font-size:17px;font-weight:700;color:#ffd100;margin-bottom:4px}
   #qcard .qm{font-size:12.5px;color:var(--muted);margin-bottom:10px}
   #qcard .qd{font-size:14px;line-height:1.6;white-space:pre-wrap;color:#e8dcc4;margin-bottom:14px}
+  #botcard{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:11}
+  #botcard .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto}
+  #botcard .bh{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  #botcard .bh .cico{width:46px;height:46px;margin:0;box-shadow:0 0 0 2px var(--gold)}
+  #botcard .bh .cico svg{width:30px;height:30px}
+  #botcard .bh .nm{font-size:19px;font-weight:700;color:var(--gold)}
+  #botcard .bh .sub{font-size:12.5px;color:var(--muted)}
+  #botcard h4{margin:14px 0 6px;font-size:13px;color:var(--gold-dim);font-weight:700;letter-spacing:.02em}
+  #botcard .can{margin:0;padding:0;list-style:none;font-size:14px;line-height:1.55;color:#e8dcc4}
+  #botcard .can li{padding:4px 0 4px 22px;position:relative}
+  #botcard .can li::before{content:attr(data-i);position:absolute;left:0;top:4px}
+  #botcard .can small{display:block;color:var(--muted);font-size:12.5px}
+  #botcard .exs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  #botcard .ex{border:1px solid #e6c36a4d;background:#e6c36a14;color:#f1dfae;border-radius:999px;padding:5px 10px;font-size:12.5px;cursor:pointer}
+  .bat{display:flex;align-items:center;gap:10px;margin-top:4px}
+  .bat .cell{position:relative;flex:1;height:22px;border:2px solid #b9ad97;border-radius:6px;padding:2px}
+  .bat .cell::after{content:"";position:absolute;right:-7px;top:5px;width:4px;height:8px;border-radius:0 2px 2px 0;background:#b9ad97}
+  .bat .fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#5fbf5a,#8fdc6a);transition:width .5s}
+  .bat.mid .fill{background:linear-gradient(90deg,#d6a53a,#e9c45a)}
+  .bat.low .fill{background:linear-gradient(90deg,#c0392b,#e0604f)}
+  .bat .pct{font-size:18px;font-weight:800;min-width:52px;text-align:right;font-variant-numeric:tabular-nums}
+  .batinfo{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.6}
+  .charge{display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
   #prof{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:9}
   #prof .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}
   .ph{display:flex;align-items:center;gap:12px}
@@ -401,7 +424,6 @@
     </div>
 
     <button class="btn ghost sm installBtn hidden" type="button">📲 홈 화면에 추가</button>
-    <a class="btn ghost sm" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">☕ 서버비 후원</a>
     <p class="note" style="text-align:center">상대 진영 채팅은 게임처럼 <b>공용어 / 오크어</b>로 보여요</p>
     <details class="more">
       <summary>자세히</summary>
@@ -505,6 +527,26 @@
     <a class="btn ghost sm" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">☕ 서버비 후원</a>
     <button class="btn ghost sm" id="logoutBtn" type="button">로그아웃</button>
     <button class="btn ghost sm" id="closeSheet" type="button">닫기</button>
+  </div>
+</div>
+
+<div id="botcard" class="hidden">
+  <div class="card">
+    <div class="bh"><span id="bcIcon"></span><div><div class="nm">포에버봇</div><div class="sub">와우 포에버 도우미 AI</div></div></div>
+    <h4>이런 걸 할 수 있어요</h4>
+    <ul class="can">
+      <li data-i="🗺️">퀘스트·몬스터·아이템 찾기<small>블리자드 공식 포에버 데이터로 어디 있는지, 뭘 하는지 알려줘요</small></li>
+      <li data-i="💬">채팅방 글 찾기<small>최근 올라온 파티·거래·길드 글을 찾아 정리해요 (같은 진영 글만)</small></li>
+      <li data-i="📜">세계관 이야기<small>인물·종족·지역 배경을 짧게 알려줘요</small></li>
+    </ul>
+    <p class="note" style="margin-top:6px">글에 <b>@포에버봇</b>을 붙이거나 <b>!</b>로 시작하면 답해요. 확인된 자료로만 답하고, 모르면 모른다고 해요.</p>
+    <div class="exs" id="bcEx"></div>
+    <h4>🔋 이번 달 배터리</h4>
+    <div class="bat" id="bcBat"><div class="cell"><div class="fill" style="width:0"></div></div><span class="pct">…</span></div>
+    <div class="batinfo" id="bcInfo">불러오는 중…</div>
+    <a class="btn charge" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">⚡ 배터리 충전하기 (커피 한 잔)</a>
+    <p class="note">충전해 주신 금액의 70%는 포에버봇 AI 사용료로, 30%는 만든 사람 수고비로 써요. 직접 확인한 뒤 배터리에 더해져서 조금 걸릴 수 있어요.</p>
+    <button class="btn ghost sm" id="bcClose" type="button">닫기</button>
   </div>
 </div>
 
@@ -755,8 +797,9 @@ function renderMsg(m, inThread){
     el.append(t, tx); return el;
   }
   if (m.tag==="bot"){
-    // 봇 글은 답글·감정·신고를 쓸 수 없으니 눌러도 메뉴를 열지 않는다
+    // 봇 글은 답글·감정·신고를 쓸 수 없으니 메뉴 대신 봇 설명 카드를 연다
     const el=document.createElement("div"); el.className="msg bot"; el.dataset.id=m.id;
+    el.style.cursor="pointer"; el.onclick=(e)=>{ if (e.target.closest("a,.mnt,.mme,.qlink,[data-q]")) return; openBotCard(); };
     const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
     const who=document.createElement("span"); who.className="who"; who.textContent=BOT_NAME;
     const tx=document.createElement("span"); tx.className="text"; tx.appendChild(linkify(m.body)); markMe(tx);
@@ -995,7 +1038,7 @@ const visible = (m) => (filterTag==="all" || m.tag===filterTag || (filterTag==="
 /* ---------- 포에버봇 ---------- */
 const BOT_NAME = "포에버봇";
 const forBot = (b) => b.startsWith("!") || b.includes("@"+BOT_NAME) || /(^|\s)@봇(\s|$)/.test(b);
-const EXAMPLES = ["@포에버봇 가시멧돼지 어디 있어요?", "@포에버봇 멀록 지느러미 어디서 구해요?", "@포에버봇 스랄은 누구예요?"];
+const EXAMPLES = ["@포에버봇 가시멧돼지 어디 있어요?", "@포에버봇 힐러 구하는 파티 있어?", "@포에버봇 스랄은 누구예요?"];
 function exBtn(q){ const b=document.createElement("button"); b.type="button"; b.className="ex"; b.textContent=q.replace("@포에버봇 ","");
   b.onclick=()=>{ const i=$("msgInput"); i.value=q; autoGrow(i); i.focus(); }; return b; }
 function setupTipBar(){
@@ -1113,6 +1156,28 @@ async function openQuest(id, name){
   $("qDesc").textContent = (data.description || "").replace(/\r/g, "").trim() || "설명이 없어요";
 }
 $("qcard").onclick = (e) => { if (e.target.id==="qcard") $("qcard").classList.add("hidden"); };
+const BOT_EXAMPLES = ["@포에버봇 힐러 구하는 파티 있어?", "@포에버봇 가시멧돼지 어디 있어요?", "@포에버봇 스랄은 누구예요?"];
+async function openBotCard(){
+  const ic=$("bcIcon"); if (!ic.firstChild) ic.appendChild(classIcon(null, true));
+  const ex=$("bcEx"); if (!ex.firstChild) BOT_EXAMPLES.forEach(q=>{ const b=exBtn(q); const go=b.onclick;
+    b.onclick=()=>{ $("botcard").classList.add("hidden"); go(); }; ex.appendChild(b); });
+  $("botcard").classList.remove("hidden");
+  const bat=$("bcBat"), info=$("bcInfo");
+  let st=null; try { ({ data:st } = await sb.rpc("wow_bot_status")); } catch {}
+  if (!st){ info.textContent="배터리 상태를 불러오지 못했어요"; return; }
+  const left=Math.max(0, st.monthly_cap - st.month_used), pct=st.monthly_cap ? Math.floor(left*100/st.monthly_cap) : 0;
+  bat.className="bat"+(pct<=15?" low":pct<=40?" mid":"");
+  bat.querySelector(".fill").style.width=pct+"%"; bat.querySelector(".pct").textContent=pct+"%";
+  const n=(x)=>Number(x).toLocaleString("ko-KR");
+  info.innerHTML="";
+  [`이번 달 AI 답변 ${n(st.monthly_cap)}번 중 <b>${n(left)}번</b> 남았어요`,
+   `오늘 ${n(st.today_used)}번 썼어요 (하루 최대 ${n(st.daily_cap)}번)`,
+   `한 사람당 ${st.cooldown_sec}초에 한 번 물어볼 수 있고, 매달 1일에 다시 가득 차요`,
+   `예전에 답한 비슷한 질문은 배터리를 쓰지 않고 바로 답해요`]
+   .forEach(t=>{ const d=document.createElement("div"); d.innerHTML="· "+t; info.appendChild(d); });
+}
+$("bcClose").onclick = () => $("botcard").classList.add("hidden");
+$("botcard").onclick = (e) => { if (e.target.id==="botcard") $("botcard").classList.add("hidden"); };
 const cardMemo = new Map();
 async function loadCard(id){
   if (!id || id==="bot") return null;
