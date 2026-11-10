@@ -608,7 +608,6 @@
     <div id="sheetInfo" style="font-size:15px;line-height:1.8"></div>
     <button class="btn" id="switchBtn" type="button">캐릭터 바꾸기</button>
     <button class="btn ghost sm installBtn hidden" type="button">📲 홈 화면에 추가</button>
-    <a class="btn ghost sm" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">☕ 서버비 후원</a>
     <button class="btn ghost sm" id="logoutBtn" type="button">로그아웃</button>
     <button class="btn ghost sm" id="closeSheet" type="button">닫기</button>
   </div>
@@ -679,14 +678,12 @@
   <div class="card">
     <div style="font-size:17px;font-weight:700;color:var(--gold);margin-bottom:10px">홈 화면에 추가하기</div>
     <ol class="guide">
-      <li>아래 <b>공유 창 열기</b>를 누르거나, Safari 막대의 <b>공유 버튼</b> <span class="shareIc"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span> 을 눌러요</li>
+      <li>Safari 아래쪽 <b>공유 버튼</b> <span class="shareIc"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span> 을 눌러요 <small style="color:var(--muted)">(안 보이면 <b>⋯</b>를 먼저 눌러요)</small></li>
       <li>목록을 내려서 <b>홈 화면에 추가</b>를 눌러요</li>
       <li>오른쪽 위 <b>추가</b>를 누르면 끝!</li>
     </ol>
-    <p class="note">공유 창에 <b>홈 화면에 추가</b>가 안 보이면, 창을 닫고 Safari 막대에 있는 공유 버튼으로 다시 해 주세요.</p>
     <p class="note" id="iosNote">Safari가 아닌 앱(카톡, 디코 안 브라우저 등)으로 열었다면 먼저 Safari로 열어 주세요.</p>
-    <button class="btn" id="iosShare" type="button">공유 창 열기</button>
-    <button class="btn ghost sm" id="iosClose" type="button">닫기</button>
+    <button class="btn" id="iosClose" type="button">알겠어요</button>
   </div>
 </div>
 
@@ -1967,13 +1964,11 @@ document.querySelectorAll(".installBtn").forEach(b => b.onclick = async () => {
     // 안내를 먼저 보여주고, 안내 안의 버튼으로 공유 창을 연다
     const inApp = /KAKAOTALK|Instagram|FBAN|FBAV|Line|NAVER|Discord|DaumApps/i.test(navigator.userAgent) || !/Safari/i.test(navigator.userAgent);
     $("iosNote").classList.toggle("hidden", !inApp);
-    $("iosShare").classList.toggle("hidden", inApp || !navigator.share);
     $("sheet").classList.add("hidden"); $("iosGuide").classList.remove("hidden"); return;
   }
   toast("브라우저 메뉴(⋮)에서 '홈 화면에 추가'를 눌러 주세요");
 });
 $("iosClose").onclick = () => $("iosGuide").classList.add("hidden");
-$("iosShare").onclick = () => { navigator.share?.({ title: "포에버 채팅", url: location.origin + "/forever/" }).catch(()=>{}); };
 $("iosGuide").onclick = (e) => { if (e.target.id==="iosGuide") $("iosGuide").classList.add("hidden"); };
 
 /* ---------- 시작 ---------- */
