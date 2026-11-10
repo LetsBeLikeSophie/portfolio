@@ -290,24 +290,24 @@
   .dsep{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:12px 4px 6px}
   .dsep::before,.dsep::after{content:"";flex:1;height:1px;background:var(--line)}
   /* 봇이 찾는 중 */
-  .typing{color:#7fd3ff;font-size:13.5px;padding:6px 4px;opacity:.9}
+  .typing{color:var(--gold);font-size:13.5px;padding:6px 4px;opacity:.9}
   .typing .dots span{display:inline-block;animation:blink 1.2s infinite both}
   .typing .dots span:nth-child(2){animation-delay:.2s}.typing .dots span:nth-child(3){animation-delay:.4s}
   @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
   /* 예시 질문 */
   #tipBar{display:flex;align-items:center;gap:6px;padding:7px 6px 7px 10px;border-top:1px solid var(--line);background:#14100b}
   #tipBar .exw{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
-  #tipBar .tl{font-size:12px;color:#7fd3ff;white-space:nowrap}
-  #tipBar .ex,.empty .ex{border:1px solid #7fd3ff44;background:#7fd3ff12;color:#bfe9ff;border-radius:999px;padding:5px 10px;font-size:12.5px;white-space:nowrap;cursor:pointer}
+  #tipBar .tl{font-size:12px;color:var(--gold);white-space:nowrap}
+  #tipBar .ex,.empty .ex{border:1px solid #e6c36a4d;background:#e6c36a14;color:#f1dfae;border-radius:999px;padding:5px 10px;font-size:12.5px;white-space:nowrap;cursor:pointer}
   #tipBar .x{flex:none;background:none;border:0;color:var(--muted);font-size:16px;cursor:pointer;padding:0 4px}
   .empty .exs{display:flex;flex-direction:column;align-items:center;gap:7px;margin-top:14px}
   /* 다른 사람 @이름 */
   .mnt{color:#cfe3ff;font-weight:600;cursor:pointer}
   details.more{margin-top:6px}
   /* 포에버봇 */
-  .msg.bot .who{color:#7fd3ff}
+  .msg.bot .who{color:var(--gold)}
   .msg.bot .text{white-space:pre-wrap}
-  .botb{display:inline-block;margin-left:4px;padding:0 5px;border-radius:5px;background:#7fd3ff22;color:#7fd3ff;
+  .botb{display:inline-block;margin-left:4px;padding:0 5px;border-radius:5px;background:#e6c36a24;color:var(--gold);
     font-size:10px;font-weight:700;vertical-align:1px}
   /* 감정 표현 보글보글 */
   #floaty{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:20}
@@ -1186,7 +1186,7 @@ function attachMention(input, allowEmote){
       if (tok.type==="link"){ n.textContent=`[${it.name}]`; n.style.color=QUALITY_COLOR[it.quality]||(it.type==="quest"?"#ffd100":"#7fb6ff");
         d.textContent=(KIND_LABEL[it.type]||it.type)+(it.area?" · "+it.area:""); d.style.color="var(--muted)"; }
       else if (tok.type==="emote"){ n.textContent="/"+it.key; n.style.color="#ffb46b"; d.textContent=it.solo.replace("{s}님이 ",""); d.style.color="var(--muted)"; }
-      else if (it.bot){ n.textContent=it.name; n.style.color="#7fd3ff"; d.textContent="질문하면 답해요"; d.style.color="var(--muted)"; }
+      else if (it.bot){ n.textContent=it.name; n.style.color="var(--gold)"; d.textContent="질문하면 답해요"; d.style.color="var(--muted)"; }
       else { n.textContent=it.name; n.style.color=CLASS_COLOR[it.cls]||"";
         d.textContent=(it.faction!==me.faction ? (it.faction==="alliance"?"얼라 ":"호드 ") : "")+(it.online?"● 접속 중":""); }
       b.append(n,d); b.onmousedown=(e)=>{ e.preventDefault(); pick(it); }; box.appendChild(b); });
