@@ -490,6 +490,21 @@
   #toBottom{position:fixed;right:14px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:5;width:42px;height:42px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;background:#2a1f12ee;border:1px solid var(--gold-dim);color:var(--gold);
     box-shadow:0 6px 18px #000b;cursor:pointer}
+  /* 포에버봇 카드 댓글 */
+  #botcard .ccount{font-size:12px;color:var(--muted);font-weight:500;margin-left:4px}
+  #botcard .cmtw{display:flex;gap:6px;align-items:flex-end;margin-top:8px}
+  #botcard .cmtw textarea{flex:1;margin:0;resize:none;max-height:104px}
+  #botcard .cmtsend{flex:none;width:42px;height:42px;border-radius:10px;border:1px solid #8a6a26;cursor:pointer;
+    background:linear-gradient(180deg,#c9a24c,#8c6b25);color:#1a1205;display:inline-flex;align-items:center;justify-content:center}
+  #botcard .cmts{margin-top:8px}
+  #botcard .cmt{display:flex;gap:9px;padding:9px 0;border-top:1px solid #ffffff10}
+  #botcard .cmt .cico{margin:2px 0 0;flex:none}
+  #botcard .cmt .cb{flex:1;min-width:0}
+  #botcard .cmt .ch{font-size:13px;display:flex;align-items:baseline;gap:2px;flex-wrap:wrap}
+  #botcard .cmt .ch small{color:var(--muted);font-size:11.5px}
+  #botcard .cmt .ch .del{margin-left:auto;background:none;border:0;color:var(--muted);font-size:11.5px;cursor:pointer;padding:0 2px}
+  #botcard .cmt .ct{font-size:14px;line-height:1.5;color:#e8dcc4;white-space:pre-wrap;word-break:break-word;margin-top:2px}
+  #botcard .cmt0{font-size:13px;color:var(--muted);padding:8px 0}
   .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
@@ -644,10 +659,11 @@
     <div class="fans hidden" id="bcFans"></div>
     <a class="btn charge" href="https://buymeacoffee.com/itssophie" target="_blank" rel="noopener">☕ 커피 한 잔 사 주고 배터리 채우기</a>
     <p class="note">보내 주신 커피로 배터리를 충전해 둘게요. 직접 확인하고 채우느라 조금 걸릴 수 있어요.<br>평소에는 만든 사람이 사비로 운영하고, 배터리는 매달 1일에 다시 가득 차요.</p>
-    <h4>✉️ 만든 사람에게 문의</h4>
-    <p class="note" style="margin:0">포에버 채팅을 쓰면서 불편한 점, 있었으면 하는 기능, 고장 난 곳을 알려 주세요. 만든 사람만 읽어요.</p>
-    <textarea id="bcAsk" maxlength="1000" rows="3" placeholder="예: 귓속말이 오면 소리로도 알려 주면 좋겠어요"></textarea>
-    <button class="btn sm" id="bcAskSend" type="button">문의 보내기</button>
+    <h4>💬 포에버봇에게 한마디 <span class="ccount" id="bcCnt"></span></h4>
+    <p class="note" style="margin:0">불편한 점이나 바라는 기능을 남겨 주세요. 내 캐릭터 이름으로 모두에게 보여요.</p>
+    <div class="cmtw"><textarea id="bcAsk" maxlength="500" rows="2" placeholder="예: 귓속말이 오면 소리로도 알려 주면 좋겠어요"></textarea>
+      <button class="cmtsend" id="bcAskSend" type="button" aria-label="댓글 달기"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="M5.5 11.5 12 5l6.5 6.5"/></svg></button></div>
+    <div class="cmts" id="bcCmts"></div>
     <button class="btn ghost sm" id="bcClose" type="button">닫기</button>
   </div>
 </div>
@@ -1355,7 +1371,7 @@ async function openBotCard(){
   const ic=$("bcIcon"); if (!ic.firstChild) ic.appendChild(classIcon(null, true));
   const ex=$("bcEx"); if (!ex.firstChild) BOT_EXAMPLES.forEach(q=>{ const b=exBtn(q); const go=b.onclick;
     b.onclick=()=>{ $("botcard").classList.add("hidden"); go(); }; ex.appendChild(b); });
-  $("botcard").classList.remove("hidden");
+  $("botcard").classList.remove("hidden"); loadComments();
   const bat=$("bcBat"), info=$("bcInfo");
   let st=null; try { ({ data:st } = await sb.rpc("wow_bot_status")); } catch {}
   if (!st){ info.textContent="배터리 상태를 불러오지 못했어요"; return; }
@@ -1383,13 +1399,37 @@ async function openBotCard(){
 $("bcClose").onclick = () => $("botcard").classList.add("hidden");
 $("botBtn").innerHTML = classIcon(null, true).innerHTML;
 $("botBtn").onclick = () => { setBotMode(!botMode); toast(botMode ? "포에버봇에게 묻기 켰어요" : "포에버봇에게 묻기 껐어요"); $("msgInput").focus(); };
+// 포에버봇 카드 댓글: 내 캐릭터 이름으로 공개되어 주렁주렁 달림
+async function loadComments(){
+  const box=$("bcCmts"); if (!me) return;
+  const { data, error } = await sb.rpc("wow_inquiry_list", { p_token: me.token, p_limit: 40 });
+  if (error){ box.innerHTML='<div class="cmt0">댓글을 불러오지 못했어요</div>'; return; }
+  box.innerHTML=""; $("bcCnt").textContent = data?.length ? String(data.length) : "";
+  if (!data?.length){ box.innerHTML='<div class="cmt0">아직 댓글이 없어요. 첫 댓글을 남겨 보세요!</div>'; return; }
+  data.forEach(c=>{
+    const row=document.createElement("div"); row.className="cmt"+(c.mine?" mine":"");
+    const ic=classIcon(c.sender_class, false, null);
+    const b=document.createElement("div"); b.className="cb";
+    const h=document.createElement("div"); h.className="ch";
+    const nm=document.createElement("b"); nm.textContent=c.sender_name; nm.style.color=CLASS_COLOR[c.sender_class]||"";
+    const meta=document.createElement("small"); meta.textContent=` ${c.sender_realm||""} · ${agoShort(c.created_at)}`;
+    h.append(nm, meta);
+    if (c.mine){ const del=document.createElement("button"); del.type="button"; del.className="del"; del.textContent="지우기";
+      del.onclick=async()=>{ if (!del.dataset.ok){ del.dataset.ok="1"; del.textContent="한 번 더 누르면 지워요"; setTimeout(()=>{ if (del.isConnected){ delete del.dataset.ok; del.textContent="지우기"; } }, 3000); return; }
+        const { error } = await sb.rpc("wow_inquiry_delete", { p_token: me.token, p_id: c.id }); if (error){ toast(errMsg(error)); return; } loadComments(); };
+      h.appendChild(del); }
+    const t=document.createElement("div"); t.className="ct"; t.textContent=c.body;
+    b.append(h, t); row.append(ic, b); box.appendChild(row);
+  });
+}
+$("bcAsk").addEventListener("input", (e)=>autoGrow(e.target));
 $("bcAskSend").onclick = async () => {
-  const t=$("bcAsk"), body=t.value.trim(); if (body.length<2){ toast("문의 내용을 적어 주세요"); t.focus(); return; }
+  const t=$("bcAsk"), body=t.value.trim(); if (body.length<2){ toast("내용을 조금 더 적어 주세요"); t.focus(); return; }
   const btn=$("bcAskSend"); btn.disabled=true;
   const { error } = await sb.rpc("wow_inquiry", { p_token: me.token, p_body: body });
   btn.disabled=false;
   if (error){ toast(errMsg(error)); return; }
-  t.value=""; toast("문의를 보냈어요. 고마워요!");
+  t.value=""; autoGrow(t); toast("댓글을 달았어요. 고마워요!"); loadComments();
 };
 // 아래 시트(봇 카드, 퀘스트, 프로필, 내 정보)는 아래로 쓸어내리면 닫힘. 새로고침으로 넘어가지 않게 막음
 function swipeClose(id){
