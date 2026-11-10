@@ -488,7 +488,7 @@
       <summary>자세히</summary>
       <p class="note">원문은 같은 진영에게만 전달되고, 메시지는 3일 뒤 지워져요. 감정 표현(<b>/인사</b>, <b>/춤</b> 등)은 상대 진영에게도 보여요.</p>
       <p class="note">궁금한 건 <b>@포에버봇</b>에게 물어보세요. 퀘스트·몬스터 위치를 블리자드 공식 데이터로 찾아줘요.</p>
-      <p class="note" style="font-size:12px">월드 오브 워크래프트: 포에버 한국 서버 플레이어를 위한 채팅이에요. 일반 서버와 PvP 서버가 나뉘어 있고, 파티·공대 모집, 거래, 길드 모집, 질문 글을 말머리로 모아볼 수 있어요.</p>
+      <p class="note" style="font-size:12px">월드 오브 워크래프트: 포에버 한국 서버 플레이어를 위한 채팅이에요. 일반 서버와 PvP 서버가 나뉘어 있고, 파티 모집과 길드 모집 글은 따로 모아볼 수 있어요.</p>
     </details>
     <p class="legal">비공식 팬 사이트예요. World of Warcraft와 게임 이미지는 Blizzard Entertainment의 자산이며, 이 사이트는 블리자드와 관계없어요.</p>
   </div>
@@ -700,6 +700,8 @@ const TAGS = [
   { id: "guild", label: "길드" }, { id: "party", label: "파티" },
 ];
 const TAG_LABEL = Object.fromEntries(TAGS.map(t => [t.id, t.label]));
+// 위쪽 탭은 전체 · 파티 · 길드만. 잡담·질문·거래는 따로 나누지 않고 전체에서 (예전 글의 말머리는 그대로 둠)
+const TAB_TAGS = ["party","guild"].map(id => TAGS.find(t => t.id===id));
 
 // 블리자드 공식 아이콘 서버 (불러오지 못하면 글자 배지로 대체)
 const ICON = (n) => `https://render.worldofwarcraft.com/us/icons/56/${n}.jpg`;
@@ -904,7 +906,7 @@ function renderMsg(m, inThread){
   el.append(t, ic, who);
   if (m.sender_level){ const l=document.createElement("span"); l.className="lv"; l.textContent="Lv."+m.sender_level; el.appendChild(l); }
   const colon=document.createElement("span"); colon.className="colon"; colon.textContent=": "; el.appendChild(colon);
-  if (m.tag && m.tag!=="chat" && !m.parent_id){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag; el.appendChild(g); }
+  if (m.tag && m.tag!=="chat" && m.tag!=="question" && !m.parent_id){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag; el.appendChild(g); }
   if (m.foreign_lang){ const l=document.createElement("span"); l.className="lang"; l.textContent=`[${LANG[m.sender_faction]}]`; el.appendChild(l); }
   const tx=document.createElement("span"); tx.className="text";
   if (m.foreign_lang) tx.textContent=m.body; else { tx.appendChild(linkify(m.body)); markMe(tx); } el.appendChild(tx);
@@ -1097,7 +1099,7 @@ function syncComposer(){
   $("send").classList.toggle("botmode", botMode && !replyCtx);
   if (replyCtx) return;
   const inTab = filterTag!=="all";
-  $("msgInput").placeholder = botMode ? "포에버봇에게 물어보기" : inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : "잡담 쓰기 (파티는 위 탭)";
+  $("msgInput").placeholder = botMode ? "포에버봇에게 물어보기" : inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : "메시지 (파티·길드는 위 탭)";
 }
 // 봇 단추: 켜 두면 쓰는 글이 모두 포에버봇에게 가는 질문이 됨 (다시 누르면 꺼짐)
 var botMode = false;
@@ -1571,7 +1573,7 @@ const EYE_OFF = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" str
 function buildChips(){
   renderSwitch();
   const c=$("chips"); c.innerHTML="";
-  const all=[{id:"all",label:"전체"}, ...TAGS];
+  const all=[{id:"all",label:"전체"}, ...TAB_TAGS];
   all.forEach(t=>{
     const b=document.createElement("button"); b.type="button"; b.className="chip"+(filterTag===t.id?" on":"");
     b.textContent=t.label; b.onclick=()=>{ filterTag=t.id; buildChips(); renderAll(); syncComposer(); };
@@ -1664,7 +1666,7 @@ $("send").onsubmit = async (ev) => {
   if (forBot(body)) callBot(newId);
   // 지금 탭에서 안 보이는 글(예: 파티 탭에서 봇에게 질문)이면 전체로 옮겨서 바로 보이게
   if (!parent && filterTag!=="all" && !visible({ tag, player_id: me.id, sender_faction: me.faction, id: newId })){
-    filterTag="all"; buildChips(); renderAll(); syncComposer(); toast(`${TAG_LABEL[tag]||"잡담"} 글이라 전체에서 보여 드려요`);
+    filterTag="all"; buildChips(); renderAll(); syncComposer(); toast(tag==="question" ? "포에버봇에게 한 질문은 전체에서 보여 드려요" : "전체에서 보여 드려요");
   }
   input.focus();
 };
