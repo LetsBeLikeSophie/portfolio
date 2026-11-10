@@ -1505,6 +1505,16 @@ function botQuestionOf(m){
   }
   return "";
 }
+// 봇이 모른다고 한 질문(또는 그 답)에 답장하면 서버가 AI로 보고 '확인 중인 제보'로 주워 감
+function harvestReply(parentId, newId){
+  const p=cache.find(x=>x.id===parentId); if (!p || !newId) return;
+  const worth = p.tag==="bot" ? BOT_UNKNOWN.test(p.body||"") : forBot(p.body||"");
+  if (!worth) return;
+  fetch(`${FN_URL}?action=harvest`, { method:"POST", headers:{ apikey: SUPABASE_KEY, "Content-Type":"application/json" },
+    body: JSON.stringify({ token: me.token, id: newId }) })
+    .then(r=>r.json()).then(d=>{ if (d?.harvested){ toast("🧠 포에버봇이 이 답을 확인 중인 제보로 올렸어요. 고마워요!"); loadReports(); } })
+    .catch(()=>{});
+}
 function teachFrom(m){
   const q=botQuestionOf(m);
   openBotCard("teach");
@@ -1911,6 +1921,7 @@ $("send").onsubmit = async (ev) => {
   if (error) { toast(errMsg(error)); if (!input.value) input.value=body; return; }
   if (replyCtx) cancelReply();
   if (forBot(body)) callBot(newId);
+  if (parent) harvestReply(parent, newId);
   // 지금 탭에서 안 보이는 글(예: 파티 탭에서 봇에게 질문)이면 전체로 옮겨서 바로 보이게
   if (!parent && filterTag!=="all" && !visible({ tag, player_id: me.id, sender_faction: me.faction, id: newId })){
     filterTag="all"; buildChips(); renderAll(); syncComposer(); toast(tag==="question" ? "포에버봇에게 한 질문은 전체에서 보여 드려요" : "전체에서 보여 드려요");
@@ -1946,8 +1957,9 @@ $("tSend").onsubmit = async (ev) => {
   const input=$("tInput"); const body=input.value.trim(); if (!body || !threadParent) return;
   if (body.startsWith("/")) { toast("감정 표현은 채팅에서만 할 수 있어요"); return; }
   input.value="";
-  const { error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: applyLinks(body), p_tag: "chat", p_parent: threadParent });
+  const { data: newId, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: applyLinks(body), p_tag: "chat", p_parent: threadParent });
   if (error) { toast(errMsg(error)); if (!input.value) input.value=body; }
+  else harvestReply(threadParent, newId);
   input.focus();
 };
 
