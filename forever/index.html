@@ -1107,7 +1107,7 @@ function syncComposer(){
   $("send").classList.toggle("botmode", botMode && !replyCtx);
   if (replyCtx) return;
   const inTab = filterTag!=="all";
-  $("msgInput").placeholder = botMode ? "포에버봇에게 물어보기" : inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : "메시지 (파티·길드는 위 탭)";
+  $("msgInput").placeholder = botMode ? "포에버봇에게 물어보기" : inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : "메시지를 입력해 보세요";
 }
 // 봇 단추: 켜 두면 쓰는 글이 모두 포에버봇에게 가는 질문이 됨 (다시 누르면 꺼짐)
 var botMode = false;
