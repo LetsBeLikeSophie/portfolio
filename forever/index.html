@@ -401,9 +401,10 @@
   #chat,#thread,#notif,#dm,#dmChat{top:var(--vvTop,0px);bottom:auto;height:var(--vvH,100%)}
   html,body{overscroll-behavior:none}
   #botcard .card,#qcard .card,#prof .card,#sheet .card{overscroll-behavior:contain}
-  /* 토스트는 위쪽(머리글 위)에: 아래에 두면 방금 올라온 글을 가렸음 */
-  .toast{top:calc(var(--vvTop,0px) + env(safe-area-inset-top) + 10px);bottom:auto;transform:translate(-50%,-6px);transition:opacity .2s,transform .2s;
-    box-shadow:0 6px 20px #000c}
+  /* 토스트는 화면 가운데쯤, 금색 바탕: 아래에 두면 방금 올라온 글을 가렸고 맨 위는 눈에 잘 안 띄었음 */
+  .toast{top:calc(var(--vvTop,0px) + var(--vvH,100vh) * .42);bottom:auto;transform:translate(-50%,-6px);transition:opacity .2s,transform .2s;
+    background:linear-gradient(180deg,#f0d27a,#d9b04f);border:1px solid #a88433;color:#1a1205;font-weight:700;
+    padding:10px 16px;border-radius:999px;box-shadow:0 8px 24px #000c}
   .toast.show{transform:translate(-50%,0)}
   /* 입력창 왼쪽 봇 단추: 켜면 포에버봇에게 묻기 */
   form.send .botbtn{width:42px;padding:0;background:#0006;border:1px solid var(--line);color:var(--muted);display:inline-flex;align-items:center;justify-content:center}
