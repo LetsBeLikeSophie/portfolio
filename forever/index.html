@@ -424,6 +424,15 @@
   #botcard .fans{margin-top:10px;padding:8px 10px;border-radius:10px;background:#e6c36a12;border:1px solid #e6c36a33;font-size:13px;line-height:1.7;color:#e8dcc4}
   #botcard .fans .fh{font-size:12px;color:var(--gold-dim);font-weight:700}
   #botcard .fans b{color:var(--gold)}
+  /* 알림·귓속말: 화면을 바꾸지 않고 아래에서 올라오는 시트. 빈 곳을 누르거나 위쪽을 아래로 쓸면 닫힘 */
+  #notif,#dm,#dmChat{top:calc(var(--vvTop,0px) + var(--vvH,100vh) * .06);height:calc(var(--vvH,100vh) * .94);z-index:8;
+    border-radius:16px 16px 0 0;border-top:1px solid var(--line);box-shadow:0 -12px 32px #000c;overflow:hidden}
+  #notif:not(.hidden),#dm:not(.hidden),#dmChat:not(.hidden){animation:sheetUp .2s ease-out}
+  @keyframes sheetUp{from{transform:translateY(48px);opacity:.5}}
+  .sheetv header{padding-top:8px;touch-action:none;cursor:grab}
+  .grab{width:40px;height:5px;border-radius:3px;background:#ffffff38;margin:0 auto 8px}
+  .sheetv header .top .shx{width:52px;text-align:right;font-size:18px;color:var(--muted)}
+  #sheetBack{position:fixed;inset:0;background:#000a;z-index:7}
   .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
@@ -508,36 +517,39 @@
 </section>
 
 <!-- 알림함 -->
-<section id="notif" class="hidden">
+<section id="notif" class="hidden sheetv">
   <header>
+    <div class="grab"></div>
     <div class="top">
-      <button type="button" id="nBack">‹ 채팅</button>
-      <div style="flex:1;text-align:center;color:var(--gold);font-weight:700">알림</div>
       <span style="width:52px"></span>
+      <div style="flex:1;text-align:center;color:var(--gold);font-weight:700">알림</div>
+      <button type="button" id="nBack" class="shx" aria-label="닫기">✕</button>
     </div>
   </header>
   <div id="nList"></div>
 </section>
 
 <!-- 귓속말 목록 -->
-<section id="dm" class="hidden">
+<section id="dm" class="hidden sheetv">
   <header>
+    <div class="grab"></div>
     <div class="top">
-      <button type="button" id="dmBack">‹ 채팅</button>
-      <div style="flex:1;text-align:center;color:var(--gold);font-weight:700">귓속말</div>
       <span style="width:52px"></span>
+      <div style="flex:1;text-align:center;color:var(--gold);font-weight:700">귓속말</div>
+      <button type="button" id="dmBack" class="shx" aria-label="닫기">✕</button>
     </div>
   </header>
   <div id="dmList"></div>
 </section>
 
 <!-- 귓속말 대화 -->
-<section id="dmChat" class="hidden">
+<section id="dmChat" class="hidden sheetv">
   <header>
+    <div class="grab"></div>
     <div class="top">
       <button type="button" id="dmcBack">‹ 목록</button>
       <div id="dmTitle"></div>
-      <span style="width:52px"></span>
+      <button type="button" id="dmcClose" class="shx" aria-label="닫기">✕</button>
     </div>
   </header>
   <div id="dmMsgs"></div>
@@ -1759,6 +1771,27 @@ async function subscribeDm(){
 $("dmBtn").onclick = () => { $("dm").classList.remove("hidden"); renderDmConvs(); loadDmConvs(); };
 $("dmBack").onclick = () => $("dm").classList.add("hidden");
 $("dmcBack").onclick = () => { closeDm(); $("dm").classList.remove("hidden"); loadDmConvs(); };
+// 알림·귓속말 시트: 뒤 배경을 누르거나, 위쪽(손잡이)을 아래로 쓸면 모두 닫힘
+const SHEET_IDS = ["notif","dm","dmChat"];
+function closeSheets(){ if (!$("dmChat").classList.contains("hidden")) closeDm(); $("dm").classList.add("hidden"); $("notif").classList.add("hidden"); }
+$("dmcClose").onclick = closeSheets;
+(function sheetSetup(){
+  const back=document.createElement("div"); back.id="sheetBack"; back.className="hidden"; document.body.appendChild(back);
+  back.onclick = closeSheets;
+  back.addEventListener("touchmove", (e)=>e.preventDefault(), { passive:false });
+  const sync=()=>back.classList.toggle("hidden", SHEET_IDS.every(id=>$(id).classList.contains("hidden")));
+  const mo=new MutationObserver(sync);
+  SHEET_IDS.forEach(id=>{
+    const sec=$(id); mo.observe(sec, { attributes:true, attributeFilter:["class"] });
+    const head=sec.querySelector("header"); let y0=null, dy=0;
+    head.addEventListener("touchstart", (e)=>{ if (e.target.closest("button")) return; y0=e.touches[0].clientY; dy=0; sec.style.transition="none"; }, { passive:true });
+    head.addEventListener("touchmove", (e)=>{ if (y0===null) return; dy=Math.max(0, e.touches[0].clientY-y0); e.preventDefault(); sec.style.transform=`translateY(${dy}px)`; }, { passive:false });
+    const end=()=>{ if (y0===null) return; y0=null; sec.style.transition="transform .18s ease-out";
+      if (dy>80){ sec.style.transform="translateY(100%)"; setTimeout(()=>{ closeSheets(); sec.style.transition=""; sec.style.transform=""; }, 180); }
+      else sec.style.transform=""; };
+    head.addEventListener("touchend", end); head.addEventListener("touchcancel", end);
+  });
+})();
 $("dmTitle").onclick = () => { if (dmWith) openProfile(dmWith); };
 $("dmInput").addEventListener("input", (e)=>autoGrow(e.target));
 $("dmInput").addEventListener("keydown", (e)=>{
