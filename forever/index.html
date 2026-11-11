@@ -87,6 +87,22 @@
   .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
   details summary{cursor:pointer;color:var(--muted);font-size:13px;text-align:center;list-style:none;padding:6px}
   details summary::-webkit-details-marker{display:none}
+  /* 로그인 전 채팅방 미리보기 + 안심 문구 */
+  .peek{margin:14px 0 12px;border:1px solid var(--line);border-radius:12px;background:#ffffff06;padding:10px 12px;text-align:left}
+  .peek .ph{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+  .peek .ph b{color:#f1dfae;font-weight:700}
+  .peek .dot{width:7px;height:7px;border-radius:50%;background:#6fd04a;box-shadow:0 0 6px #6fd04a}
+  .peek .dot.old{background:#7d7262;box-shadow:none}
+  .peek .pm{font-size:13px;line-height:1.45;padding:3px 0;display:flex;gap:6px;min-width:0}
+  .peek .pm .pn{font-weight:700;white-space:nowrap;flex:none}
+  .peek .pm .pt{color:#d8ccb4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .peek .pm .pt.g{color:#8a7e6a;font-style:italic}
+  .peek .pm .pa{margin-left:auto;flex:none;font-size:11px;color:#6d6354;padding-left:6px}
+  .peek .pf{font-size:11.5px;color:#7d7262;margin:6px 0 0;line-height:1.45}
+  .safe{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.5;color:#cbbfa8;margin:10px 2px 0;text-align:left}
+  .safe svg{flex:none;margin-top:2px;color:#6fd04a}
+  details.safeMore summary{font-size:12.5px;color:var(--gold-dim, #a8873e);padding:4px}
+  details.safeMore .note{text-align:left;margin-top:4px}
   .legal{font-size:11px;color:#6d6354;text-align:center;margin-top:16px;line-height:1.5}
 
   .pick{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-top:8px;padding:10px 12px;
@@ -601,9 +617,20 @@
 
     <!-- 처음 화면 -->
     <div id="altBox">
+      <div id="peek" class="peek hidden" aria-label="지금 채팅방 미리보기">
+        <div class="ph"><span class="dot" id="peekDot"></span><b id="peekStat"></b></div>
+        <div id="peekList"></div>
+        <p class="pf">로그인 전에는 다른 사람 글이 공용어/오크어로 보여요. 들어가면 같은 진영 글은 원래 말로 보여요.</p>
+      </div>
       <button class="btn bnet" id="bnetBtn" type="button">배틀넷으로 로그인</button>
       <div class="err" id="bnetErr"></div>
-      <p class="note" style="margin-top:2px;text-align:center">배틀넷 계정의 포에버 캐릭터로 입장해요</p>
+      <p class="safe"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+        <span>비밀번호는 블리자드 공식 로그인 화면에만 입력해요. 이 사이트는 비밀번호를 보거나 저장할 수 없어요.</span></p>
+      <details class="more safeMore">
+        <summary>어떤 정보를 받나요?</summary>
+        <p class="note">받는 건 <b>배틀태그</b>와 <b>포에버 캐릭터 목록</b>(이름·레벨·종족·직업·서버)뿐이에요. 이메일, 비밀번호, 결제 정보는 받지 않아요.</p>
+        <p class="note">로그인 화면 주소가 <b>battle.net</b>인지 직접 확인해 보세요. 블리자드 공식 연동 방식(OAuth)이라 비밀번호는 우리 사이트를 아예 거치지 않아요.</p>
+      </details>
 
     </div>
 
@@ -919,7 +946,43 @@ function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("show
 function errMsg(e){ return (e && (e.message || e.error_description)) || String(e); }
 // 일반·PvP 서버 모두 한 방에서 이야기해요 (서버는 프로필과 파티·길드·거래 글의 작은 표시로)
 const chOf = () => "general";
-function show(id){ for (const s of ["join","chat"]) $(s).classList.toggle("hidden", s!==id); }
+function show(id){ for (const s of ["join","chat"]) $(s).classList.toggle("hidden", s!==id); if (id==="join") onJoinShown(); }
+/* 들어온 흐름 세기: 이름·기기 정보 없이, 기기마다 하루 한 번씩 단계 숫자만 올림 */
+function track(step){
+  try { const k="wowchat_tr_"+step, d=new Date().toLocaleDateString("sv"); if (localStorage.getItem(k)===d) return; localStorage.setItem(k,d); } catch(_){}
+  try { sb.rpc("wow_track",{ p_step: step }).then(()=>{},()=>{}); } catch(_){}
+}
+/* 로그인 전 채팅방 미리보기 (가짜 없이 실제 최근 글만) */
+let peekLoaded = false;
+function onJoinShown(){
+  if (!$("altBox").classList.contains("hidden")) track("join_view");
+  if (peekLoaded) return; peekLoaded = true; loadPeek();
+}
+function agoTxt(iso){ const m=Math.max(0,Math.round((Date.now()-new Date(iso))/60000));
+  return m<1?"방금":m<60?m+"분 전":m<1440?Math.floor(m/60)+"시간 전":Math.floor(m/1440)+"일 전"; }
+async function loadPeek(){
+  try {
+    const { data } = await sb.rpc("wow_peek");
+    if (!data || !data.msgs || !data.msgs.length) return;
+    const fresh = Date.now()-new Date(data.last_at) < 3600e3;
+    $("peekDot").classList.toggle("old", !fresh);
+    $("peekStat").textContent = data.msgs_24h>0
+      ? `최근 24시간 글 ${data.msgs_24h}개` + (data.people_24h>0 ? ` · ${data.people_24h}명` : "") + ` · 마지막 글 ${agoTxt(data.last_at)}`
+      : `마지막 글 ${agoTxt(data.last_at)}`;
+    const box = $("peekList"); box.innerHTML = "";
+    data.msgs.slice(-4).forEach(m => {
+      const r=document.createElement("div"); r.className="pm";
+      const n=document.createElement("span"); n.className="pn"; n.textContent=m.name;
+      n.style.color = m.tag==="bot" ? "var(--gold)" : (CLASS_COLOR[m.class]||"#ddd");
+      const t=document.createElement("span"); t.className="pt"+(m.garbled?" g":"");
+      t.textContent = String(m.text||"").replace(/\[\[[a-z]+:[^\]]*?::([^\]]+)\]\]/g,"$1").replace(/\s+/g," ");
+      const a=document.createElement("span"); a.className="pa"; a.textContent=agoTxt(m.created_at);
+      r.append(n,t,a); box.appendChild(r);
+    });
+    $("peek").classList.remove("hidden");
+    track("peek_seen");
+  } catch(_){}
+}
 
 let me = null, channel = "general";
 let cache = [];
@@ -946,7 +1009,7 @@ async function startBnet(btn){
     btn.disabled = false;
   }
 }
-$("bnetBtn").onclick = () => startBnet($("bnetBtn"));
+$("bnetBtn").onclick = () => { track("login_click"); startBnet($("bnetBtn")); };
 $("refreshBtn").onclick = () => startBnet($("refreshBtn"));
 
 function showAlt(){ $("pickBox").classList.add("hidden"); $("altBox").classList.remove("hidden"); }
@@ -981,6 +1044,7 @@ function showPicker(acc){
       delete b.dataset.busy;
       if (error) { $("pickErr").textContent = errMsg(error); return; }
       ls.set("wowchat_token", data.token);
+      track("signup");
       enterChat(data);
     };
     b.onclick = go; b.onkeydown = (e)=>{ if (e.key==="Enter") go(); };
@@ -1013,6 +1077,7 @@ async function handleBnetReturn(params){
     const d = await r.json();
     if (!d.ok) throw new Error(d.message || "캐릭터를 불러오지 못했어요");
     ls.set("wowchat_account", d.account_token);
+    track("login_back");
     if (!(await openPickerFromAccount())) throw new Error("캐릭터 목록을 불러오지 못했어요");
   } catch (e) {
     $("bnetErr").textContent = errMsg(e);
@@ -2140,6 +2205,7 @@ async function subscribe(){
 }
 
 function enterChat(player){
+  track("chat_enter");
   me = player; channel = chOf(me.realm);
   cache = []; filterTag = "all"; newFrom = 0; jumpNew = true;
   show("chat");
