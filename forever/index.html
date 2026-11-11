@@ -544,6 +544,25 @@
   /* 봇이 모를 때 '제가 알아요' */
   .iknoww{order:7;flex-basis:100%;margin:5px 0 2px 33px}
   .iknow{border:1px dashed var(--gold-dim);background:#e6c36a12;color:var(--gold);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:700;cursor:pointer}
+  /* 사진 */
+  form.send > .cambtn{width:40px;padding:0;background:#0006;border:1px solid var(--line);color:var(--muted);display:inline-flex;align-items:center;justify-content:center}
+  form.send > .cambtn svg{width:21px;height:21px}
+  #photoBar{display:flex;align-items:center;gap:10px;padding:6px 12px;background:#1f1a14;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+  #photoBar img{width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:#000}
+  #photoBar img:not([src]){visibility:hidden}
+  #photoBar button{margin-left:auto;background:none;border:0;color:var(--muted);font-size:17px;cursor:pointer;padding:0 4px}
+  .msg .text .ph{display:block;position:relative;max-width:100%;border-radius:10px;overflow:hidden;background:#000;cursor:zoom-in;margin:2px 0 6px}
+  .msg .text.phonly{padding:3px!important}
+  .msg .text.phonly .ph{margin:0;border-radius:12px}
+  .msg .text .ph img{display:block;width:100%;height:100%;object-fit:cover}
+  .msg .text .ph.blur{cursor:pointer}
+  .msg .text .ph .phb{position:absolute;inset:-14px;background-size:cover;background-position:center;filter:blur(10px) saturate(.5) brightness(.6)}
+  .msg .text .ph .phl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-style:normal;color:#e8dcc6;text-shadow:0 1px 3px #000}
+  .msg .text .ph.gone{display:flex;align-items:center;justify-content:center;aspect-ratio:auto!important;height:auto;padding:14px 10px;font-size:12px;color:var(--muted);background:#ffffff08;cursor:default}
+  #photoView{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.96);display:flex;align-items:center;justify-content:center;touch-action:none;overflow:hidden}
+  #photoView img{max-width:100vw;max-height:100%;object-fit:contain;transform-origin:center;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+  #pvX{position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:12px;width:40px;height:40px;border-radius:50%;border:0;background:#ffffff24;color:#fff;font-size:18px;cursor:pointer}
+  .cdl{font-weight:700;color:var(--gold)} .cdl.done{color:#7bd17b}
   .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
@@ -605,8 +624,11 @@
   <div id="list"></div>
   <div id="tipBar" class="hidden"><span class="tl">👾 이렇게 물어보세요</span></div>
   <div id="replyBar" class="hidden"><span>↩ <b id="replyTo"></b> 님에게 답장</span><button type="button" id="replyX" aria-label="답장 취소">✕</button></div>
+  <div id="photoBar" class="hidden"><img id="photoPrev" alt=""><span id="photoTxt">사진 1장</span><button type="button" id="photoX" aria-label="사진 빼기">✕</button></div>
   <form class="send" id="send" autocomplete="off">
     <button type="button" class="botbtn" id="botBtn" aria-pressed="false" aria-label="포에버봇에게 묻기" title="포에버봇에게 묻기"></button>
+    <button type="button" class="cambtn" id="camBtn" aria-label="사진 보내기" title="사진 보내기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg></button>
+    <input type="file" id="photoIn" accept="image/*" hidden>
     <textarea id="msgInput" maxlength="300" rows="1" placeholder="메시지 입력" enterkeyhint="send"></textarea>
     <button type="submit" class="sendbtn" aria-label="전송" title="전송"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5.5 11.5 12 5l6.5 6.5"/></svg></button>
   </form>
@@ -726,6 +748,8 @@
     <button class="btn ghost sm" id="bcClose" type="button">닫기</button>
   </div>
 </div>
+
+<div id="photoView" class="hidden" role="dialog" aria-label="사진 크게 보기"><img id="pvImg" alt="사진" draggable="false"><button type="button" id="pvX" aria-label="닫기">✕</button></div>
 
 <div id="copyCard" class="hidden">
   <div class="card">
@@ -997,6 +1021,7 @@ function renderMsg(m, inThread){
     const t=document.createElement("span"); t.className="time"; t.textContent=fmtTime(m.created_at);
     const who=document.createElement("span"); who.className="who"; who.textContent=BOT_NAME;
     const tx=document.createElement("span"); tx.className="text"; tx.appendChild(linkify(m.body)); markMe(tx);
+    liveCooldown(m, tx);
     const co=document.createElement("span"); co.className="colon"; co.textContent=": ";
     const bic=classIcon(null, true);
     [bic, who].forEach(x=>{ x.style.cursor="pointer"; x.onclick=(e)=>{ e.stopPropagation(); openBotCard(); }; });
@@ -1034,7 +1059,11 @@ function renderMsg(m, inThread){
   if (m.tag && m.tag!=="chat" && m.tag!=="question" && !m.parent_id){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag; el.appendChild(g); }
   if (m.foreign_lang){ const l=document.createElement("span"); l.className="lang"; l.textContent=`[${LANG[m.sender_faction]}]`; el.appendChild(l); }
   const tx=document.createElement("span"); tx.className="text";
-  if (m.foreign_lang) tx.textContent=m.body; else { tx.appendChild(linkify(m.body)); markMe(tx); } el.appendChild(tx);
+  const onlyPhoto = m.photo && m.body===PHOTO_ONLY;
+  if (m.photo) tx.appendChild(photoEl(m));
+  if (onlyPhoto) tx.classList.add("phonly");
+  else if (m.foreign_lang) tx.appendChild(document.createTextNode(m.body)); else { tx.appendChild(linkify(m.body)); markMe(tx); }
+  el.appendChild(tx);
   // 말풍선(글)만 누르면 메뉴. 이름·아이콘은 프로필, 인용은 원래 글, 링크는 링크
   if (!inThread || inThread==="reply") el.onclick = (e) => { if (!e.target.closest(".text") || e.target.closest("a,.mnt,.mme,.qlink,[data-q]")) return; toggleActions(m, el); };
   return el;
@@ -1228,7 +1257,8 @@ function syncComposer(){
   $("send").classList.toggle("botmode", botMode && !replyCtx);
   if (replyCtx) return;
   const inTab = filterTag!=="all";
-  $("msgInput").placeholder = botMode ? "포에버봇에게 물어보기" : inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : "메시지를 입력해 보세요";
+  const wait = botWaitLeft();
+  $("msgInput").placeholder = botMode ? (wait>0 ? `${wait}초 뒤에 물어볼 수 있어요` : "포에버봇에게 물어보기") : inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : "메시지를 입력해 보세요";
 }
 // 봇 단추: 켜 두면 쓰는 글이 모두 포에버봇에게 가는 질문이 됨 (다시 누르면 꺼짐)
 var botMode = false;
@@ -1308,6 +1338,135 @@ function showTyping(){
   clearTimeout(showTyping._t); showTyping._t=setTimeout(clearTyping, 40000);
 }
 function clearTyping(){ $("list").querySelector(".typing")?.remove(); }
+/* ---------- 사진: 휴대폰에서 줄여서(위치 정보도 빠짐) 올리고, 말풍선엔 작게, 누르면 크게 ---------- */
+var PHOTO_BASE = `${SUPABASE_URL}/storage/v1/object/public/wow-photos/`;
+var PHOTO_ONLY = "📷 사진";
+var pendingPhoto = null, photoBusy = false;
+async function loadImage(file){
+  try { return await createImageBitmap(file, { imageOrientation: "from-image" }); } catch {}
+  const url = URL.createObjectURL(file);
+  try { return await new Promise((res, rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; }); }
+  finally { setTimeout(()=>URL.revokeObjectURL(url), 1000); }
+}
+async function shrinkPhoto(file){
+  const img = await loadImage(file); const W = img.width, H = img.height;
+  if (!W || !H) throw new Error("bad");
+  const draw = (max) => { const k = Math.min(1, max/Math.max(W, H)); const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(W*k)); c.height = Math.max(1, Math.round(H*k));
+    const x = c.getContext("2d"); x.fillStyle = "#000"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height); return c; };
+  const blob = (c, q) => new Promise((res, rej)=>c.toBlob(b=>b ? res(b) : rej(new Error("bad")), "image/jpeg", q));
+  let fc = draw(1280), full = await blob(fc, .82);
+  if (full.size > 640000) full = await blob(fc, .62);
+  if (full.size > 640000){ fc = draw(960); full = await blob(fc, .62); }
+  const thumb = await blob(draw(420), .74);
+  const tiny = draw(24).toDataURL("image/jpeg", .5);
+  return { full, thumb, tiny, w: fc.width, h: fc.height };
+}
+async function uploadPhoto(p){
+  const fd = new FormData();
+  fd.append("token", me.token); fd.append("full", p.full, "full.jpg"); fd.append("thumb", p.thumb, "thumb.jpg");
+  fd.append("tiny", p.tiny); fd.append("w", String(p.w)); fd.append("h", String(p.h));
+  let d = {};
+  try { const r = await fetch(`${FN_URL}?action=photo`, { method:"POST", headers:{ apikey: SUPABASE_KEY }, body: fd }); d = await r.json(); }
+  catch { throw new Error("사진을 올리지 못했어요. 잠시 뒤에 다시 해 주세요"); }
+  if (!d.ok || !d.id) throw new Error(d.message || "사진을 올리지 못했어요");
+  return d.id;
+}
+function clearPhoto(){
+  if (pendingPhoto?.url) URL.revokeObjectURL(pendingPhoto.url);
+  pendingPhoto = null; $("photoBar").classList.add("hidden"); $("photoPrev").removeAttribute("src");
+}
+$("camBtn").onclick = () => { if (!me){ toast("먼저 입장해 주세요"); return; } $("photoIn").click(); };
+$("photoIn").onchange = async (e) => {
+  const f = e.target.files?.[0]; e.target.value = ""; if (!f) return;
+  if (f.type && !f.type.startsWith("image/")){ toast("사진만 보낼 수 있어요"); return; }
+  $("photoTxt").textContent = "사진 준비 중…"; $("photoBar").classList.remove("hidden");
+  try {
+    const p = await shrinkPhoto(f); clearPhoto(); p.url = URL.createObjectURL(p.thumb); pendingPhoto = p;
+    $("photoPrev").src = p.url; $("photoTxt").textContent = "사진 1장"; $("photoBar").classList.remove("hidden");
+    $("msgInput").focus();
+  } catch { clearPhoto(); toast("이 사진은 열 수 없어요. 다른 사진으로 해 주세요"); }
+};
+$("photoX").onclick = clearPhoto;
+// 말풍선 속 사진. 상대 진영은 흐린 미리보기만 받아서 알아볼 수 없음
+function photoEl(m){
+  const p = m.photo, box = document.createElement("span"); box.className = "ph" + (p.blur ? " blur" : "");
+  const ar = Math.min(2, Math.max(.5, (p.w||1)/(p.h||1)));
+  box.style.width = Math.round(ar >= 1 ? 210 : 210*ar) + "px"; box.style.aspectRatio = String(ar);
+  if (p.blur){
+    const bg = document.createElement("span"); bg.className = "phb"; bg.style.backgroundImage = `url("${p.tiny}")`;
+    const l = document.createElement("span"); l.className = "phl"; l.textContent = "알아볼 수 없는 사진";
+    box.append(bg, l);
+    box.onclick = (e) => { e.stopPropagation(); toast("상대 진영 사진이라 알아볼 수 없어요"); };
+  } else {
+    const im = document.createElement("img"); im.src = PHOTO_BASE + p.thumb; im.alt = "사진"; im.loading = "lazy"; im.decoding = "async";
+    im.onerror = () => { box.classList.add("gone"); box.textContent = "기간이 지난 사진이에요"; };
+    box.appendChild(im);
+    box.onclick = (e) => { e.stopPropagation(); if (!box.classList.contains("gone")) openPhoto(PHOTO_BASE + p.full, PHOTO_BASE + p.thumb); };
+  }
+  return box;
+}
+// 크게 보기: 두 손가락으로 확대, 확대했을 땐 끌어서 이동, 아래로 쓸거나 빈 곳을 누르면 닫힘
+const pv = $("photoView"), pvImg = $("pvImg");
+let pz = { s:1, x:0, y:0 }, pg = null, pvMovedAt = 0;
+function pvApply(anim){ pvImg.style.transition = anim ? "transform .18s ease-out" : "none"; pvImg.style.transform = `translate(${pz.x}px,${pz.y}px) scale(${pz.s})`; }
+function openPhoto(src, low){
+  pz = { s:1, x:0, y:0 }; pvApply(false); pv.style.background = "";
+  pvImg.src = low; pvImg.dataset.want = src;
+  const hi = new Image(); hi.onload = () => { if (pvImg.dataset.want === src) pvImg.src = src; }; hi.src = src;
+  pv.classList.remove("hidden");
+}
+function closePhoto(){ pv.classList.add("hidden"); pvImg.removeAttribute("src"); pvImg.dataset.want = ""; }
+const tdist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+const pvStart1 = (t) => ({ mode: pz.s > 1.02 ? "pan" : "swipe", x0: t.clientX, y0: t.clientY, x: pz.x, y: pz.y, dy: 0 });
+pv.addEventListener("touchstart", (e) => { const t = e.touches;
+  if (t.length === 2) pg = { mode:"pinch", d: tdist(t), s: pz.s }; else if (t.length === 1) pg = pvStart1(t[0]); }, { passive:true });
+pv.addEventListener("touchmove", (e) => { if (!pg) return; e.preventDefault(); const t = e.touches;
+  if (pg.mode === "pinch" && t.length === 2){ pz.s = Math.min(5, Math.max(1, pg.s * tdist(t) / pg.d)); pvMovedAt = Date.now(); pvApply(false); }
+  else if (pg.mode === "pan" && t.length === 1){ pz.x = pg.x + t[0].clientX - pg.x0; pz.y = pg.y + t[0].clientY - pg.y0; pvMovedAt = Date.now(); pvApply(false); }
+  else if (pg.mode === "swipe" && t.length === 1){ pg.dy = t[0].clientY - pg.y0; if (Math.abs(pg.dy) > 6) pvMovedAt = Date.now();
+    pz.y = Math.max(0, pg.dy); pvApply(false); pv.style.background = `rgba(0,0,0,${Math.max(.35, .96 - pz.y/420)})`; }
+}, { passive:false });
+pv.addEventListener("touchend", (e) => { if (!pg) return; const g = pg;
+  if (e.touches.length){ if (g.mode === "pinch" && e.touches.length === 1) pg = pvStart1(e.touches[0]); return; }
+  pg = null;
+  if (g.mode === "swipe"){ if (g.dy > 110) closePhoto(); else { pz.y = 0; pvApply(true); pv.style.background = ""; } }
+  if (pz.s <= 1.02){ pz = { s:1, x:0, y:0 }; pvApply(true); }
+});
+pv.addEventListener("click", (e) => { if (Date.now() - pvMovedAt < 350) return; if (e.target === pvImg) return; closePhoto(); });
+pvImg.addEventListener("dblclick", () => { pz = pz.s > 1.02 ? { s:1, x:0, y:0 } : { s:2.2, x:0, y:0 }; pvApply(true); });
+$("pvX").onclick = (e) => { e.stopPropagation(); closePhoto(); };
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !pv.classList.contains("hidden")) closePhoto(); });
+
+/* ---------- 포에버봇 '잠깐만요': 남은 초가 실제로 줄어들고, 그동안 입력창에도 보임 ---------- */
+var botWaitUntil = 0, cdTimer = null;
+function botWaitLeft(){ return Math.max(0, Math.ceil((botWaitUntil - Date.now()) / 1000)); }
+function liveCooldown(m, tx){
+  const mt = (m.body||"").match(/(\d+)초 뒤에 다시 물어봐 주세요\.?/); if (!mt) return;
+  const n = Number(mt[1]); const until = Math.min(new Date(m.created_at).getTime() + n*1000, Date.now() + n*1000);
+  if (me && (m.body||"").startsWith("@"+me.name) && until > botWaitUntil) botWaitUntil = until;
+  const w = document.createTreeWalker(tx, NodeFilter.SHOW_TEXT);
+  while (w.nextNode()){
+    const node = w.currentNode, i = node.nodeValue.indexOf(mt[0]); if (i < 0) continue;
+    const after = node.splitText(i); after.splitText(mt[0].length);
+    const sp = document.createElement("span"); sp.className = "cdl"; sp.dataset.until = String(until); sp.textContent = mt[0];
+    after.replaceWith(sp); break;
+  }
+  setTimeout(startCd, 0);
+}
+function tickCd(){
+  let live = false;
+  document.querySelectorAll(".cdl[data-until]").forEach(el => {
+    const r = Math.ceil((Number(el.dataset.until) - Date.now()) / 1000);
+    if (r > 0){ el.textContent = `${r}초 뒤에 다시 물어봐 주세요.`; live = true; }
+    else { el.textContent = "이제 다시 물어봐도 돼요 ✅"; el.classList.add("done"); el.removeAttribute("data-until"); }
+  });
+  if (botWaitLeft() > 0) live = true;
+  syncComposer();
+  if (!live && cdTimer){ clearInterval(cdTimer); cdTimer = null; }
+}
+function startCd(){ if (!cdTimer) cdTimer = setInterval(tickCd, 1000); tickCd(); }
+
 function callBot(id){
   if (!id) return;
   showTyping();
@@ -1901,8 +2060,10 @@ function enterChat(player){
 
 $("send").onsubmit = async (ev) => {
   ev.preventDefault();
-  const input=$("msgInput"); let body=input.value.trim(); if (!body) return;
-  if (botMode && !replyCtx && !body.startsWith("/") && !forBot(body)) body = "@"+BOT_NAME+" "+body;
+  const input=$("msgInput"); let body=input.value.trim(); if (!body && !pendingPhoto) return;
+  if (botMode && !replyCtx && !body.startsWith("/") && !forBot(body)) body = ("@"+BOT_NAME+" "+body).trim();
+  if (forBot(body) && botWaitLeft()>0){ toast(`포에버봇은 ${botWaitLeft()}초 뒤에 물어볼 수 있어요`); startCd(); return; }
+  if (body.startsWith("/") && pendingPhoto){ toast("감정 표현에는 사진을 붙일 수 없어요"); return; }
   if (body.startsWith("/") && replyCtx){ toast("감정 표현은 답글로 못 해요. ✕를 눌러 답글을 취소해 주세요"); return; }
   if (body.startsWith("/")){
     const m=body.match(/^\/(\S+)\s*(.*)$/); const key=m?.[1]||""; const target=(m?.[2]||"").replace(/^@/,"").trim();
@@ -1916,9 +2077,17 @@ $("send").onsubmit = async (ev) => {
   const parent = replyCtx ? replyCtx.parent : null;
   const sendBody = applyLinks(body);
   if (sendBody.length > 300) { toast("링크가 많아서 300자를 넘었어요. 조금 줄여 주세요"); return; }
+  let photoId = null;
+  if (pendingPhoto){
+    if (photoBusy) return; photoBusy=true; $("photoTxt").textContent="사진 올리는 중…";
+    try { photoId = await uploadPhoto(pendingPhoto); }
+    catch (e) { toast(e.message || "사진을 올리지 못했어요"); return; }
+    finally { photoBusy=false; $("photoTxt").textContent="사진 1장"; }
+  }
   input.value=""; autoGrow(input);
-  const { data: newId, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: sendBody, p_tag: tag, p_parent: parent });
+  const { data: newId, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: sendBody, p_tag: tag, p_parent: parent, p_photo: photoId });
   if (error) { toast(errMsg(error)); if (!input.value) input.value=body; return; }
+  if (photoId) clearPhoto();
   if (replyCtx) cancelReply();
   if (forBot(body)) callBot(newId);
   if (parent) harvestReply(parent, newId);
