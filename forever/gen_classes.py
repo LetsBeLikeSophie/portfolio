@@ -77,9 +77,15 @@ h2{font-size:20px;margin:34px 0 10px;color:#f3e8d2;border-bottom:1px solid var(-
 .tal h3{font-size:15px;margin:0;color:#8fd3ff} .tal h3 small{color:var(--muted);font-weight:500;font-size:12px;margin-left:6px}
 .tal p{margin:3px 0 0;font-size:14px;color:#d6cab4}
 .tal p.r1{color:var(--muted);font-size:13px}
-table{width:100%;border-collapse:collapse;font-size:14px;background:var(--card);border-radius:12px;overflow:hidden}
-th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{color:var(--gold);font-weight:700;background:#1d1610}
+.fac{font-size:15px;margin:16px 0 8px;font-weight:700}
+.races{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.race{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.race h3{margin:0 0 8px;font-size:16px;display:flex;align-items:center;gap:8px}
+.race h3 img{width:28px;height:28px;border-radius:6px;box-shadow:0 0 0 1px #000a}
+.race h3 small{margin-left:auto;font-size:12px;font-weight:500;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;padding:3px 9px 3px 4px;border-radius:999px;background:#ffffff0d;border:1px solid var(--line);text-decoration:none;font-weight:600}
+.chip img{width:18px;height:18px;border-radius:50%}
 .ally{color:#8fb6ff} .horde{color:#ff8a7a}
 .others{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px} .others a{font-size:13px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;text-decoration:none}
 footer{margin-top:40px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
@@ -174,19 +180,27 @@ for name, d in data.items():
 cards = "".join(f'<a class="cls" href="/forever/classes/{SLUG[n]}.html"><img src="{ICON(CLASS_ICON[n])}" alt="{E(n)} 아이콘" width="44" height="44">'
                 f'<span><b style="color:{COLOR[n]}">{E(n)}</b><small>{E(ROLE[n])} · {E(" / ".join(d["specs"]))}</small></span></a>' for n, d in data.items())
 class_names = list(data.keys())
-head = "".join(f"<th>{E(n)}</th>" for n in class_names)
-rows = []
+def race_card(r):
+    ic = RACE_ICON.get(r["race"])
+    img = f'<img src="{ICON(ic)}" alt="{E(r["race"])} 아이콘" loading="lazy" width="28" height="28">' if ic else ""
+    chips = "".join(f'<a class="chip" href="/forever/classes/{SLUG[n]}.html" style="color:{COLOR[n]}">'
+                    f'<img src="{ICON(CLASS_ICON[n])}" alt="" loading="lazy" width="18" height="18">{E(n)}</a>'
+                    for n in class_names if n in r["classes"])
+    return (f'<div class="race"><h3>{img}<span class="{faction_class(r["faction"])}">{E(r["race"])}</span>'
+            f'<small>직업 {sum(n in r["classes"] for n in class_names)}개</small></h3><div class="chips">{chips}</div></div>')
+factions = []
 for r in races:
-    cells = "".join(f"<td>{'✔' if n in r['classes'] else ''}</td>" for n in class_names)
-    rows.append(f'<tr><td class="{faction_class(r["faction"])}"><b>{E(r["race"])}</b><br><small>{E(r["faction"])}</small></td>{cells}</tr>')
+    if r["faction"] not in factions: factions.append(r["faction"])
+race_html = "".join(f'<div class="fac {faction_class(f)}">{E(f)}</div><div class="races">'
+                    + "".join(race_card(r) for r in races if r["faction"] == f) + "</div>" for f in factions)
 body = f"""
 <div class="crumb"><a href="/forever/">포에버 채팅</a> › 직업 정리</div>
 <h1>와우 포에버 직업 정리</h1>
 <p class="lead">와우 포에버(월드 오브 워크래프트: 포에버)의 직업 9개, 전문화 27개, 특성 470개를 블리자드 공식 게임 데이터 기준으로 정리했어요. 직업을 누르면 전문화별 특성과 등급별 수치를 볼 수 있어요.</p>
 <div class="grid">{cards}</div>
-<a class="cta" href="/forever/">🤖 직업·특성·퀘스트가 궁금하면 포에버봇에게 물어보기 · 와우 포에버 채팅 들어가기</a>
+<a class="cta" href="/forever/">🤖 포에버봇에게 물어보러 가기</a>
 <h2>종족별로 고를 수 있는 직업</h2>
-<div style="overflow-x:auto"><table><tr><th>종족</th>{head}</tr>{"".join(rows)}</table></div>
+{race_html}
 <p class="lead" style="margin-top:10px">포에버에는 얼라이언스 「고등 마법원 스카이본」과 호드 「바람구체자 스카이본」 종족이 새로 있어요.</p>
 """
 title = "와우 포에버 직업 정리 – 9개 직업·전문화·특성, 종족별 직업 | 포에버 채팅"
