@@ -9,8 +9,10 @@
 //  POST ?action=harvest  {token, id}                   봇이 모른다고 한 질문에 단 답장 → AI 심사 후 '확인 중' 제보로 주워 감
 //  POST ?action=bmc&key=...                            Buy Me a Coffee 웹훅 → 포에버봇 배터리 충전 (key는 wow.bot_settings.webhook_key)
 //  GET  ?action=sync_classes&key=...                  블리자드 포에버 직업·종족·특성을 DB로 (패치 뒤 다시)
+//  POST ?action=push  {token, kind: msg|dm, id}        글·귓속말 보낸 뒤 → 받을 사람 휴대폰 알림 / GET ?action=push_key 공개 키
 //  GET  ?name=이름-성 / ?rulesets=1 / ?realm_id=번호 / ?media=이름-성   진단용
 // 비밀값: BLIZZARD_CLIENT_ID, BLIZZARD_CLIENT_SECRET, FOREVER_BOT_PROD_ANTHROPIC_KEY
+// 알림 비밀값(없으면 알림만 꺼짐): VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY
 // 선택: BLIZZARD_REGION(기본 kr), ALLOWED_REDIRECTS(쉼표 구분), FOREVER_BOT_MODEL(기본 claude-haiku-5-5)
 // 배포: Supabase 프로젝트 camtrip 의 Edge Function "wow-character" (verify_jwt 끔)
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
@@ -53,6 +55,32 @@ const withTimeout = <T,>(p: Promise<T>, ms = 4000) =>
   Promise.race([p, new Promise<never>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
 
 const serviceClient = () => createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+// ---------- 휴대폰(웹) 알림 ----------
+// 받을 기기는 DB(wow_push_targets)가 정함: 내 글 댓글·@이름·감정표현·귓속말, 그리고 하루 2번까지 "지금 대화 중"
+let webpushLib: any = null;
+async function sendPush(kind: "msg" | "dm", refId: number, tok: string | null) {
+  const pub = Deno.env.get("VAPID_PUBLIC_KEY")?.trim(), priv = Deno.env.get("VAPID_PRIVATE_KEY")?.trim();
+  if (!pub || !priv) return { ok: false, reason: "not_configured" };
+  const sb = serviceClient();
+  const { data, error } = await sb.rpc("wow_push_targets", { p_kind: kind, p_id: refId, p_token: tok });
+  if (error) return { ok: false, reason: error.message };
+  const targets: any[] = Array.isArray(data) ? data : [];
+  if (!targets.length) return { ok: true, sent: 0 };
+  if (!webpushLib) { webpushLib = (await import("npm:web-push@3.6.7")).default; }
+  webpushLib.setVapidDetails("https://itssophie.dev/forever/", pub, priv);
+  const gone: string[] = []; let sent = 0;
+  await Promise.all(targets.slice(0, 300).map(async (t) => {
+    const payload = JSON.stringify({ title: t.title, body: t.body, url: t.url, tag: t.tag });
+    try {
+      await webpushLib.sendNotification({ endpoint: t.endpoint, keys: { p256dh: t.p256dh, auth: t.auth } }, payload,
+        { TTL: kind === "dm" ? 86400 : 3600, urgency: "normal" });
+      sent++;
+    } catch (e: any) { if (e?.statusCode === 404 || e?.statusCode === 410) gone.push(t.endpoint); }
+  }));
+  if (gone.length) await sb.rpc("wow_push_drop", { p_endpoints: gone });
+  return { ok: true, sent, dropped: gone.length };
+}
 
 // ---------- 게임 데이터 검색 (포에버 한국 공식 데이터) ----------
 const searchCache = new Map<string, { exp: number; results: any[] }>();
@@ -292,7 +320,7 @@ const BOT_TOOLS = [
       hours: { type: "integer", description: "몇 시간 전까지 (기본 6, 최대 72)" } } } },
   { name: "class_info", description: "블리자드 공식 포에버 직업·종족 정보. class(직업 공식 이름, 예: 사냥꾼, 흑마법사, 성기사)를 주면 전문화·자원·진영별로 고를 수 있는 종족을, race(종족 이름, 예: 언데드, 나이트 엘프)를 주면 진영과 고를 수 있는 직업을 준다. 둘 다 비우면 전체 직업·종족 목록.",
     input_schema: { type: "object", properties: { class: { type: "string" }, race: { type: "string" } } } },
-  { name: "find_talents", description: "블리자드 공식 포에버 특성(특성 트리)을 찾는다. class(직업 공식 이름)·spec(전문화, 예: 야수, 회복, 방어)로 거르고, words(특성 이름이나 효과 단어 1~3개, 예: '치명타', '은신 이동')로 찾는다. 결과: 특성 이름, 전문화, 트리 줄(row, 0이 맨 위), 최대 등급, 등급별 효과 설명(포에버 수치).",
+  { name: "find_talents", description: "블리자드 공식 포에버 특성(특성 트리)을 찾는다. class(직업 공식 이름)·spec(전문화, 예: 야수, 회복, 방어)로 거르고, words(특성 이름이나 효과 단어 1~3개, 예: '치명타', '은신 이동')로 찾는다. 결과: 특성 이름, 전문화, 트리 줄(row, 1이 맨 위), 최대 등급, 등급별 효과 설명(포에버 수치).",
     input_schema: { type: "object", properties: { class: { type: "string" }, spec: { type: "string" }, words: { type: "string" } } } },
   { name: "get_quest", description: "퀘스트 번호로 블리자드 공식 포에버 퀘스트 상세(지역, 설명, 필요 레벨, 선행 퀘스트, 보상)를 가져온다.",
     input_schema: { type: "object", properties: { id: { type: "integer" } }, required: ["id"] } },
@@ -487,7 +515,11 @@ async function handleBot(tokenStr: string, messageId: number, host: string, regi
   const body: string = String(m.body ?? "").trim();
   const asker: string = m.sender_name;
   const ctx: Ctx = { host, region, token: appToken, sb, kbIds: new Set<number>(), asker: m.player_id, channel: m.channel };
-  const say = async (text: string) => { await sb.rpc("wow_bot_post", { p_channel: m.channel, p_body: text, p_reply_to: m.id }); return { ok: true }; };
+  const say = async (text: string) => {
+    const { data: bid } = await sb.rpc("wow_bot_post", { p_channel: m.channel, p_body: text, p_reply_to: m.id });
+    if (bid) await sendPush("msg", Number(bid), null).catch(() => {});
+    return { ok: true };
+  };
 
   if (body.startsWith("!") || body.includes("@" + BOT_NAME) || /(^|\s)@봇(\s|$)/.test(body)) {
     const photoUrl: string | null = m.photo ? `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/wow-photos/${m.photo}` : null;
@@ -739,6 +771,16 @@ Deno.serve(async (req) => {
         p_topic: v.topic || q.slice(0, 60) || "제보", p_body: v.body || a, p_pass: pass, p_note: v.reason });
       return json({ ok: true, harvested: !!rid && pass, topic: pass ? v.topic : undefined });
     }
+
+    // 글·귓속말을 보낸 뒤 화면이 부름: 받을 사람 기기에 알림 (보낸 사람 본인인지 DB가 확인)
+    if (action === "push") {
+      const b = await req.json().catch(() => ({}));
+      const tok = String(b.token ?? ""), rid = Number(b.id), kind = b.kind === "dm" ? "dm" : "msg";
+      if (!/^[0-9a-f-]{36}$/i.test(tok) || !Number.isFinite(rid)) return json({ ok: false }, 400);
+      return json(await sendPush(kind, rid, tok).catch((e) => ({ ok: false, reason: String(e) })));
+    }
+
+    if (action === "push_key") { const k = Deno.env.get("VAPID_PUBLIC_KEY")?.trim() || null; return json({ ok: true, key: k }, 200, !!k); }
 
     // Buy Me a Coffee 웹훅: 후원이 들어오면 포에버봇 배터리 충전. 주소의 key가 DB의 webhook_key와 같아야 받음
     if (action === "bmc") {
