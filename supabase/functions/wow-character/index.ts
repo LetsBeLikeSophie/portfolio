@@ -8,6 +8,7 @@
 //  POST ?action=photo  form{token, full, thumb, tiny, w, h}  채팅 사진 올리기: AI가 썸네일 검사 후 저장소 wow-photos → 사진 id
 //  POST ?action=harvest  {token, id}                   봇이 모른다고 한 질문에 단 답장 → AI 심사 후 '확인 중' 제보로 주워 감
 //  POST ?action=bmc&key=...                            Buy Me a Coffee 웹훅 → 포에버봇 배터리 충전 (key는 wow.bot_settings.webhook_key)
+//  GET  ?action=sync_classes&key=...                  블리자드 포에버 직업·종족·특성을 DB로 (패치 뒤 다시)
 //  GET  ?name=이름-성 / ?rulesets=1 / ?realm_id=번호 / ?media=이름-성   진단용
 // 비밀값: BLIZZARD_CLIENT_ID, BLIZZARD_CLIENT_SECRET, FOREVER_BOT_PROD_ANTHROPIC_KEY
 // 선택: BLIZZARD_REGION(기본 kr), ALLOWED_REDIRECTS(쉼표 구분), FOREVER_BOT_MODEL(기본 claude-haiku-5-5)
@@ -181,6 +182,45 @@ async function syncQuestDetails(host: string, region: string, token: string, lim
   return { requested: list.length, saved, fail };
 }
 
+// 블리자드 공식 포에버 직업·종족·특성을 받아서 DB에 저장 (패치 뒤에 다시 실행)
+async function syncClasses(host: string, region: string, token: string) {
+  const ns = `static-forever-${region}`;
+  const idx = (p: string) => api(`${host}${p}?namespace=${ns}&locale=ko_KR`, token);
+  const href = (h: string) => api(`${h}${h.includes("?") ? "&" : "?"}locale=ko_KR`, token);
+  const ci = await idx("/data/wow/playable-class/index");
+  const classes = await Promise.all((ci.body?.classes ?? []).map(async (c: any) => {
+    const d = (await href(c.key.href)).body ?? {};
+    return { id: d.id ?? c.id, name: d.name ?? c.name, power: d.power_type?.name ?? null, specs: (d.specializations ?? []).map((s: any) => s.name) };
+  }));
+  const ri = await idx("/data/wow/playable-race/index");
+  const races = await Promise.all((ri.body?.races ?? []).map(async (r: any) => {
+    const d = (await href(r.key.href)).body ?? {};
+    return { id: d.id ?? r.id, name: d.name ?? r.name, faction: d.faction?.name ?? null, selectable: d.is_selectable ?? true,
+      classes: (d.playable_classes ?? []).map((x: any) => x.name) };
+  }));
+  const ti = await idx("/data/wow/talent-tree/index");
+  const trees: any[] = ti.body?.spec_talent_trees ?? [];
+  const talents: any[] = []; let sample: any = null;
+  for (let i = 0; i < trees.length; i += 6) {
+    const got = await Promise.all(trees.slice(i, i + 6).map((t: any) => href(t.key.href).then((r) => ({ t, d: r.body ?? {} }))));
+    for (const { t, d } of got) {
+      const cls = d.playable_class?.name ?? null, spec = d.playable_specialization?.name ?? t.name;
+      for (const n of [...(d.class_talent_nodes ?? []), ...(d.spec_talent_nodes ?? [])]) {
+        if (!sample) sample = Object.keys(n);
+        const ranks: any[] = n.ranks ?? [];
+        const tt = ranks[0]?.tooltip ?? ranks[0]?.choice_of_tooltips?.[0];
+        if (!tt?.talent?.id) continue;
+        talents.push({ id: tt.talent.id, name: tt.talent.name, class: cls, spec,
+          row: n.display_row ?? n.row ?? null, col: n.display_col ?? n.column ?? null, max_rank: ranks.length || 1,
+          descs: ranks.map((r: any) => String(r.tooltip?.spell_tooltip?.description ?? "").slice(0, 600)).filter(Boolean),
+          cast: tt.spell_tooltip?.cast_time ?? null });
+      }
+    }
+  }
+  const { data, error } = await serviceClient().rpc("wow_game_sync", { p_classes: classes, p_races: races, p_talents: talents });
+  return { saved: data, error: error?.message, trees: trees.length, node_keys: sample };
+}
+
 // ---------- 포에버봇 ----------
 const tokenOf = (x: any) => `[[${x.type}:${x.id}:${x.quality ?? ""}:${x.name}]]`;
 const KIND = { quest: "퀘스트", item: "아이템", npc: "NPC", spell: "주문", achievement: "업적" } as Record<string, string>;
@@ -193,6 +233,7 @@ const BOT_SYSTEM = `너는 "와우 포에버(World of Warcraft: Forever)" 한국
 - 몬스터·NPC·퀘스트 아이템 이름이 나오면 먼저 find_quests(words=그 이름)로 찾아. 퀘스트 설명에 그 이름이 나오는 퀘스트의 지역과 설명 속 단서(예: "서쪽 언덕", "호숫가")가 곧 답이야. 지역을 말했으면 zone도 넣어.
 - 퀘스트 이름을 말하면 search_game_data로 찾고 get_quest로 내용(지역, 할 일, 보상)을 확인해.
 - 운영진 자료(search_knowledge)도 같이 찾아봐.
+- 직업·전문화·특성·종족 질문은 class_info와 find_talents로 찾아서 블리자드 공식 포에버 수치로 답해. 특성 수치는 등급마다 다르니 몇 등급 기준인지 밝혀. "제일 센 직업", "특성 추천" 같은 평가는 공식 자료에 없으니 특성 효과를 근거로 "이런 특성이 있어서 ~에 좋아 보여요" 정도로만 말하고 단정하지 마.
 - 검색이 안 되면 한국 공식 표기로 바꿔서 한 번 더 찾아 (예: 쓰랄→스랄, 실바나스, 오그리마, 스톰윈드). 단어를 바꿔 다시 찾는 건 한 번까지만, get_quest는 많아야 2번까지만.
 - 같은 몬스터·NPC가 여러 지역 퀘스트에 나오면 "모르겠다"고 하지 말고 지역들을 짧게 다 말해 (예: "듀로타의 칼바위 언덕 근처([[quest:837::영토 침범]])와 붉은구름 고원 동쪽 칼날가시 협곡([[quest:780::전투멧돼지]])에 있어요").
 - 찾은 자료가 조금이라도 질문과 맞으면 그걸로 답해. "확인된 정보가 없어요"는 관련 자료가 정말 하나도 없을 때만 써.
@@ -236,6 +277,10 @@ const BOT_TOOLS = [
       words: { type: "string", description: "공백으로 구분한 핵심 단어 0~4개. 하나만 맞아도 걸린다 (예: '힐 힐러 사제')" },
       tag: { type: "string", enum: ["party", "trade", "guild", "question", "chat"], description: "말머리로 거르기 (없으면 전체)" },
       hours: { type: "integer", description: "몇 시간 전까지 (기본 6, 최대 72)" } } } },
+  { name: "class_info", description: "블리자드 공식 포에버 직업·종족 정보. class(직업 공식 이름, 예: 사냥꾼, 흑마법사, 성기사)를 주면 전문화·자원·진영별로 고를 수 있는 종족을, race(종족 이름, 예: 언데드, 나이트 엘프)를 주면 진영과 고를 수 있는 직업을 준다. 둘 다 비우면 전체 직업·종족 목록.",
+    input_schema: { type: "object", properties: { class: { type: "string" }, race: { type: "string" } } } },
+  { name: "find_talents", description: "블리자드 공식 포에버 특성(특성 트리)을 찾는다. class(직업 공식 이름)·spec(전문화, 예: 야수, 회복, 방어)로 거르고, words(특성 이름이나 효과 단어 1~3개, 예: '치명타', '은신 이동')로 찾는다. 결과: 특성 이름, 전문화, 트리 줄(row, 0이 맨 위), 최대 등급, 등급별 효과 설명(포에버 수치).",
+    input_schema: { type: "object", properties: { class: { type: "string" }, spec: { type: "string" }, words: { type: "string" } } } },
   { name: "get_quest", description: "퀘스트 번호로 블리자드 공식 포에버 퀘스트 상세(지역, 설명, 필요 레벨, 선행 퀘스트, 보상)를 가져온다.",
     input_schema: { type: "object", properties: { id: { type: "integer" } }, required: ["id"] } },
   { name: "get_item", description: "아이템 번호로 블리자드 공식 포에버 아이템 상세(등급, 레벨, 능력치, 효과)를 가져온다.",
@@ -287,6 +332,17 @@ async function runTool(name: string, input: any, ctx: Ctx) {
       return data.map((m: any) => ({ who: m.sender_name, cls: m.sender_class, lv: m.sender_level,
         tag: TAG_KO[m.tag] ?? m.tag, when: agoKo(m.created_at), reply: m.is_reply || undefined, text: m.body,
         replies: m.reply_count || undefined }));
+    }
+    if (name === "class_info") {
+      const { data } = await ctx.sb.rpc("wow_class_info", { p_class: input?.class ? String(input.class) : null, p_race: input?.race ? String(input.race) : null });
+      return data ?? "직업·종족 자료를 찾지 못했어요";
+    }
+    if (name === "find_talents") {
+      const { data } = await ctx.sb.rpc("wow_talent_find", { p_words: input?.words ? String(input.words).slice(0, 60) : null,
+        p_class: input?.class ? String(input.class) : null, p_spec: input?.spec ? String(input.spec) : null, p_limit: 25 });
+      if (!data?.length) return "맞는 특성을 찾지 못했어요";
+      return data.map((t: any) => ({ name: t.name, class: t.class, spec: t.spec, row: t.row, max_rank: t.max_rank,
+        effect: t.max_rank > 1 && t.descs?.length > 1 ? `1등급: ${t.descs[0]} / ${t.descs.length}등급: ${t.descs[t.descs.length - 1]}` : (t.descs?.[0] ?? "") }));
     }
     if (name === "get_quest") return await questDetail(Number(input?.id), ctx.host, ctx.region, ctx.token);
     if (name === "get_item") {
@@ -718,6 +774,12 @@ Deno.serve(async (req) => {
       const { data: ok } = await serviceClient().rpc("wow_bot_test_key_ok", { p_key: url.searchParams.get("key") ?? "" });
       if (!ok) return json({ ok: false, reason: "forbidden" }, 403);
       return json(await syncQuests(host, region, token));
+    }
+
+    if (action === "sync_classes") {
+      const { data: ok } = await serviceClient().rpc("wow_bot_test_key_ok", { p_key: url.searchParams.get("key") ?? "" });
+      if (!ok) return json({ ok: false, reason: "forbidden" }, 403);
+      return json(await syncClasses(host, region, token));
     }
 
     if (action === "sync_quest_details") {
