@@ -573,6 +573,7 @@
   #qcard .qd{white-space:pre-line}
   .tag .srvtag{margin-left:5px;padding:0 5px;border-radius:999px;font-size:10px;font-weight:700;background:#00000059;color:#e6c36a;border:1px solid #e6c36a40}
   .tag .srvtag.pvp{color:#ff8a7a;border-color:#ff8a7a40}
+  .guideLink{display:block;text-align:center;margin:12px 0 4px;font-size:13.5px;font-weight:700;color:var(--gold);text-decoration:none}
   .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
@@ -606,8 +607,9 @@
       <summary>자세히</summary>
       <p class="note">원문은 같은 진영에게만 전달되고, 메시지는 3일 뒤 지워져요. 감정 표현(<b>/인사</b>, <b>/춤</b> 등)은 상대 진영에게도 보여요.</p>
       <p class="note">궁금한 건 <b>@포에버봇</b>에게 물어보세요. 퀘스트·몬스터 위치를 블리자드 공식 데이터로 찾아줘요.</p>
-      <p class="note" style="font-size:12px">월드 오브 워크래프트: 포에버 한국 서버 플레이어를 위한 채팅이에요. 일반 서버와 PvP 서버가 나뉘어 있고, 파티 모집과 길드 모집 글은 따로 모아볼 수 있어요.</p>
+      <p class="note" style="font-size:12px">월드 오브 워크래프트: 포에버 한국 서버 플레이어를 위한 채팅이에요. 일반·PvP 서버가 한 방에서 이야기하고, 파티 모집과 길드 모집 글은 내 서버 글만 따로 모아볼 수 있어요.</p>
     </details>
+    <a class="guideLink" href="/forever/classes/">📘 와우 포에버 직업·특성 정리 보기</a>
     <p class="legal">비공식 팬 사이트예요. World of Warcraft와 게임 이미지는 Blizzard Entertainment의 자산이며, 이 사이트는 블리자드와 관계없어요.</p>
   </div>
 </section>
@@ -1342,7 +1344,7 @@ async function openTalent(id, name){
   if (!talentInfo.has(id)){ const { data } = await sb.rpc("wow_talent_info", { p_ids: [id] }); talentInfo.set(id, data?.[0] || null); }
   const t = talentInfo.get(id);
   $("qTitle").textContent = t?.name || name || "특성";
-  renderFacts(t ? [["직업", t.class], ["전문화", t.spec], ["특성 줄", t.row!=null ? `위에서 ${t.row+1}번째 줄` : null],
+  renderFacts(t ? [["직업", t.class], ["전문화", t.spec], ["특성 줄", t.row!=null && t.row<=10 ? `위에서 ${t.row}번째 줄` : null],
     ["최대 등급", `${t.max_rank}등급`]].filter(r=>r[1]) : [], false);
   $("qcard").querySelector(".qdh").textContent = "효과";
   $("qWh").textContent = "와우헤드에서 보기"; $("qNote").classList.add("hidden");
