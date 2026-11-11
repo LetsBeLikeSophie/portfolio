@@ -843,13 +843,13 @@
   <div class="card">
     <div style="font-size:17px;font-weight:700;color:var(--gold);margin-bottom:10px">홈 화면에 추가하기</div>
     <ol class="guide">
-      <li>Safari 아래쪽 <b>공유 버튼</b> <span class="shareIc"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span> 을 눌러요 <small style="color:var(--muted)">(안 보이면 <b>⋯</b>를 먼저 눌러요)</small></li>
-      <li>목록을 내려서 <b>홈 화면에 추가</b>를 눌러요</li>
-      <li>오른쪽 위 <b>추가</b>를 누르면 끝!</li>
-      <li>홈 화면 아이콘으로 열면 <b>휴대폰 알림</b>도 켤 수 있어요</li>
+      <li>아래 <b>공유 열기</b>를 눌러요</li>
+      <li>뜨는 목록을 내려서 <b>홈 화면에 추가</b>를 눌러요</li>
+      <li>오른쪽 위 <b>추가</b>를 누르면 끝! 홈 화면 아이콘으로 열면 <b>휴대폰 알림</b>도 켤 수 있어요</li>
     </ol>
-    <p class="note" id="iosNote">Safari가 아닌 앱(카톡, 디코 안 브라우저 등)으로 열었다면 먼저 Safari로 열어 주세요.</p>
-    <button class="btn" id="iosClose" type="button">알겠어요</button>
+    <p class="note" id="iosNote">카톡·디코 안에서 열었다면 목록에 「홈 화면에 추가」가 없어요. 먼저 Safari로 열어 주세요.</p>
+    <button class="btn" id="iosShare" type="button" style="display:flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> 공유 열기</button>
+    <button class="btn ghost sm" id="iosClose" type="button">닫기</button>
   </div>
 </div>
 
@@ -2555,6 +2555,11 @@ document.querySelectorAll(".installBtn").forEach(b => b.onclick = async () => {
   toast("브라우저 메뉴(⋮)에서 '홈 화면에 추가'를 눌러 주세요");
 });
 $("iosClose").onclick = () => $("iosGuide").classList.add("hidden");
+// 공유 창을 바로 열어 줌: 아이폰 공유 목록에 「홈 화면에 추가」가 있어요
+$("iosShare").onclick = async () => {
+  if (!navigator.share) { toast("Safari 아래쪽 공유 버튼을 눌러 주세요"); return; }
+  try { await navigator.share({ title: "포에버 채팅", url: location.origin + "/forever/" }); } catch {}
+};
 
 /* ---------- 휴대폰 알림 (웹 푸시) ---------- */
 var pushKey = null, pushEndpoint = null;
@@ -2621,7 +2626,7 @@ async function maybeShowPushBar(){
     if (Notification.permission !== "default" || !(await getPushKey())) return;
     $("pushTxt").textContent = "나를 부르거나 댓글·귓속말이 오면 휴대폰으로 알려 드릴까요?"; $("pushGo").textContent = "알림 켜기";
   } else if (isIOS && !isStandalone()) {
-    $("pushTxt").textContent = "아이폰은 홈 화면에 추가하면 알림을 받을 수 있어요"; $("pushGo").textContent = "방법 보기";
+    $("pushTxt").textContent = "홈 화면에 추가하면 아이폰에서도 알림을 받을 수 있어요"; $("pushGo").textContent = "추가하기";
   } else return;
   $("pushBar").classList.remove("hidden");
 }
