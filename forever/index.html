@@ -1369,7 +1369,7 @@ async function uploadPhoto(p){
   let d = {};
   try { const r = await fetch(`${FN_URL}?action=photo`, { method:"POST", headers:{ apikey: SUPABASE_KEY }, body: fd }); d = await r.json(); }
   catch { throw new Error("사진을 올리지 못했어요. 잠시 뒤에 다시 해 주세요"); }
-  if (!d.ok || !d.id) throw new Error(d.message || "사진을 올리지 못했어요");
+  if (!d.ok || !d.id){ const er = new Error(d.message || "사진을 올리지 못했어요"); er.blocked = !!d.blocked; throw er; }
   return d.id;
 }
 function clearPhoto(){
@@ -2079,9 +2079,9 @@ $("send").onsubmit = async (ev) => {
   if (sendBody.length > 300) { toast("링크가 많아서 300자를 넘었어요. 조금 줄여 주세요"); return; }
   let photoId = null;
   if (pendingPhoto){
-    if (photoBusy) return; photoBusy=true; $("photoTxt").textContent="사진 올리는 중…";
+    if (photoBusy) return; photoBusy=true; $("photoTxt").textContent="사진 확인 중…";
     try { photoId = await uploadPhoto(pendingPhoto); }
-    catch (e) { toast(e.message || "사진을 올리지 못했어요"); return; }
+    catch (e) { toast(e.message || "사진을 올리지 못했어요"); if (e.blocked){ photoBusy=false; clearPhoto(); } return; }
     finally { photoBusy=false; $("photoTxt").textContent="사진 1장"; }
   }
   input.value=""; autoGrow(input);
