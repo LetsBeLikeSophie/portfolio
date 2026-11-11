@@ -210,13 +210,25 @@ async function syncClasses(host: string, region: string, token: string) {
         const ranks: any[] = n.ranks ?? [];
         const tt = ranks[0]?.tooltip ?? ranks[0]?.choice_of_tooltips?.[0];
         if (!tt?.talent?.id) continue;
-        talents.push({ id: tt.talent.id, name: tt.talent.name, class: cls, spec,
+        talents.push({ id: tt.talent.id, name: tt.talent.name, class: cls, spec, spell_id: tt.spell_tooltip?.spell?.id ?? null,
           row: n.display_row ?? n.row ?? null, col: n.display_col ?? n.column ?? null, max_rank: ranks.length || 1,
           descs: ranks.map((r: any) => String(r.tooltip?.spell_tooltip?.description ?? "").slice(0, 600)).filter(Boolean),
           cast: tt.spell_tooltip?.cast_time ?? null });
       }
     }
   }
+  // 특성 아이콘: 주문 그림 (render.worldofwarcraft.com 의 아이콘 이름만 저장)
+  const spellIds = [...new Set(talents.map((t) => t.spell_id).filter(Boolean))];
+  const iconOf = new Map<number, string>();
+  for (let i = 0; i < spellIds.length; i += 25) {
+    await Promise.all(spellIds.slice(i, i + 25).map(async (sid) => {
+      const r = await api(`${host}/data/wow/media/spell/${sid}?namespace=${ns}&locale=ko_KR`, token).catch(() => null);
+      const u: string = (r?.body?.assets ?? []).find((a: any) => a.key === "icon")?.value ?? "";
+      const nm = u.split("/").pop()?.replace(/\.jpg$/, "") ?? "";
+      if (/^[a-z0-9_\-]+$/i.test(nm)) iconOf.set(sid as number, nm.toLowerCase());
+    }));
+  }
+  talents.forEach((t) => { t.icon = t.spell_id ? iconOf.get(t.spell_id) ?? null : null; });
   const { data, error } = await serviceClient().rpc("wow_game_sync", { p_classes: classes, p_races: races, p_talents: talents });
   return { saved: data, error: error?.message, trees: trees.length, node_keys: sample };
 }
@@ -259,8 +271,9 @@ const BOT_SYSTEM = `너는 "와우 포에버(World of Warcraft: Forever)" 한국
 
 답변 형식:
 - 한국어, 친근한 존댓말. 2~3문장, 200자 이내 (채팅방 글을 정리할 때는 300자까지). 채팅이라 마크다운(**굵게**, # 제목, 목록 기호)은 쓰지 마.
-- 퀘스트/아이템/NPC를 말할 땐 도구 결과의 link 값을 그대로 붙여 써 (예: [[quest:837::영토 침범]]). 직접 만들어 쓰지 마.
-- 채팅방 사람을 말할 땐 이름 앞에 @를 붙여 (예: @레골라스). 누르면 프로필이 열려.
+- 퀘스트/아이템/NPC/특성을 말할 땐 도구 결과의 link 값을 그대로 붙여 써 (예: [[quest:837::영토 침범]], [[talent:134371::급속 성장]]). 아이콘과 함께 보여. 직접 만들어 쓰지 마.
+- 답은 질문한 사람 이름이 자동으로 앞에 붙어서 나가. 그러니 답을 "○○님," 같은 호칭으로 시작하지 말고 바로 본론부터 말해.
+- 다른 채팅방 사람을 말할 땐 이름 앞에 @를 붙이고 이름을 띄어쓰기까지 전부 그대로 써 (예: @레골라스, @아 살릴까). 이름 일부만 쓰지 마. 누르면 프로필이 열려.
 - 주소는 괄호로 감싸지 말고 앞뒤에 띄어쓰기를 둬. 운영진 자료를 썼으면 마지막에 출처 주소를 붙여.`;
 
 const BOT_TOOLS = [
@@ -341,7 +354,7 @@ async function runTool(name: string, input: any, ctx: Ctx) {
       const { data } = await ctx.sb.rpc("wow_talent_find", { p_words: input?.words ? String(input.words).slice(0, 60) : null,
         p_class: input?.class ? String(input.class) : null, p_spec: input?.spec ? String(input.spec) : null, p_limit: 25 });
       if (!data?.length) return "맞는 특성을 찾지 못했어요";
-      return data.map((t: any) => ({ name: t.name, class: t.class, spec: t.spec, row: t.row, max_rank: t.max_rank,
+      return data.map((t: any) => ({ name: t.name, link: `[[talent:${t.id}::${t.name}]]`, class: t.class, spec: t.spec, row: t.row, max_rank: t.max_rank,
         effect: t.max_rank > 1 && t.descs?.length > 1 ? `1등급: ${t.descs[0]} / ${t.descs.length}등급: ${t.descs[t.descs.length - 1]}` : (t.descs?.[0] ?? "") }));
     }
     if (name === "get_quest") return await questDetail(Number(input?.id), ctx.host, ctx.region, ctx.token);
@@ -463,7 +476,7 @@ async function screenPhoto(jpeg: Uint8Array): Promise<{ ok: boolean; reason: str
   return { ok: j.ok !== false, reason: String(j.reason ?? "").slice(0, 120) };
 }
 
-const plain = (t: string) => t.replace(/\[\[(?:quest|item|npc|spell|achievement):\d+:[A-Z_]*:([^\]\n]{1,60})\]\]/g, "[$1]");
+const plain = (t: string) => t.replace(/\[\[(?:quest|item|npc|spell|achievement|talent):\d+:[A-Z_]*:([^\]\n]{1,60})\]\]/g, "[$1]");
 // 채팅방 글을 찾는 질문 (이런 건 예전 답을 다시 쓰면 안 된다)
 const CHAT_Q = /파티|구하|구인|모집|힐러|탱커|딜러|거래|판매|구매|팝니다|삽니다|길드|누가|아까|방금|채팅/;
 
@@ -508,7 +521,11 @@ async function handleBot(tokenStr: string, messageId: number, host: string, regi
       answer = data?.length ? `정리된 자료에서 찾은 내용이에요. 📌 ${data[0].title}: ${String(data[0].body).slice(0, 200)}${data[0].source_url ? " " + data[0].source_url : ""}`
         : "지금은 답변을 할 수 없어요. 잠시 뒤에 다시 물어봐 주세요.";
     }
-    return say(`@${asker} ${answer.replace(/\*\*/g, "")}`);
+    // 앞머리에 질문자를 다시 부르는 말("@살릴까님,")은 이름이 이미 붙으니 뺌
+    answer = answer.replace(/\*\*/g, "").trim();
+    const lead = answer.match(/^@?([^\n,!.@]{1,24}?)\s*님\s*[,!.]?\s*/);
+    if (lead && asker.replace(/\s/g, "").includes(lead[1].replace(/\s/g, ""))) answer = answer.slice(lead[0].length);
+    return say(`@${asker} ${answer}`);
   }
   return { ok: true, skipped: "not_for_bot" };
 }
