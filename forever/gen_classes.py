@@ -64,7 +64,7 @@ h1{font-family:Georgia,"Times New Roman",serif;color:var(--gold);font-size:28px;
 h1 img{width:40px;height:40px;border-radius:8px;box-shadow:0 0 0 1px #000a}
 h2{font-size:20px;margin:34px 0 10px;color:#f3e8d2;border-bottom:1px solid var(--line);padding-bottom:6px}
 .lead{color:#d6cab4;margin:4px 0 18px}
-.facts{display:grid;grid-template-columns:110px 1fr;gap:6px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14.5px}
+.facts{display:grid;grid-template-columns:72px 1fr;gap:6px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14.5px}
 .facts dt{color:var(--muted)} .facts dd{margin:0}
 .cta{display:block;margin:18px 0;padding:14px 16px;border-radius:12px;border:1px solid var(--gold-dim);background:#e6c36a14;color:var(--gold);
   text-decoration:none;font-weight:700;text-align:center}
@@ -72,11 +72,33 @@ h2{font-size:20px;margin:34px 0 10px;color:#f3e8d2;border-bottom:1px solid var(-
 .cls{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-decoration:none;color:var(--text)}
 .cls img{width:44px;height:44px;border-radius:8px} .cls b{display:block;font-size:16px} .cls small{color:var(--muted)}
 .row{margin:14px 0 4px;font-size:13px;color:var(--gold-dim);font-weight:700}
-.tal{display:flex;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:6px 0}
-.tal img{width:36px;height:36px;border-radius:6px;flex:none;box-shadow:0 0 0 1px #000a;background:#000}
-.tal h3{font-size:15px;margin:0;color:#8fd3ff} .tal h3 small{color:var(--muted);font-weight:500;font-size:12px;margin-left:6px}
-.tal p{margin:3px 0 0;font-size:14px;color:#d6cab4}
-.tal p.r1{color:var(--muted);font-size:13px}
+.facts dd .fl{display:block}
+.tabs{position:sticky;top:0;z-index:5;display:flex;gap:6px;margin:26px -16px 0;padding:10px 16px;background:#0d0b09ee;backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.tabs a{flex:1;text-align:center;padding:8px 6px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);text-decoration:none;font-weight:700;font-size:14px}
+.tabs a.on{color:#1a1208;background:var(--gold);border-color:var(--gold)}
+.spec{scroll-margin-top:70px}
+.spec h2{display:flex;align-items:baseline;gap:8px} .spec h2 small{font-size:13px;color:var(--muted);font-weight:500}
+.hint{font-size:13px;color:var(--muted);margin:12px 0 0}
+.tree{display:grid;gap:12px 6px;background:linear-gradient(#1a140e,#120e0a);border:1px solid var(--line);border-radius:14px;padding:16px 8px 14px 30px}
+.tree .rn{font-size:11px;color:var(--gold-dim);align-self:start;justify-self:start;margin:16px 0 0 -24px;width:18px;text-align:center}
+.tb{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0;-webkit-tap-highlight-color:transparent}
+.tb .ic{position:relative;width:48px;height:48px}
+.tb img{width:48px;height:48px;border-radius:9px;box-shadow:0 0 0 2px #5a4a2e,0 2px 6px #000c;background:#000;display:block}
+.tb .mr{position:absolute;right:-6px;bottom:-5px;font-size:10px;font-weight:800;color:#9fe870;background:#0b0906;border:1px solid #5a4a2e;border-radius:6px;padding:0 4px;line-height:15px}
+.tb .nm{font-size:11.5px;line-height:1.25;color:#e9e1d2;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tb:hover img,.tb:focus-visible img{box-shadow:0 0 0 2px var(--gold),0 2px 8px #000c}
+.tb .d{display:none}
+dialog{border:1px solid var(--gold-dim);border-radius:16px;background:#17120d;color:var(--text);padding:0;width:min(420px,calc(100% - 32px));box-shadow:0 20px 60px #000}
+dialog::backdrop{background:#000a}
+.md{padding:18px 18px 16px}
+.md .hd{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.md .hd img{width:52px;height:52px;border-radius:10px;box-shadow:0 0 0 2px #5a4a2e}
+.md .hd b{display:block;font-size:18px;color:#8fd3ff} .md .hd small{color:var(--muted);font-size:13px}
+.md ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.md li{font-size:14.5px;background:#ffffff08;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.md li b{color:var(--gold);font-size:12px;margin-right:6px}
+.md li.more{cursor:pointer;text-align:center;color:var(--gold);font-size:13px;font-weight:700;background:none;border-style:dashed;padding:6px}
+.md .x{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:block;text-align:center;margin-top:14px;padding:10px;border-radius:10px;background:#ffffff10;font-weight:700}
 .fac{font-size:15px;margin:16px 0 8px;font-weight:700}
 .races{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
 .race{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
@@ -128,30 +150,63 @@ def page(title, desc, path, body, ld):
 def faction_class(f):
     return "ally" if "얼라" in f else "horde"
 
+def tal_btn(d, t, pos):
+    ic = d["icons"].get(t["id"], {}).get("icon")
+    src = ICON(ic) if ic else ""
+    descs = t.get("descs") or []
+    lis = "".join(f'<li><b>{i}등급</b>{E(x)}</li>' for i, x in enumerate(descs, 1))
+    return (f'<button class="tb" type="button" style="{pos}"><span class="ic"><img src="{src}" alt="{E(t["name"])} 아이콘" loading="lazy" width="48" height="48">'
+            f'<span class="mr">{t["max_rank"]}</span></span><span class="nm">{E(t["name"])}</span>'
+            f'<span class="d" data-max="{t["max_rank"]}"><ol>{lis}</ol></span></button>')
+
+TREE_JS = """
+const md=document.getElementById('md');
+document.querySelectorAll('.tb').forEach(b=>b.addEventListener('click',()=>{
+  const d=b.querySelector('.d');
+  document.getElementById('mdI').src=b.querySelector('img').src;
+  document.getElementById('mdN').textContent=b.querySelector('.nm').textContent;
+  document.getElementById('mdR').textContent=b.closest('.spec').querySelector('h2').firstChild.textContent.trim()+' · 최대 '+d.dataset.max+'등급';
+  const L=document.getElementById('mdL');L.innerHTML=d.querySelector('ol').innerHTML;
+  const li=[...L.children];
+  if(li.length>2){const mid=li.slice(1,-1);mid.forEach(x=>x.hidden=true);
+    const m=document.createElement('li');m.className='more';m.textContent=(li.length>3?'2~'+(li.length-1):'2')+'등급도 보기';
+    m.onclick=()=>{mid.forEach(x=>x.hidden=false);m.remove()};li[0].after(m);}
+  md.showModal();
+}));
+document.getElementById('mdX').onclick=()=>md.close();
+md.addEventListener('click',e=>{if(e.target===md)md.close()});
+const tabs=[...document.querySelectorAll('.tabs a')],secs=tabs.map(a=>document.getElementById(decodeURIComponent(a.hash.slice(1))));
+function onScroll(){let k=0;secs.forEach((s,i)=>{if(s.getBoundingClientRect().top<120)k=i});tabs.forEach((a,i)=>a.classList.toggle('on',i===k))}
+addEventListener('scroll',onScroll,{passive:true});onScroll();
+"""
+
 # ---------- 직업 페이지 ----------
 urls = []
 for name, d in data.items():
     slug = SLUG[name]; path = f"/forever/classes/{slug}.html"; urls.append(path)
     specs = d["specs"]
-    race_txt = " / ".join(f'<span class="{faction_class(f)}">{E(f)}</span>: {E(", ".join(rs))}' for f, rs in d["races"].items())
+    race_txt = "".join(f'<span class="fl"><span class="{faction_class(f)}">{E(f)}</span> · {E(", ".join(rs))}</span>' for f, rs in d["races"].items())
     sec = []
     for sp in specs:
         tl = [t for t in d["talents"] if t["spec"] == sp]
-        rows = {}
-        for t in tl: rows.setdefault(t["row"], []).append(t)
-        parts = [f'<h2 id="{E(sp)}">{E(name)} {E(sp)} 특성 ({len(tl)}개)</h2>']
-        for r in sorted(rows, key=lambda x: (x is None or x > 10, x or 0)):
-            parts.append(f'<div class="row">{"위에서 " + str(r) + "번째 줄" if r is not None and r <= 10 else "기타"}</div>')
-            for t in sorted(rows[r], key=lambda x: (x.get("col") or 0)):
-                ic = d["icons"].get(t["id"], {}).get("icon")
-                descs = t.get("descs") or []
-                last = descs[-1] if descs else ""
-                first = descs[0] if len(descs) > 1 else ""
-                img = f'<img src="{ICON(ic)}" alt="{E(t["name"])} 아이콘" loading="lazy" width="36" height="36">' if ic else '<img alt="" width="36" height="36">'
-                parts.append(f'<div class="tal">{img}<div><h3>{E(t["name"])}<small>최대 {t["max_rank"]}등급</small></h3>'
-                             + (f'<p class="r1">1등급: {E(first)}</p>' if first else "")
-                             + f'<p>{(str(len(descs)) + "등급: ") if first else ""}{E(last)}</p></div></div>')
-        sec.append("\n".join(parts))
+        ok = [t for t in tl if t["row"] is not None and t["row"] <= 10 and t.get("col")]
+        base = min([t["col"] for t in ok] or [1]) - 1   # 직업 전체 칸 번호라 전문화마다 1부터 다시 셈
+        ncol = 4
+        main = [t for t in ok if 1 <= t["col"] - base <= ncol]
+        for t in main: t["c"] = t["col"] - base
+        extra = [t for t in tl if t not in main]
+        rows = sorted({t["row"] for t in main})
+        cells = []
+        for gi, r in enumerate(rows, 1):
+            cells.append(f'<span class="rn" style="grid-row:{gi};grid-column:1">{r}</span>')
+            for t in sorted([t for t in main if t["row"] == r], key=lambda x: x["c"]):
+                cells.append(tal_btn(d, t, f"grid-row:{gi};grid-column:{t['c']}"))
+        gi = len(rows)
+        for i, t in enumerate(extra):
+            if i % ncol == 0: gi += 1
+            cells.append(tal_btn(d, t, f"grid-row:{gi};grid-column:{i % ncol + 1}"))
+        sec.append(f'<section class="spec" id="{E(sp)}"><h2>{E(name)} {E(sp)} 특성 <small>{len(tl)}개</small></h2>'
+                   f'<div class="tree" style="grid-template-columns:repeat({ncol},minmax(0,1fr))">{"".join(cells)}</div></section>')
     others = "".join(f'<a href="/forever/classes/{SLUG[o]}.html">{E(o)}</a>' for o in data if o != name)
     body = f"""
 <div class="crumb"><a href="/forever/">포에버 채팅</a> › <a href="/forever/classes/">직업 정리</a> › {E(name)}</div>
@@ -161,10 +216,14 @@ for name, d in data.items():
   <dt>역할</dt><dd>{E(ROLE[name])}</dd>
   <dt>자원</dt><dd>{E(d["power"] or "-")}</dd>
   <dt>전문화</dt><dd>{" · ".join(f'<a href="#{E(s)}">{E(s)}</a>' for s in specs)}</dd>
-  <dt>고를 수 있는 종족</dt><dd>{race_txt}</dd>
+  <dt>종족</dt><dd>{race_txt}</dd>
 </dl>
-<a class="cta" href="/forever/">🤖 {E(name)} 특성이 궁금하면 포에버봇에게 물어보기 · 와우 포에버 채팅 들어가기</a>
+<a class="cta" href="/forever/">🤖 {E(name)} 특성, 포에버봇에게 물어보기</a>
+<nav class="tabs">{"".join(f'<a href="#{E(s)}">{E(s)}</a>' for s in specs)}</nav>
+<p class="hint">특성 아이콘을 누르면 등급별 설명이 나와요. 왼쪽 숫자는 위에서부터 몇 번째 줄인지예요.</p>
 {"".join(sec)}
+<dialog id="md"><div class="md"><div class="hd"><img id="mdI" alt=""><div><b id="mdN"></b><small id="mdR"></small></div></div><ol id="mdL"></ol><button class="x" id="mdX" type="button">닫기</button></div></dialog>
+<script>{TREE_JS}</script>
 <h2>다른 직업</h2><div class="others">{others}</div>
 <a class="cta" href="/forever/">와우 포에버 채팅에서 파티·길드 구하고 포에버봇에게 물어보기</a>
 """
