@@ -357,6 +357,12 @@
   /* 알림 */
   .bell{position:relative;background:#0006;border:1px solid var(--line);border-radius:999px;width:34px;height:34px;
     display:grid;place-items:center;color:var(--gold);cursor:pointer;flex:none;padding:0}
+  .gdchip{flex:none;margin-left:auto;margin-right:8px;font-size:12px;font-weight:700;color:var(--gold);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 9px;background:#0006;white-space:nowrap}
+  #pushBar{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 12px;background:#1d1710;border-bottom:1px solid var(--line);font-size:13px;line-height:1.4}
+  #pushBar.hidden{display:none}
+  #pushBar span{flex:1}
+  #pushBar #pushGo{flex:none;background:var(--gold);color:#1a1209;border:0;border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;cursor:pointer}
+  #pushBar #pushX{flex:none;background:none;border:0;color:var(--muted);font-size:15px;padding:4px 6px;cursor:pointer}
   .bdot{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;
     background:var(--danger);color:#fff;font-size:10px;font-weight:700;line-height:17px;text-align:center}
   #notif{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);z-index:7}
@@ -627,12 +633,14 @@
     </div>
     <div class="chiprow">
       <div class="chips" id="chips"></div>
+      <a class="gdchip" id="guideBtn" href="/forever/classes/" title="와우 포에버 직업·특성 정리">📘 직업·특성</a>
       <button type="button" class="sw" id="enemySw" role="switch" aria-checked="true">
         <span id="enemyLbl"></span><span class="eye" id="enemyEye"></span>
       </button>
     </div>
   </header>
   <div class="online hidden" id="online">접속 중…</div>
+  <div id="pushBar" class="hidden"><span id="pushTxt"></span><button type="button" id="pushGo">알림 켜기</button><button type="button" id="pushX" aria-label="나중에">✕</button></div>
   <div id="list"></div>
   <div id="tipBar" class="hidden"><span class="tl">👾 이렇게 물어보세요</span></div>
   <div id="replyBar" class="hidden"><span>↩ <b id="replyTo"></b> 님에게 답장</span><button type="button" id="replyX" aria-label="답장 취소">✕</button></div>
@@ -709,6 +717,8 @@
   <div class="card">
     <div id="sheetInfo" style="font-size:15px;line-height:1.8"></div>
     <button class="btn" id="switchBtn" type="button">캐릭터 바꾸기</button>
+    <button class="btn ghost sm" id="pushBtn" type="button">🔔 휴대폰 알림 켜기</button>
+    <a class="btn ghost sm" href="/forever/classes/" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box">📘 직업·특성 정리 보기</a>
     <button class="btn ghost sm installBtn hidden" type="button">📲 홈 화면에 추가</button>
     <button class="btn ghost sm" id="logoutBtn" type="button">로그아웃</button>
     <button class="btn ghost sm" id="closeSheet" type="button">닫기</button>
@@ -809,6 +819,7 @@
       <li>Safari 아래쪽 <b>공유 버튼</b> <span class="shareIc"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span> 을 눌러요 <small style="color:var(--muted)">(안 보이면 <b>⋯</b>를 먼저 눌러요)</small></li>
       <li>목록을 내려서 <b>홈 화면에 추가</b>를 눌러요</li>
       <li>오른쪽 위 <b>추가</b>를 누르면 끝!</li>
+      <li>홈 화면 아이콘으로 열면 <b>휴대폰 알림</b>도 켤 수 있어요</li>
     </ol>
     <p class="note" id="iosNote">Safari가 아닌 앱(카톡, 디코 안 브라우저 등)으로 열었다면 먼저 Safari로 열어 주세요.</p>
     <button class="btn" id="iosClose" type="button">알겠어요</button>
@@ -1533,7 +1544,7 @@ function reaskEl(m){
     b.disabled = true; b.textContent = "다시 묻는 중…";
     const { data: newId, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: q.body, p_tag: "question", p_parent: null });
     if (error){ toast(errMsg(error)); b.disabled = false; b.textContent = "🔁 다시 물어보기"; return; }
-    reasked.add(m.id); b.textContent = "다시 물어봤어요"; callBot(newId);
+    reasked.add(m.id); b.textContent = "다시 물어봤어요"; callBot(newId); pushAfter("msg", newId);
   };
   w.appendChild(b); setTimeout(startCd, 0);
   return w;
@@ -1885,8 +1896,9 @@ $("prof").onclick = (e) => { if (e.target.id==="prof") $("prof").classList.add("
 let EMOTES = [];
 async function loadEmotes(){ if (EMOTES.length) return; const { data } = await sb.rpc("wow_emote_list"); EMOTES = data || []; }
 async function sendEmote(key, target){
-  const { error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: key, p_tag: "emote", p_parent: null, p_target: target || null });
+  const { data: eid, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: key, p_tag: "emote", p_parent: null, p_target: target || null });
   if (error) { toast(errMsg(error)); return false; }
+  pushAfter("msg", eid);
   return true;
 }
 
@@ -2146,6 +2158,7 @@ function enterChat(player){
   loadBlocked(); loadDmConvs(); subscribeDm();
   loadEmotes();
   setupTipBar();
+  pushOnEnter();
   if (!ls.get("wowchat_tip_reply")) { ls.set("wowchat_tip_reply","1"); setTimeout(()=>toast("글을 누르면 답글을 달 수 있어요"), 1800); }
 }
 
@@ -2182,6 +2195,7 @@ $("send").onsubmit = async (ev) => {
   if (replyCtx) cancelReply();
   if (forBot(body)) callBot(newId);
   if (parent) harvestReply(parent, newId);
+  pushAfter("msg", newId);
   // 지금 탭에서 안 보이는 글(예: 파티 탭에서 봇에게 질문)이면 전체로 옮겨서 바로 보이게
   if (!parent && filterTag!=="all" && !visible({ tag, player_id: me.id, sender_faction: me.faction, id: newId })){
     filterTag="all"; buildChips(); renderAll(); syncComposer(); toast(tag==="question" ? "포에버봇에게 한 질문은 전체에서 보여 드려요" : "전체에서 보여 드려요");
@@ -2219,7 +2233,7 @@ $("tSend").onsubmit = async (ev) => {
   input.value="";
   const { data: newId, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: applyLinks(body), p_tag: "chat", p_parent: threadParent });
   if (error) { toast(errMsg(error)); if (!input.value) input.value=body; }
-  else harvestReply(threadParent, newId);
+  else { harvestReply(threadParent, newId); pushAfter("msg", newId); }
   input.focus();
 };
 
@@ -2392,8 +2406,9 @@ $("dmSend").onsubmit = async (ev) => {
   ev.preventDefault();
   const input=$("dmInput"); const body=input.value.trim(); if (!body || !dmWith) return;
   input.value=""; autoGrow(input);
-  const { error } = await sb.rpc("wow_dm_send", { p_token: me.token, p_to: dmWith.player_id, p_body: body });
+  const { data: did, error } = await sb.rpc("wow_dm_send", { p_token: me.token, p_to: dmWith.player_id, p_body: body });
   if (error){ toast(errMsg(error)); if (!input.value) input.value=body; return; }
+  pushAfter("dm", did);
   input.focus();
 };
 $("pDm").onclick = () => { if (profFor) openDm(profFor); };
@@ -2421,6 +2436,11 @@ $("meBtn").onclick = () => {
     b.style.color="var(--muted)"; b.textContent=k+"  "; d.append(b, document.createTextNode(v)); box.appendChild(d);
   });
   $("sheet").classList.remove("hidden");
+  currentSub().then(sub => { $("pushBtn").textContent = sub && Notification.permission==="granted" ? "🔕 휴대폰 알림 끄기" : "🔔 휴대폰 알림 켜기"; });
+};
+$("pushBtn").onclick = async () => {
+  const sub = await currentSub(); $("sheet").classList.add("hidden");
+  if (sub && Notification.permission==="granted") await disablePush(); else await enablePush();
 };
 $("closeSheet").onclick = () => $("sheet").classList.add("hidden");
 $("sheet").onclick = (e) => { if (e.target.id==="sheet") $("sheet").classList.add("hidden"); };
@@ -2430,7 +2450,7 @@ function leaveChat(){
   if (dmSub) sb.removeChannel(dmSub);
   msgSub=presence=dmSub=null; me=null; dmWith=null; dmConvs=[]; blocked=new Set(); $("dmDot").classList.add("hidden");
   $("dm").classList.add("hidden"); $("dmChat").classList.add("hidden");
-  $("sheet").classList.add("hidden"); $("thread").classList.add("hidden");
+  $("sheet").classList.add("hidden"); $("thread").classList.add("hidden"); hidePushBar(); pushEndpoint = null;
   $("prof").classList.add("hidden"); $("newBar").classList.add("hidden"); $("notif").classList.add("hidden");
 }
 $("switchBtn").onclick = async () => {
@@ -2469,6 +2489,87 @@ document.querySelectorAll(".installBtn").forEach(b => b.onclick = async () => {
   toast("브라우저 메뉴(⋮)에서 '홈 화면에 추가'를 눌러 주세요");
 });
 $("iosClose").onclick = () => $("iosGuide").classList.add("hidden");
+
+/* ---------- 휴대폰 알림 (웹 푸시) ---------- */
+var pushKey = null, pushEndpoint = null;
+const pushOk = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+async function getPushKey(){
+  if (pushKey) return pushKey;
+  try { const r = await fetch(`${FN_URL}?action=push_key`, { headers:{ apikey: SUPABASE_KEY } }); const d = await r.json(); pushKey = d?.key || null; } catch {}
+  return pushKey;
+}
+const b64u = (s) => { const r = atob((s + "=".repeat((4 - s.length % 4) % 4)).replace(/-/g,"+").replace(/_/g,"/")); return Uint8Array.from(r, c => c.charCodeAt(0)); };
+async function currentSub(){
+  if (!pushOk()) return null;
+  try { const reg = await navigator.serviceWorker.ready; return await reg.pushManager.getSubscription(); } catch { return null; }
+}
+async function saveSub(sub){
+  const j = sub.toJSON(); pushEndpoint = sub.endpoint;
+  const { error } = await sb.rpc("wow_push_subscribe", { p_token: me.token, p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth });
+  return !error;
+}
+function openIosGuide(){
+  const inApp = /KAKAOTALK|Instagram|FBAN|FBAV|Line|NAVER|Discord|DaumApps/i.test(navigator.userAgent) || !/Safari/i.test(navigator.userAgent);
+  $("iosNote").classList.toggle("hidden", !inApp); $("iosGuide").classList.remove("hidden");
+}
+async function enablePush(){
+  if (!pushOk()) { if (isIOS && !isStandalone()) openIosGuide(); else toast("이 브라우저는 알림을 지원하지 않아요"); return false; }
+  // 허락 창은 누른 직후에 바로 띄워야 해서 먼저 물어봄
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") { toast(perm==="denied" ? "알림이 막혀 있어요. 브라우저 설정에서 이 사이트 알림을 허용해 주세요" : "알림을 켜지 않았어요"); hidePushBar(); return false; }
+  const key = await getPushKey();
+  if (!key) { toast("알림 준비가 아직 덜 됐어요. 조금 뒤에 다시 해 주세요"); return false; }
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(key) });
+    if (!(await saveSub(sub))) throw new Error("save");
+    hidePushBar(); toast("알림을 켰어요. 나를 부르거나 댓글·귓속말이 오면 알려 드려요"); return true;
+  } catch { toast("알림을 켜지 못했어요. 다시 해 주세요"); return false; }
+}
+async function disablePush(){
+  const sub = await currentSub();
+  if (sub) { await sb.rpc("wow_push_unsubscribe", { p_token: me.token, p_endpoint: sub.endpoint }); try { await sub.unsubscribe(); } catch {} }
+  pushEndpoint = null; toast("알림을 껐어요");
+}
+// 채팅에 들어올 때: 이미 켠 기기면 지금 캐릭터로 다시 연결(=보고 있음), 아니면 잠시 뒤 안내 줄
+async function pushOnEnter(){
+  getPushKey();
+  const sub = await currentSub();
+  if (sub && Notification.permission==="granted") { if (me) saveSub(sub); }
+  else setTimeout(maybeShowPushBar, 8000);
+  openFromPushUrl();
+}
+function pushSeen(){ if (me && pushEndpoint) sb.rpc("wow_push_seen", { p_token: me.token, p_endpoint: pushEndpoint }).then(()=>{}, ()=>{}); }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState==="visible") pushSeen(); });
+setInterval(() => { if (document.visibilityState==="visible") pushSeen(); }, 10*60*1000);
+function pushAfter(kind, id){
+  if (!id || !me) return;
+  fetch(`${FN_URL}?action=push`, { method:"POST", keepalive:true, headers:{ apikey: SUPABASE_KEY, "Content-Type":"application/json" },
+    body: JSON.stringify({ token: me.token, kind, id }) }).catch(()=>{});
+}
+async function maybeShowPushBar(){
+  if (!me || $("chat").classList.contains("hidden")) return;
+  if (Date.now() - Number(ls.get("wowchat_push_later") || 0) < 3*86400e3) return;
+  if (pushOk()) {
+    if (Notification.permission !== "default" || !(await getPushKey())) return;
+    $("pushTxt").textContent = "나를 부르거나 댓글·귓속말이 오면 휴대폰으로 알려 드릴까요?"; $("pushGo").textContent = "알림 켜기";
+  } else if (isIOS && !isStandalone()) {
+    $("pushTxt").textContent = "아이폰은 홈 화면에 추가하면 알림을 받을 수 있어요"; $("pushGo").textContent = "방법 보기";
+  } else return;
+  $("pushBar").classList.remove("hidden");
+}
+function hidePushBar(){ $("pushBar").classList.add("hidden"); }
+$("pushGo").onclick = () => { hidePushBar(); enablePush(); };
+$("pushX").onclick = () => { ls.set("wowchat_push_later", String(Date.now())); hidePushBar(); };
+// 알림을 눌러 들어오면: 귓속말 알림은 귓속말 목록을 열어 줌
+function openFromPushUrl(u){
+  const url = new URL(u || location.href);
+  if (!url.searchParams.has("dm")) return;
+  history.replaceState(null, "", "/forever/");
+  setTimeout(() => { if (me) $("dmBtn").click(); }, 900);
+}
+try { navigator.serviceWorker?.addEventListener("message", (e) => { if (e.data?.type === "open" && e.data.url) openFromPushUrl(e.data.url); }); } catch {}
 $("iosGuide").onclick = (e) => { if (e.target.id==="iosGuide") $("iosGuide").classList.add("hidden"); };
 
 /* ---------- 시작 ---------- */
