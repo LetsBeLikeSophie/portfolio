@@ -66,8 +66,9 @@ h2{font-size:20px;margin:34px 0 10px;color:#f3e8d2;border-bottom:1px solid var(-
 .lead{color:#d6cab4;margin:4px 0 18px}
 .facts{display:grid;grid-template-columns:72px 1fr;gap:6px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14.5px}
 .facts dt{color:var(--muted)} .facts dd{margin:0}
-.cta{display:block;margin:18px 0;padding:14px 16px;border-radius:12px;border:1px solid var(--gold-dim);background:#e6c36a14;color:var(--gold);
+.cta{display:flex;align-items:center;justify-content:center;gap:10px;margin:18px 0;padding:12px 16px;border-radius:12px;border:1px solid var(--gold-dim);background:#e6c36a14;color:var(--gold);
   text-decoration:none;font-weight:700;text-align:center}
+.boti{flex:none;display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#e6c36a24;box-shadow:0 0 0 1.5px var(--gold-dim);color:var(--gold)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
 .cls{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-decoration:none;color:var(--text)}
 .cls img{width:44px;height:44px;border-radius:8px} .cls b{display:block;font-size:16px} .cls small{color:var(--muted)}
@@ -84,7 +85,27 @@ h2{font-size:20px;margin:34px 0 10px;color:#f3e8d2;border-bottom:1px solid var(-
 @keyframes specIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
 @keyframes specInL{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
 .spec h2{display:flex;align-items:baseline;gap:8px} .spec h2 small{font-size:13px;color:var(--muted);font-weight:500}
-.hint{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
+.calc{display:flex;align-items:center;gap:8px;margin:10px 0 0;font-size:13px;color:var(--muted)}
+.calc b{color:var(--gold);font-size:16px;margin:0 2px}
+.calc .sp{flex:1}
+.calc button{all:unset;cursor:pointer;padding:5px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:12.5px;font-weight:700}
+.calc button:disabled{opacity:.35;cursor:default}
+.tb .mr{min-width:10px;text-align:center}
+.tb.lock img{filter:grayscale(1) brightness(.45)}
+.tb.lock .nm{color:#7d7262}
+.tb.has img{box-shadow:0 0 0 2px #6fd04a,0 2px 6px #000c}
+.tb.full img{box-shadow:0 0 0 2px var(--gold),0 0 10px #e6c36a66}
+.tb.full .mr{color:var(--gold);border-color:var(--gold-dim)}
+.tb.lock .mr{color:#7d7262}
+.tree .rn.need{color:#5d5040}
+.ctl{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+.ctl button{all:unset;cursor:pointer;width:46px;height:40px;border-radius:10px;text-align:center;font:800 22px/40px sans-serif;background:#ffffff10;border:1px solid var(--line);color:var(--text)}
+.ctl button.plus{background:#e6c36a;color:#1a1208;border-color:#e6c36a}
+.ctl button:disabled{opacity:.3;cursor:default}
+.ctl .rk{flex:1;text-align:center;font-size:15px;font-weight:700} .ctl .rk small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.md li.cur{border-color:#6fd04a;background:#6fd04a14}
+.md li.nx{border-style:dashed}
+.md li i{font-style:normal;font-size:11px;color:var(--muted);margin-left:6px}
 .tree{display:grid;gap:12px 6px;background:linear-gradient(#1a140e,#120e0a);border:1px solid var(--line);border-radius:14px;padding:16px 8px 14px 30px}
 .tree .rn{font-size:11px;color:var(--gold-dim);align-self:start;justify-self:start;margin:16px 0 0 -24px;width:18px;text-align:center}
 .tb{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0;-webkit-tap-highlight-color:transparent}
@@ -156,41 +177,74 @@ def page(title, desc, path, body, ld):
 def faction_class(f):
     return "ally" if "얼라" in f else "horde"
 
-def tal_btn(d, t, pos):
+def tal_btn(d, t, pos, req_row):
     ic = d["icons"].get(t["id"], {}).get("icon")
     src = ICON(ic) if ic else ""
     descs = t.get("descs") or []
     lis = "".join(f'<li><b>{i}등급</b>{E(x)}</li>' for i, x in enumerate(descs, 1))
-    return (f'<button class="tb" type="button" style="{pos}"><span class="ic"><img src="{src}" alt="{E(t["name"])} 아이콘" loading="lazy" width="48" height="48">'
+    return (f'<button class="tb" type="button" style="{pos}" data-row="{req_row}" data-max="{t["max_rank"]}"><span class="ic"><img src="{src}" alt="{E(t["name"])} 아이콘" loading="lazy" width="48" height="48">'
             f'<span class="mr">{t["max_rank"]}</span></span><span class="nm">{E(t["name"])}</span>'
             f'<span class="d" data-max="{t["max_rank"]}"><ol>{lis}</ol></span></button>')
 
+BOT_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3"/><circle cx="12" cy="2.6" r="1" fill="currentColor" stroke="none"/><rect x="4.5" y="6.5" width="15" height="12" rx="3.5"/><circle cx="9.3" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="14.7" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M9.5 15.6h5"/><path d="M2.5 11v3M21.5 11v3"/></svg>'
+
 TREE_JS = """
-const md=document.getElementById('md');
-document.querySelectorAll('.tb').forEach(b=>b.addEventListener('click',()=>{
-  const d=b.querySelector('.d');
-  document.getElementById('mdI').src=b.querySelector('img').src;
-  document.getElementById('mdN').textContent=b.querySelector('.nm').textContent;
-  document.getElementById('mdR').textContent=b.closest('.spec').querySelector('h2').firstChild.textContent.trim()+' · 최대 '+d.dataset.max+'등급';
-  const L=document.getElementById('mdL');L.innerHTML=d.querySelector('ol').innerHTML;
-  const li=[...L.children];
-  if(li.length>2){const mid=li.slice(1,-1);mid.forEach(x=>x.hidden=true);
-    const m=document.createElement('li');m.className='more';m.textContent=(li.length>3?'2~'+(li.length-1):'2')+'등급도 보기';
-    m.onclick=()=>{mid.forEach(x=>x.hidden=false);m.remove()};li[0].after(m);}
-  md.showModal();
-}));
-document.getElementById('mdX').onclick=()=>md.close();
-md.addEventListener('click',e=>{if(e.target===md)md.close()});
 document.documentElement.classList.add('js');
-const tabs=[...document.querySelectorAll('.tabs a')],secs=tabs.map(a=>document.getElementById(decodeURIComponent(a.hash.slice(1))));
+const $=id=>document.getElementById(id), md=$('md'), TOTAL=51;
+const tabs=[...document.querySelectorAll('.tabs a')],secs=tabs.map(a=>$(decodeURIComponent(a.hash.slice(1))));
+const trees=secs.map(s=>[...s.querySelectorAll('.tb')]);
+const rk=trees.map(t=>t.map(()=>0));
+// 특성 계산기: 60레벨 51포인트, 아래 줄은 그 트리에 (줄-1)×5포인트를 써야 열려요
+const spent=i=>rk[i].reduce((a,b)=>a+b,0), used=()=>rk.reduce((a,_,i)=>a+spent(i),0);
+const rowOf=(i,j)=>+trees[i][j].dataset.row, maxOf=(i,j)=>+trees[i][j].dataset.max;
+const below=(i,r,arr)=>arr.reduce((a,v,j)=>a+(rowOf(i,j)<r?v:0),0);
+const open=(i,j)=>below(i,rowOf(i,j),rk[i])>=(rowOf(i,j)-1)*5;
+const canAdd=(i,j)=>rk[i][j]<maxOf(i,j)&&used()<TOTAL&&open(i,j);
+function canSub(i,j){if(!rk[i][j])return false;const a=rk[i].slice();a[j]--;
+  return a.every((v,k)=>!v||below(i,rowOf(i,k),a)>=(rowOf(i,k)-1)*5);}
+function paint(){
+  trees.forEach((t,i)=>{t.forEach((b,j)=>{const v=rk[i][j],m=maxOf(i,j);
+    b.querySelector('.mr').textContent=v+'/'+m;
+    b.classList.toggle('has',v>0&&v<m);b.classList.toggle('full',v===m);b.classList.toggle('lock',!v&&!open(i,j));});
+    secs[i].querySelectorAll('.rn').forEach(n=>n.classList.toggle('need',below(i,+n.dataset.row,rk[i])<(+n.dataset.row-1)*5));
+    tabs[i].querySelector('small').textContent=spent(i);});
+  $('left').textContent=TOTAL-used();$('reset').disabled=!used();
+  const code=rk.map(a=>a.join('').replace(/0+$/,'')).join('-');
+  const u=new URL(location.href);if(used())u.searchParams.set('b',code);else u.searchParams.delete('b');
+  history.replaceState(history.state,'',u);
+}
+function load(){const c=new URL(location.href).searchParams.get('b');if(!c)return;
+  c.split('-').forEach((p,i)=>{if(!rk[i])return;[...p].forEach((ch,j)=>{if(j<rk[i].length)rk[i][j]=Math.min(+ch||0,maxOf(i,j))})});
+  rk.forEach((a,i)=>{if(!a.every((v,k)=>!v||below(i,rowOf(i,k),a)>=(rowOf(i,k)-1)*5))a.fill(0)});
+  if(used()>TOTAL)rk.forEach(a=>a.fill(0));}
+let mi=-1,mj=-1;
+function fillMd(){const b=trees[mi][mj],d=b.querySelector('.d'),v=rk[mi][mj],m=maxOf(mi,mj);
+  $('mdK').innerHTML=v+' / '+m+'<small>'+(open(mi,mj)?(used()>=TOTAL&&v<m?'포인트를 다 썼어요':'이 트리에 '+spent(mi)+'포인트'):'위 줄에 '+((rowOf(mi,mj)-1)*5)+'포인트를 써야 열려요')+'</small>';
+  $('mdP').disabled=!canAdd(mi,mj);$('mdM').disabled=!canSub(mi,mj);
+  const L=$('mdL');L.innerHTML=d.querySelector('ol').innerHTML;const li=[...L.children];
+  const show=new Set([Math.max(v,1)-1]);if(v&&v<m)show.add(v);
+  li.forEach((x,k)=>{x.classList.toggle('cur',k===v-1);x.classList.toggle('nx',k===v&&v<m);
+    if(k===v&&v>0&&v<m)x.insertAdjacentHTML('beforeend','<i>다음 등급</i>');x.hidden=!show.has(k)});
+  if(li.length>show.size){const mo=document.createElement('li');mo.className='more';mo.textContent='모든 등급 보기';
+    mo.onclick=()=>{li.forEach(x=>x.hidden=false);mo.remove()};L.appendChild(mo);}}
+trees.forEach((t,i)=>t.forEach((b,j)=>b.addEventListener('click',()=>{mi=i;mj=j;
+  $('mdI').src=b.querySelector('img').src;$('mdN').textContent=b.querySelector('.nm').textContent;
+  $('mdR').textContent=secs[i].querySelector('h2').firstChild.textContent.trim();fillMd();md.showModal();})));
+$('mdP').onclick=()=>{if(canAdd(mi,mj)){rk[mi][mj]++;paint();fillMd();}};
+$('mdM').onclick=()=>{if(canSub(mi,mj)){rk[mi][mj]--;paint();fillMd();}};
+$('mdX').onclick=()=>md.close();
+md.addEventListener('click',e=>{if(e.target===md)md.close()});
+$('reset').onclick=()=>{if(confirm('찍은 특성을 모두 지울까요?')){rk.forEach(a=>a.fill(0));paint();}};
+$('share').onclick=async()=>{const u=location.href;try{if(navigator.share){await navigator.share({title:document.title,url:u});return}
+  await navigator.clipboard.writeText(u);$('share').textContent='복사했어요';setTimeout(()=>$('share').textContent='링크 복사',1500)}catch(_){}};
 let cur=-1;
 function show(i){i=(i+secs.length)%secs.length;if(i===cur)return;const back=cur>=0&&i<cur;
   secs.forEach((s,k)=>{s.hidden=k!==i;s.classList.toggle('fromL',back)});tabs.forEach((a,k)=>a.classList.toggle('on',k===i));
-  cur=i;history.replaceState(history.state,'',tabs[i].hash);}
+  cur=i;const u=new URL(location.href);u.hash=tabs[i].hash;history.replaceState(history.state,'',u);}
 const idx=h=>secs.findIndex(s=>'#'+s.id===decodeURIComponent(h));
 tabs.forEach((a,i)=>a.addEventListener('click',e=>{e.preventDefault();show(i)}));
 document.querySelectorAll('.facts a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const i=idx(a.hash);if(i<0)return;e.preventDefault();show(i);document.querySelector('.tabs').scrollIntoView({behavior:'smooth',block:'start'})}));
-show(Math.max(0,idx(location.hash)));
+load();show(Math.max(0,idx(location.hash)));paint();
 // 트리 위에서 옆으로 밀면 전문화가 바뀌어요 (화면 맨 가장자리는 뒤로가기용이라 빼요)
 let sx=null,sy=0;const area=document.querySelector('.specs');
 area.addEventListener('touchstart',e=>{const t=e.touches[0];sx=(e.touches.length===1&&t.clientX>30&&t.clientX<innerWidth-30)?t.clientX:null;sy=t.clientY},{passive:true});
@@ -216,35 +270,36 @@ for name, d in data.items():
         rows = sorted({t["row"] for t in main})
         cells = []
         for gi, r in enumerate(rows, 1):
-            cells.append(f'<span class="rn" style="grid-row:{gi};grid-column:1">{r}</span>')
+            cells.append(f'<span class="rn" data-row="{r}" style="grid-row:{gi};grid-column:1">{r}</span>')
             for t in sorted([t for t in main if t["row"] == r], key=lambda x: x["c"]):
-                cells.append(tal_btn(d, t, f"grid-row:{gi};grid-column:{t['c']}"))
+                cells.append(tal_btn(d, t, f"grid-row:{gi};grid-column:{t['c']}", r))
         gi = len(rows)
         for i, t in enumerate(extra):
             if i % ncol == 0: gi += 1
-            cells.append(tal_btn(d, t, f"grid-row:{gi};grid-column:{i % ncol + 1}"))
+            cells.append(tal_btn(d, t, f"grid-row:{gi};grid-column:{i % ncol + 1}", t["row"] if t["row"] and t["row"] <= 10 else 1))
         sec.append(f'<section class="spec" id="{E(sp)}"><h2>{E(name)} {E(sp)} 특성 <small>{len(tl)}개</small></h2>'
                    f'<div class="tree" style="grid-template-columns:repeat({ncol},minmax(0,1fr))">{"".join(cells)}</div></section>')
     others = "".join(f'<a href="/forever/classes/{SLUG[o]}.html">{E(o)}</a>' for o in data if o != name)
     body = f"""
 <div class="crumb"><a href="/forever/">포에버 채팅</a> › <a href="/forever/classes/">직업 정리</a> › {E(name)}</div>
 <h1><img src="{ICON(CLASS_ICON[name])}" alt="{E(name)} 아이콘" width="40" height="40"><span style="color:{COLOR[name]}">{E(name)}</span></h1>
-<p class="lead">와우 포에버 {E(name)}의 전문화 {len(specs)}개({E(", ".join(specs))})와 특성 {len(d["talents"])}개를 블리자드 공식 데이터 그대로 정리했어요. 수치는 포에버 기준이에요.</p>
 <dl class="facts">
   <dt>역할</dt><dd>{E(ROLE[name])}</dd>
   <dt>자원</dt><dd>{E(d["power"] or "-")}</dd>
   <dt>전문화</dt><dd>{" · ".join(f'<a href="#{E(s)}">{E(s)}</a>' for s in specs)}</dd>
   <dt>종족</dt><dd>{race_txt}</dd>
 </dl>
-<a class="cta" href="/forever/">🤖 {E(name)} 특성, 포에버봇에게 물어보기</a>
+<a class="cta" href="/forever/"><span class="boti">{BOT_SVG}</span>{E(name)} 특성, 포에버봇에게 물어보기</a>
 <nav class="tabs">{"".join(f'<a href="#{E(s)}">{E(s)}<small>{sum(t["spec"] == s for t in d["talents"])}</small></a>' for s in specs)}</nav>
-<p class="hint">아이콘을 누르면 등급별 설명이 나와요. 트리를 옆으로 밀면 다른 전문화로 바뀌어요.</p>
+<div class="calc">남은 포인트<b id="left">51</b><span class="sp"></span><button type="button" id="share">링크 복사</button><button type="button" id="reset">초기화</button></div>
 <div class="specs">{"".join(sec)}</div>
-<dialog id="md"><div class="md"><div class="hd"><img id="mdI" alt=""><div><b id="mdN"></b><small id="mdR"></small></div></div><ol id="mdL"></ol><button class="x" id="mdX" type="button">닫기</button></div></dialog>
+<dialog id="md"><div class="md"><div class="hd"><img id="mdI" alt=""><div><b id="mdN"></b><small id="mdR"></small></div></div>
+<div class="ctl"><button type="button" id="mdM" aria-label="한 등급 빼기">−</button><div class="rk" id="mdK"></div><button type="button" class="plus" id="mdP" aria-label="한 등급 올리기">+</button></div>
+<ol id="mdL"></ol><button class="x" id="mdX" type="button">닫기</button></div></dialog>
 <script>{TREE_JS}</script>
 <script src="/forever/swipe.js" defer></script>
 <h2>다른 직업</h2><div class="others">{others}</div>
-<a class="cta" href="/forever/">와우 포에버 채팅에서 파티·길드 구하고 포에버봇에게 물어보기</a>
+<a class="cta" href="/forever/"><span class="boti">{BOT_SVG}</span>와우 포에버 채팅에서 파티 구하고 포에버봇에게 물어보기</a>
 """
     title = f"와우 포에버 {name} 특성·전문화 정리 ({', '.join(specs)}) | 포에버 채팅"
     desc = f"와우 포에버 {name} 전문화 {', '.join(specs)}와 특성 {len(d['talents'])}개를 블리자드 공식 데이터 기준 수치로 정리했어요. 고를 수 있는 종족, 자원, 역할까지."
@@ -274,9 +329,8 @@ race_html = "".join(f'<div class="fac {faction_class(f)}">{E(f)}</div><div class
 body = f"""
 <div class="crumb"><a href="/forever/">포에버 채팅</a> › 직업 정리</div>
 <h1>와우 포에버 직업 정리</h1>
-<p class="lead">와우 포에버(월드 오브 워크래프트: 포에버)의 직업 9개, 전문화 27개, 특성 470개를 블리자드 공식 게임 데이터 기준으로 정리했어요. 직업을 누르면 전문화별 특성과 등급별 수치를 볼 수 있어요.</p>
 <div class="grid">{cards}</div>
-<a class="cta" href="/forever/">🤖 포에버봇에게 물어보러 가기</a>
+<a class="cta" href="/forever/"><span class="boti">{BOT_SVG}</span>포에버봇에게 물어보러 가기</a>
 <h2>종족별로 고를 수 있는 직업</h2>
 {race_html}
 <p class="lead" style="margin-top:10px">포에버에는 얼라이언스 「고등 마법원 스카이본」과 호드 「바람구체자 스카이본」 종족이 새로 있어요.</p>
