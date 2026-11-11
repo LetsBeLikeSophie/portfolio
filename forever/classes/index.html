@@ -40,12 +40,18 @@ h2{font-size:20px;margin:34px 0 10px;color:#f3e8d2;border-bottom:1px solid var(-
 .cls img{width:44px;height:44px;border-radius:8px} .cls b{display:block;font-size:16px} .cls small{color:var(--muted)}
 .row{margin:14px 0 4px;font-size:13px;color:var(--gold-dim);font-weight:700}
 .facts dd .fl{display:block}
-.tabs{position:sticky;top:0;z-index:5;display:flex;gap:6px;margin:26px -16px 0;padding:10px 16px;background:#0d0b09ee;backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
-.tabs a{flex:1;text-align:center;padding:8px 6px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);text-decoration:none;font-weight:700;font-size:14px}
-.tabs a.on{color:#1a1208;background:var(--gold);border-color:var(--gold)}
-.spec{scroll-margin-top:70px}
+.tabs{display:flex;gap:4px;margin:28px 0 0;padding:4px;background:#ffffff0a;border:1px solid var(--line);border-radius:12px}
+.tabs a{flex:1;text-align:center;padding:7px 4px;border-radius:9px;color:var(--muted);text-decoration:none;font-weight:700;font-size:14px;transition:background .15s,color .15s}
+.tabs a small{font-weight:500;font-size:11px;opacity:.75;margin-left:3px}
+.tabs a.on{color:#1a1208;background:var(--gold)}
+.specs{margin-top:10px;touch-action:pan-y}
+.js .spec h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.js .spec{animation:specIn .22s ease}
+.js .spec.fromL{animation-name:specInL}
+@keyframes specIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes specInL{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
 .spec h2{display:flex;align-items:baseline;gap:8px} .spec h2 small{font-size:13px;color:var(--muted);font-weight:500}
-.hint{font-size:13px;color:var(--muted);margin:12px 0 0}
+.hint{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
 .tree{display:grid;gap:12px 6px;background:linear-gradient(#1a140e,#120e0a);border:1px solid var(--line);border-radius:14px;padding:16px 8px 14px 30px}
 .tree .rn{font-size:11px;color:var(--gold-dim);align-self:start;justify-self:start;margin:16px 0 0 -24px;width:18px;text-align:center}
 .tb{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0;-webkit-tap-highlight-color:transparent}
