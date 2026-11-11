@@ -121,4 +121,11 @@ footer{margin-top:40px;font-size:12px;color:var(--muted);border-top:1px solid va
   블리자드 공식 「월드 오브 워크래프트: 포에버」 게임 데이터 기준 · 2026-11-11 업데이트<br>
   비공식 팬 사이트예요. World of Warcraft와 게임 이미지는 Blizzard Entertainment의 자산이며, 이 사이트는 블리자드와 관계없어요.
 </footer>
-</div></body></html>
+</div>
+<script>
+// 몇 명이 정리 페이지를 봤는지 숫자만 셈 (이름·기기 정보 없이 기기마다 하루 한 번)
+function track(step){try{const k='wowchat_tr_'+step,d=new Date().toLocaleDateString('sv');if(localStorage.getItem(k)===d)return;localStorage.setItem(k,d)}catch(_){}
+  fetch('https://ztxzqvnybiemgbhtrwiw.supabase.co/rest/v1/rpc/wow_track',{method:'POST',headers:{apikey:'sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7',Authorization:'Bearer sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7','Content-Type':'application/json'},body:JSON.stringify({p_step:step}),keepalive:true}).catch(()=>{})}
+track('guide_view');
+</script>
+</body></html>
