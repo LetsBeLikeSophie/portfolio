@@ -73,12 +73,18 @@ h2{font-size:20px;margin:34px 0 10px;color:#f3e8d2;border-bottom:1px solid var(-
 .cls img{width:44px;height:44px;border-radius:8px} .cls b{display:block;font-size:16px} .cls small{color:var(--muted)}
 .row{margin:14px 0 4px;font-size:13px;color:var(--gold-dim);font-weight:700}
 .facts dd .fl{display:block}
-.tabs{position:sticky;top:0;z-index:5;display:flex;gap:6px;margin:26px -16px 0;padding:10px 16px;background:#0d0b09ee;backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
-.tabs a{flex:1;text-align:center;padding:8px 6px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);text-decoration:none;font-weight:700;font-size:14px}
-.tabs a.on{color:#1a1208;background:var(--gold);border-color:var(--gold)}
-.spec{scroll-margin-top:70px}
+.tabs{display:flex;gap:4px;margin:28px 0 0;padding:4px;background:#ffffff0a;border:1px solid var(--line);border-radius:12px}
+.tabs a{flex:1;text-align:center;padding:7px 4px;border-radius:9px;color:var(--muted);text-decoration:none;font-weight:700;font-size:14px;transition:background .15s,color .15s}
+.tabs a small{font-weight:500;font-size:11px;opacity:.75;margin-left:3px}
+.tabs a.on{color:#1a1208;background:var(--gold)}
+.specs{margin-top:10px;touch-action:pan-y}
+.js .spec h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.js .spec{animation:specIn .22s ease}
+.js .spec.fromL{animation-name:specInL}
+@keyframes specIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes specInL{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
 .spec h2{display:flex;align-items:baseline;gap:8px} .spec h2 small{font-size:13px;color:var(--muted);font-weight:500}
-.hint{font-size:13px;color:var(--muted);margin:12px 0 0}
+.hint{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
 .tree{display:grid;gap:12px 6px;background:linear-gradient(#1a140e,#120e0a);border:1px solid var(--line);border-radius:14px;padding:16px 8px 14px 30px}
 .tree .rn{font-size:11px;color:var(--gold-dim);align-self:start;justify-self:start;margin:16px 0 0 -24px;width:18px;text-align:center}
 .tb{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0;-webkit-tap-highlight-color:transparent}
@@ -175,9 +181,21 @@ document.querySelectorAll('.tb').forEach(b=>b.addEventListener('click',()=>{
 }));
 document.getElementById('mdX').onclick=()=>md.close();
 md.addEventListener('click',e=>{if(e.target===md)md.close()});
+document.documentElement.classList.add('js');
 const tabs=[...document.querySelectorAll('.tabs a')],secs=tabs.map(a=>document.getElementById(decodeURIComponent(a.hash.slice(1))));
-function onScroll(){let k=0;secs.forEach((s,i)=>{if(s.getBoundingClientRect().top<120)k=i});tabs.forEach((a,i)=>a.classList.toggle('on',i===k))}
-addEventListener('scroll',onScroll,{passive:true});onScroll();
+let cur=-1;
+function show(i){i=(i+secs.length)%secs.length;if(i===cur)return;const back=cur>=0&&i<cur;
+  secs.forEach((s,k)=>{s.hidden=k!==i;s.classList.toggle('fromL',back)});tabs.forEach((a,k)=>a.classList.toggle('on',k===i));
+  cur=i;history.replaceState(history.state,'',tabs[i].hash);}
+const idx=h=>secs.findIndex(s=>'#'+s.id===decodeURIComponent(h));
+tabs.forEach((a,i)=>a.addEventListener('click',e=>{e.preventDefault();show(i)}));
+document.querySelectorAll('.facts a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const i=idx(a.hash);if(i<0)return;e.preventDefault();show(i);document.querySelector('.tabs').scrollIntoView({behavior:'smooth',block:'start'})}));
+show(Math.max(0,idx(location.hash)));
+// 트리 위에서 옆으로 밀면 전문화가 바뀌어요 (화면 맨 가장자리는 뒤로가기용이라 빼요)
+let sx=null,sy=0;const area=document.querySelector('.specs');
+area.addEventListener('touchstart',e=>{const t=e.touches[0];sx=(e.touches.length===1&&t.clientX>30&&t.clientX<innerWidth-30)?t.clientX:null;sy=t.clientY},{passive:true});
+area.addEventListener('touchend',e=>{if(sx===null)return;const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;sx=null;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5)show(cur+(dx<0?1:-1))},{passive:true});
 """
 
 # ---------- 직업 페이지 ----------
@@ -219,11 +237,12 @@ for name, d in data.items():
   <dt>종족</dt><dd>{race_txt}</dd>
 </dl>
 <a class="cta" href="/forever/">🤖 {E(name)} 특성, 포에버봇에게 물어보기</a>
-<nav class="tabs">{"".join(f'<a href="#{E(s)}">{E(s)}</a>' for s in specs)}</nav>
-<p class="hint">특성 아이콘을 누르면 등급별 설명이 나와요. 왼쪽 숫자는 위에서부터 몇 번째 줄인지예요.</p>
-{"".join(sec)}
+<nav class="tabs">{"".join(f'<a href="#{E(s)}">{E(s)}<small>{sum(t["spec"] == s for t in d["talents"])}</small></a>' for s in specs)}</nav>
+<p class="hint">아이콘을 누르면 등급별 설명이 나와요. 트리를 옆으로 밀면 다른 전문화로 바뀌어요.</p>
+<div class="specs">{"".join(sec)}</div>
 <dialog id="md"><div class="md"><div class="hd"><img id="mdI" alt=""><div><b id="mdN"></b><small id="mdR"></small></div></div><ol id="mdL"></ol><button class="x" id="mdX" type="button">닫기</button></div></dialog>
 <script>{TREE_JS}</script>
+<script src="/forever/swipe.js" defer></script>
 <h2>다른 직업</h2><div class="others">{others}</div>
 <a class="cta" href="/forever/">와우 포에버 채팅에서 파티·길드 구하고 포에버봇에게 물어보기</a>
 """
