@@ -571,6 +571,8 @@
   a.tlink::before,a.tlink::after{content:""}
   #qTitle .tic.big{width:26px;height:26px;border-radius:5px;vertical-align:-6px;margin-right:7px;box-shadow:0 0 0 1px #000a}
   #qcard .qd{white-space:pre-line}
+  .tag .srvtag{margin-left:5px;padding:0 5px;border-radius:999px;font-size:10px;font-weight:700;background:#00000059;color:#e6c36a;border:1px solid #e6c36a40}
+  .tag .srvtag.pvp{color:#ff8a7a;border-color:#ff8a7a40}
   .msg.gone{color:#7a6e5c;font-size:13px;font-style:italic;cursor:default}
 </style>
 </head>
@@ -902,7 +904,8 @@ const ls = mk(()=>localStorage), ss = mk(()=>sessionStorage);
 function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("show");
   clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("show"),2400); }
 function errMsg(e){ return (e && (e.message || e.error_description)) || String(e); }
-const chOf = (realm) => realm === "PvP" ? "pvp" : "general";
+// 일반·PvP 서버 모두 한 방에서 이야기해요 (서버는 프로필과 파티·길드·거래 글의 작은 표시로)
+const chOf = () => "general";
 function show(id){ for (const s of ["join","chat"]) $(s).classList.toggle("hidden", s!==id); }
 
 let me = null, channel = "general";
@@ -1065,7 +1068,10 @@ function renderMsg(m, inThread){
   }
   if (m.sender_level){ const l=document.createElement("span"); l.className="lv"; l.textContent="Lv."+m.sender_level; el.appendChild(l); }
   const colon=document.createElement("span"); colon.className="colon"; colon.textContent=": "; el.appendChild(colon);
-  if (m.tag && m.tag!=="chat" && m.tag!=="question" && !m.parent_id){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag; el.appendChild(g); }
+  if (m.tag && m.tag!=="chat" && m.tag!=="question" && !m.parent_id){ const g=document.createElement("span"); g.className="tag "+m.tag; g.textContent=TAG_LABEL[m.tag]||m.tag;
+    // 파티·길드·거래는 서버가 같아야 같이 할 수 있으니 어느 서버 글인지 작게
+    if (["party","guild","trade"].includes(m.tag) && m.sender_realm){ const sv=document.createElement("span"); sv.className="srvtag"+(m.sender_realm==="PvP"?" pvp":""); sv.textContent=m.sender_realm; g.appendChild(sv); }
+    el.appendChild(g); }
   if (m.foreign_lang){ const l=document.createElement("span"); l.className="lang"; l.textContent=`[${LANG[m.sender_faction]}]`; el.appendChild(l); }
   const tx=document.createElement("span"); tx.className="text";
   const onlyPhoto = m.photo && m.body===PHOTO_ONLY;
@@ -1358,6 +1364,8 @@ const visible = (m) => (filterTag==="all" || m.tag===filterTag || (filterTag==="
     || (m.parent_id && (m.parent_tag ?? cache.find(x=>x.id===m.parent_id)?.tag)===filterTag)
     || (m.tag==="bot" && (filterTag==="chat" || filterTag==="question")))
   && (!myFactionOnly || m.sender_faction===me.faction || m.tag==="bot")
+  // 파티·길드 탭은 같이 할 수 있는 내 서버 글만
+  && ((filterTag!=="party" && filterTag!=="guild") || !me?.realm || !m.sender_realm || m.sender_realm===me.realm || m.tag==="bot")
   && !muted.has(m.player_id);
 
 /* ---------- 포에버봇 ---------- */
