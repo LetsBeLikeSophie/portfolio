@@ -543,6 +543,7 @@
   #botcard .chargeRow small{color:var(--muted);font-size:11.5px;line-height:1.45}
   /* 봇이 모를 때 '제가 알아요' */
   .iknoww{order:7;flex-basis:100%;margin:5px 0 2px 33px}
+  .iknow.reask:disabled{opacity:.55;cursor:default}
   .iknow{border:1px dashed var(--gold-dim);background:#e6c36a12;color:var(--gold);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:700;cursor:pointer}
   /* 사진 */
   form.send > .cambtn{width:40px;padding:0;background:#0006;border:1px solid var(--line);color:var(--muted);display:inline-flex;align-items:center;justify-content:center}
@@ -1033,6 +1034,7 @@ function renderMsg(m, inThread){
     const bic=classIcon(null, true);
     [bic, who].forEach(x=>{ x.style.cursor="pointer"; x.onclick=(e)=>{ e.stopPropagation(); openBotCard(); }; });
     el.append(t, bic, who, co, tx);
+    const rw = reaskEl(m); if (rw) el.appendChild(rw);
     // 봇이 모른다고 하면 '제가 알아요' → 가르치기 탭에 질문을 채워서 열어 줌
     if (BOT_UNKNOWN.test(m.body||"")){
       const w=document.createElement("div"); w.className="iknoww";
@@ -1498,8 +1500,41 @@ function liveCooldown(m, tx){
   }
   setTimeout(startCd, 0);
 }
+// '잠깐만요' 답 옆 '다시 물어보기': 기다림이 끝나면 내 질문을 그대로 다시 보냄 (사진 질문은 제외)
+var reasked = new Set();
+function botQuestionMsg(m){
+  const i = cache.findIndex(x=>x.id===m.id);
+  for (let k=(i<0?cache.length:i)-1; k>=0 && k>=i-60; k--){
+    const q = cache[k]; if (q.tag==="bot" || !q.body) continue;
+    if (forBot(q.body) && me && q.player_id===me.id && (m.body||"").startsWith("@"+q.sender_name)) return q;
+  }
+  return null;
+}
+function reaskEl(m){
+  const mt = (m.body||"").match(/(\d+)초 뒤에 다시 물어봐 주세요/);
+  if (!mt || !me || !(m.body||"").startsWith("@"+me.name) || reasked.has(m.id)) return null;
+  const at = new Date(m.created_at).getTime(); if (Date.now() - at > 10*60*1000) return null;
+  const q = botQuestionMsg(m); if (!q || q.photo) return null;
+  const n = Number(mt[1]), until = Math.min(at + n*1000, Date.now() + n*1000);
+  const w = document.createElement("div"); w.className = "iknoww";
+  const b = document.createElement("button"); b.type = "button"; b.className = "iknow reask"; b.dataset.until = String(until);
+  b.onclick = async (e) => {
+    e.stopPropagation(); if (b.disabled) return;
+    b.disabled = true; b.textContent = "다시 묻는 중…";
+    const { data: newId, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: q.body, p_tag: "question", p_parent: null });
+    if (error){ toast(errMsg(error)); b.disabled = false; b.textContent = "🔁 다시 물어보기"; return; }
+    reasked.add(m.id); b.textContent = "다시 물어봤어요"; callBot(newId);
+  };
+  w.appendChild(b); setTimeout(startCd, 0);
+  return w;
+}
 function tickCd(){
   let live = false;
+  document.querySelectorAll(".reask[data-until]").forEach(b => {
+    const r = Math.ceil((Number(b.dataset.until) - Date.now()) / 1000);
+    if (r > 0){ b.disabled = true; b.textContent = `${r}초 뒤 다시 물어보기`; live = true; }
+    else { b.disabled = false; b.textContent = "🔁 다시 물어보기"; b.removeAttribute("data-until"); }
+  });
   document.querySelectorAll(".cdl[data-until]").forEach(el => {
     const r = Math.ceil((Number(el.dataset.until) - Date.now()) / 1000);
     if (r > 0){ el.textContent = `${r}초 뒤에 다시 물어봐 주세요.`; live = true; }
