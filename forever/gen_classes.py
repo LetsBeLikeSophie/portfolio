@@ -1,0 +1,203 @@
+# 와우 포에버 직업·특성 정리 페이지 만들기 (구글 노출용 정적 페이지)
+# 블리자드 공식 포에버 데이터(우리 DB에 받아 둔 것)를 공개 읽기 함수로 가져와서
+# forever/classes/index.html, forever/classes/<직업>.html, forever/sitemap.xml 을 만든다.
+# 사용: python -X utf8 forever/gen_classes.py   (패치로 특성이 바뀌면 sync_classes 뒤에 다시 실행)
+import html, json, os, re, urllib.request, datetime
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+SITE = "https://itssophie.dev"
+idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
+KEY = re.search(r'SUPABASE_KEY\s*=\s*"([^"]+)"', idx).group(1)
+API = "https://ztxzqvnybiemgbhtrwiw.supabase.co/rest/v1/rpc/"
+
+def rpc(name, body):
+    req = urllib.request.Request(API + name, data=json.dumps(body).encode(),
+        headers={"apikey": KEY, "Authorization": "Bearer " + KEY, "Content-Type": "application/json"})
+    return json.load(urllib.request.urlopen(req, timeout=40))
+
+SLUG = {"전사": "warrior", "성기사": "paladin", "사냥꾼": "hunter", "도적": "rogue", "사제": "priest",
+        "주술사": "shaman", "마법사": "mage", "흑마법사": "warlock", "드루이드": "druid"}
+COLOR = {"전사": "#C69B6D", "성기사": "#F48CBA", "사냥꾼": "#AAD372", "도적": "#FFF468", "사제": "#FFFFFF",
+         "주술사": "#0070DD", "마법사": "#3FC7EB", "흑마법사": "#8788EE", "드루이드": "#FF7C0A"}
+ROLE = {"전사": "탱커·근접 딜러", "성기사": "힐러·탱커·근접 딜러", "사냥꾼": "원거리 딜러", "도적": "근접 딜러",
+        "사제": "힐러·원거리 딜러", "주술사": "힐러·근접/원거리 딜러", "마법사": "원거리 딜러",
+        "흑마법사": "원거리 딜러", "드루이드": "힐러·탱커·딜러"}
+ICON = lambda n: f"https://render.worldofwarcraft.com/us/icons/56/{n}.jpg"
+CLASS_ICON = {c: f"classicon_{s}" for c, s in SLUG.items()}
+RACE_ICON = {"인간": "achievement_character_human_male", "드워프": "achievement_character_dwarf_male",
+             "노움": "achievement_character_gnome_male", "나이트 엘프": "achievement_character_nightelf_male",
+             "오크": "achievement_character_orc_male", "언데드": "achievement_character_undead_male",
+             "타우렌": "achievement_character_tauren_male", "트롤": "achievement_character_troll_male"}
+TODAY = datetime.date.today().isoformat()
+E = html.escape
+
+# ---------- 데이터 ----------
+info = rpc("wow_class_info", {})
+classes = info["classes"]
+races = info["races"]
+data = {}
+for c in classes:
+    name = c["class"]
+    ci = rpc("wow_class_info", {"p_class": name})
+    tl = []
+    for sp in c["specs"]:
+        part = [t for t in rpc("wow_talent_find", {"p_class": name, "p_spec": sp, "p_limit": 60}) if t["spec"] == sp]
+        assert len(part) < 60, f"{name} {sp}: 특성이 60개 이상이라 일부가 빠졌을 수 있어요"
+        tl += part
+    icons = {}
+    ids = [t["id"] for t in tl]
+    for i in range(0, len(ids), 50):
+        for t in rpc("wow_talent_info", {"p_ids": ids[i:i + 50]}):
+            icons[t["id"]] = t
+    data[name] = {"specs": c["specs"], "power": ci.get("power"), "races": ci.get("races_by_faction") or {}, "talents": tl, "icons": icons}
+
+# ---------- 공통 틀 ----------
+CSS = """
+:root{--bg:#0d0b09;--card:#17120d;--line:#3a2e1f;--gold:#e6c36a;--gold-dim:#a8873e;--text:#e9e1d2;--muted:#a3977f}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 50% -200px,#2a1f12,transparent),var(--bg);color:var(--text);
+  font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.6;-webkit-text-size-adjust:100%}
+a{color:var(--gold)}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+.crumb{font-size:13px;color:var(--muted)} .crumb a{color:var(--muted)}
+h1{font-family:Georgia,"Times New Roman",serif;color:var(--gold);font-size:28px;margin:10px 0 6px;display:flex;align-items:center;gap:10px}
+h1 img{width:40px;height:40px;border-radius:8px;box-shadow:0 0 0 1px #000a}
+h2{font-size:20px;margin:34px 0 10px;color:#f3e8d2;border-bottom:1px solid var(--line);padding-bottom:6px}
+.lead{color:#d6cab4;margin:4px 0 18px}
+.facts{display:grid;grid-template-columns:110px 1fr;gap:6px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14.5px}
+.facts dt{color:var(--muted)} .facts dd{margin:0}
+.cta{display:block;margin:18px 0;padding:14px 16px;border-radius:12px;border:1px solid var(--gold-dim);background:#e6c36a14;color:var(--gold);
+  text-decoration:none;font-weight:700;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.cls{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-decoration:none;color:var(--text)}
+.cls img{width:44px;height:44px;border-radius:8px} .cls b{display:block;font-size:16px} .cls small{color:var(--muted)}
+.row{margin:14px 0 4px;font-size:13px;color:var(--gold-dim);font-weight:700}
+.tal{display:flex;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:6px 0}
+.tal img{width:36px;height:36px;border-radius:6px;flex:none;box-shadow:0 0 0 1px #000a;background:#000}
+.tal h3{font-size:15px;margin:0;color:#8fd3ff} .tal h3 small{color:var(--muted);font-weight:500;font-size:12px;margin-left:6px}
+.tal p{margin:3px 0 0;font-size:14px;color:#d6cab4}
+.tal p.r1{color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px;background:var(--card);border-radius:12px;overflow:hidden}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--gold);font-weight:700;background:#1d1610}
+.ally{color:#8fb6ff} .horde{color:#ff8a7a}
+.others{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px} .others a{font-size:13px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;text-decoration:none}
+footer{margin-top:40px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+"""
+
+def page(title, desc, path, body, ld):
+    url = SITE + path
+    return f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{E(title)}</title>
+<meta name="description" content="{E(desc)}">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="포에버 채팅">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:url" content="{url}">
+<meta property="og:title" content="{E(title)}">
+<meta property="og:description" content="{E(desc)}">
+<meta property="og:image" content="{SITE}/forever/og.png">
+<meta name="theme-color" content="#0d0b09">
+<link rel="icon" type="image/png" sizes="192x192" href="/forever/icon-192.png?v=2">
+<link rel="apple-touch-icon" href="/forever/apple-touch-icon.png?v=2">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
+<style>{CSS}</style>
+</head>
+<body><div class="wrap">
+{body}
+<footer>
+  블리자드 공식 「월드 오브 워크래프트: 포에버」 게임 데이터 기준 · {TODAY} 업데이트<br>
+  비공식 팬 사이트예요. World of Warcraft와 게임 이미지는 Blizzard Entertainment의 자산이며, 이 사이트는 블리자드와 관계없어요.
+</footer>
+</div></body></html>
+"""
+
+def faction_class(f):
+    return "ally" if "얼라" in f else "horde"
+
+# ---------- 직업 페이지 ----------
+urls = []
+for name, d in data.items():
+    slug = SLUG[name]; path = f"/forever/classes/{slug}.html"; urls.append(path)
+    specs = d["specs"]
+    race_txt = " / ".join(f'<span class="{faction_class(f)}">{E(f)}</span>: {E(", ".join(rs))}' for f, rs in d["races"].items())
+    sec = []
+    for sp in specs:
+        tl = [t for t in d["talents"] if t["spec"] == sp]
+        rows = {}
+        for t in tl: rows.setdefault(t["row"], []).append(t)
+        parts = [f'<h2 id="{E(sp)}">{E(name)} {E(sp)} 특성 ({len(tl)}개)</h2>']
+        for r in sorted(rows, key=lambda x: (x is None or x > 10, x or 0)):
+            parts.append(f'<div class="row">{"위에서 " + str(r) + "번째 줄" if r is not None and r <= 10 else "기타"}</div>')
+            for t in sorted(rows[r], key=lambda x: (x.get("col") or 0)):
+                ic = d["icons"].get(t["id"], {}).get("icon")
+                descs = t.get("descs") or []
+                last = descs[-1] if descs else ""
+                first = descs[0] if len(descs) > 1 else ""
+                img = f'<img src="{ICON(ic)}" alt="{E(t["name"])} 아이콘" loading="lazy" width="36" height="36">' if ic else '<img alt="" width="36" height="36">'
+                parts.append(f'<div class="tal">{img}<div><h3>{E(t["name"])}<small>최대 {t["max_rank"]}등급</small></h3>'
+                             + (f'<p class="r1">1등급: {E(first)}</p>' if first else "")
+                             + f'<p>{(str(len(descs)) + "등급: ") if first else ""}{E(last)}</p></div></div>')
+        sec.append("\n".join(parts))
+    others = "".join(f'<a href="/forever/classes/{SLUG[o]}.html">{E(o)}</a>' for o in data if o != name)
+    body = f"""
+<div class="crumb"><a href="/forever/">포에버 채팅</a> › <a href="/forever/classes/">직업 정리</a> › {E(name)}</div>
+<h1><img src="{ICON(CLASS_ICON[name])}" alt="{E(name)} 아이콘" width="40" height="40"><span style="color:{COLOR[name]}">{E(name)}</span></h1>
+<p class="lead">와우 포에버 {E(name)}의 전문화 {len(specs)}개({E(", ".join(specs))})와 특성 {len(d["talents"])}개를 블리자드 공식 데이터 그대로 정리했어요. 수치는 포에버 기준이에요.</p>
+<dl class="facts">
+  <dt>역할</dt><dd>{E(ROLE[name])}</dd>
+  <dt>자원</dt><dd>{E(d["power"] or "-")}</dd>
+  <dt>전문화</dt><dd>{" · ".join(f'<a href="#{E(s)}">{E(s)}</a>' for s in specs)}</dd>
+  <dt>고를 수 있는 종족</dt><dd>{race_txt}</dd>
+</dl>
+<a class="cta" href="/forever/">🤖 {E(name)} 특성이 궁금하면 포에버봇에게 물어보기 · 와우 포에버 채팅 들어가기</a>
+{"".join(sec)}
+<h2>다른 직업</h2><div class="others">{others}</div>
+<a class="cta" href="/forever/">와우 포에버 채팅에서 파티·길드 구하고 포에버봇에게 물어보기</a>
+"""
+    title = f"와우 포에버 {name} 특성·전문화 정리 ({', '.join(specs)}) | 포에버 채팅"
+    desc = f"와우 포에버 {name} 전문화 {', '.join(specs)}와 특성 {len(d['talents'])}개를 블리자드 공식 데이터 기준 수치로 정리했어요. 고를 수 있는 종족, 자원, 역할까지."
+    ld = {"@context": "https://schema.org", "@type": "Article", "headline": title, "inLanguage": "ko",
+          "dateModified": TODAY, "url": SITE + path, "about": f"와우 포에버 {name}",
+          "publisher": {"@type": "Organization", "name": "포에버 채팅"}}
+    os.makedirs(os.path.join(ROOT, "classes"), exist_ok=True)
+    open(os.path.join(ROOT, "classes", f"{slug}.html"), "w", encoding="utf-8", newline="\n").write(page(title, desc, path, body, ld))
+
+# ---------- 전체 직업 페이지 ----------
+cards = "".join(f'<a class="cls" href="/forever/classes/{SLUG[n]}.html"><img src="{ICON(CLASS_ICON[n])}" alt="{E(n)} 아이콘" width="44" height="44">'
+                f'<span><b style="color:{COLOR[n]}">{E(n)}</b><small>{E(ROLE[n])} · {E(" / ".join(d["specs"]))}</small></span></a>' for n, d in data.items())
+class_names = list(data.keys())
+head = "".join(f"<th>{E(n)}</th>" for n in class_names)
+rows = []
+for r in races:
+    cells = "".join(f"<td>{'✔' if n in r['classes'] else ''}</td>" for n in class_names)
+    rows.append(f'<tr><td class="{faction_class(r["faction"])}"><b>{E(r["race"])}</b><br><small>{E(r["faction"])}</small></td>{cells}</tr>')
+body = f"""
+<div class="crumb"><a href="/forever/">포에버 채팅</a> › 직업 정리</div>
+<h1>와우 포에버 직업 정리</h1>
+<p class="lead">와우 포에버(월드 오브 워크래프트: 포에버)의 직업 9개, 전문화 27개, 특성 470개를 블리자드 공식 게임 데이터 기준으로 정리했어요. 직업을 누르면 전문화별 특성과 등급별 수치를 볼 수 있어요.</p>
+<div class="grid">{cards}</div>
+<a class="cta" href="/forever/">🤖 직업·특성·퀘스트가 궁금하면 포에버봇에게 물어보기 · 와우 포에버 채팅 들어가기</a>
+<h2>종족별로 고를 수 있는 직업</h2>
+<div style="overflow-x:auto"><table><tr><th>종족</th>{head}</tr>{"".join(rows)}</table></div>
+<p class="lead" style="margin-top:10px">포에버에는 얼라이언스 「고등 마법원 스카이본」과 호드 「바람구체자 스카이본」 종족이 새로 있어요.</p>
+"""
+title = "와우 포에버 직업 정리 – 9개 직업·전문화·특성, 종족별 직업 | 포에버 채팅"
+desc = "와우 포에버 직업 9개(전사, 성기사, 사냥꾼, 도적, 사제, 주술사, 마법사, 흑마법사, 드루이드)의 전문화와 특성 470개, 종족별로 고를 수 있는 직업을 블리자드 공식 데이터로 정리했어요."
+ld = {"@context": "https://schema.org", "@type": "ItemList", "name": title, "inLanguage": "ko",
+      "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": n, "url": f"{SITE}/forever/classes/{SLUG[n]}.html"} for i, n in enumerate(class_names)]}
+open(os.path.join(ROOT, "classes", "index.html"), "w", encoding="utf-8", newline="\n").write(page(title, desc, "/forever/classes/", body, ld))
+
+# ---------- 사이트맵 ----------
+all_urls = ["/forever/", "/forever/classes/"] + urls
+sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "".join(
+    f"  <url><loc>{SITE}{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in all_urls) + "</urlset>\n"
+open(os.path.join(ROOT, "sitemap.xml"), "w", encoding="utf-8", newline="\n").write(sm)
+print("ok", len(all_urls), "pages;", sum(len(d["talents"]) for d in data.values()), "talents")
