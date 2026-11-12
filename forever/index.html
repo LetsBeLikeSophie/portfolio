@@ -126,8 +126,16 @@
   #drunkBar button{flex:none;background:linear-gradient(180deg,#1a8dff,#0060c7);color:#fff;border:0;border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;cursor:pointer}
   body.guest #camBtn, body.guest #dmBtn, body.guest #pushBtn{display:none}
   /* 여관 장면 (위쪽) */
-  #scene{position:relative;flex:none;height:clamp(150px,30vh,240px);border-bottom:1px solid var(--line);background:#1a120a}
-  #scene canvas{display:block;width:100%;height:100%;cursor:pointer;touch-action:manipulation}
+  #scene{position:relative;z-index:2;flex:none;height:clamp(160px,32vh,250px);background:#1a120a;border-bottom:3px solid #4a2f17;box-shadow:0 1px 0 #c9a25a66,0 6px 14px #000c}
+  #scene canvas{display:block;width:100%;height:100%;cursor:pointer;touch-action:pan-y}
+  #sceneTabs{position:absolute;left:50%;top:6px;transform:translateX(-50%);display:flex;gap:2px;padding:2px;background:#0d0906d9;border:2px solid #4a2f17;border-radius:3px;font-family:Galmuri11,system-ui,sans-serif}
+  #sceneTabs button{position:relative;border:0;border-radius:2px;background:none;color:#a8957a;font:inherit;font-size:11px;line-height:1;padding:5px 9px;cursor:pointer;white-space:nowrap}
+  #sceneTabs button.on{background:#5a3a1c;color:#f6e6c2}
+  #sceneTabs button b{font-weight:400;color:#e6c36a;margin-left:2px}
+  #sceneTabs button.new::after{content:"";position:absolute;top:2px;right:2px;width:6px;height:6px;background:#ff5a5a;box-shadow:0 0 0 1px #0d0906}
+  #scene.off #sceneTabs{display:none}
+  #sceneTabs i{font-style:normal;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+  #list{background:#100c08}
   #sceneX{position:absolute;right:6px;bottom:6px;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:#000a;color:var(--muted);font-size:12px;line-height:1;cursor:pointer;padding:0}
   #scene.off{height:auto;background:none}
   #scene.off canvas{display:none}
@@ -720,7 +728,7 @@
   </header>
   <div class="online hidden" id="online">접속 중…</div>
   <div id="drunkBar" class="hidden"><span>🍺 취해서 글이 흐리게 보여요. 배틀넷으로 인증하면 술이 깨요</span><button type="button" id="soberGo">술 깨기</button></div>
-  <div id="scene"><canvas id="sceneCv" role="img" aria-label="여관: 지금 있는 사람들"></canvas><button type="button" id="sceneX" aria-label="여관 장면 접기">▴</button></div>
+  <div id="scene"><canvas id="sceneCv" role="img" aria-label="여관: 지금 있는 사람들. 옆으로 밀면 침실"></canvas><div id="sceneTabs" role="tablist"><button type="button" role="tab" data-r="0" class="on"><i>🍺</i> 홀<b id="stHall"></b></button><button type="button" role="tab" data-r="1"><i>🛏️</i> 침실<b id="stBed"></b></button></div><button type="button" id="sceneX" aria-label="여관 장면 접기">▴</button></div>
   <div id="pushBar" class="hidden"><span id="pushTxt"></span><button type="button" id="pushGo">알림 켜기</button><button type="button" id="pushX" aria-label="나중에">✕</button></div>
   <div id="list"></div>
   <div id="tipBar" class="hidden"><span class="tl">👾 이렇게 물어보세요</span></div>
@@ -911,7 +919,7 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
-import { createScene } from "./scene.js?v=5";
+import { createScene } from "./scene.js?v=6";
 
 const SUPABASE_URL = "https://ztxzqvnybiemgbhtrwiw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7";
@@ -2338,7 +2346,7 @@ function enterChat(player){
   document.body.classList.toggle("guest", isGuest()); $("drunkBar").classList.toggle("hidden", !isGuest());
   cache = []; filterTag = "all"; newFrom = 0; jumpNew = true;
   show("chat");
-  scene.reset(); scene.setMe(me.id); scene.resize(); syncScene(); sceneRun();
+  innRoster = []; scene.reset(); scene.setMe(me.id); scene.resize(); syncScene(); sceneRun(); loadInn(true);
   $("srvBadge").textContent = me.realm||"일반"; $("srvBadge").title = `${me.realm||"일반"} 서버`;
   $("srvBadge").className = "srv"+(me.realm==="PvP"?" pvp":"");
   const fi=document.createElement("span"); fi.className="icons"; fi.id="meIcons";
@@ -2793,7 +2801,20 @@ const scene = createScene($("sceneCv"), { classColor: CLASS_COLOR, emoteEmoji: E
   if (a.bot) { if (isGuest()) toast(BOT_NO_DRUNK); else openBotCard(); return; }
   openProfile({ player_id: a.id, sender_name: a.name, sender_class: a.cls, sender_race: a.race, sender_faction: a.faction,
     sender_level: a.level, sender_realm: a.realm, sender_verified: a.verified, tag: "chat" });
+}, onInfo: ({ room, hall, bed, hallNew }) => {
+  document.querySelectorAll("#sceneTabs button").forEach((b) => { b.classList.toggle("on", +b.dataset.r === room); b.setAttribute("aria-selected", +b.dataset.r === room); });
+  $("stHall").textContent = hall; $("stBed").textContent = bed;
+  document.querySelector('#sceneTabs [data-r="0"]').classList.toggle("new", hallNew);
 } });
+document.querySelectorAll("#sceneTabs button").forEach((b) => { b.onclick = () => scene.setRoom(+b.dataset.r); });
+// 침실에 눕힐 예전 사람들 (최근 30일 안에 들어왔던 같은 서버 사람)
+let innRoster = [], innAt = 0;
+async function loadInn(force){
+  if (!me || (!force && Date.now() - innAt < 5 * 60e3)) return;
+  innAt = Date.now();
+  const { data } = await sb.rpc("wow_inn_roster", { p_token: ls.get("wowchat_token") });
+  if (Array.isArray(data)) { innRoster = data; syncScene(); }
+}
 let sceneOff = ls.get("wowchat_scene_off") === "1";
 function sceneRun(){
   $("scene").classList.toggle("off", sceneOff);
@@ -2802,21 +2823,26 @@ function sceneRun(){
   scene.setRunning(!!me && !sceneOff && !$("chat").classList.contains("hidden") && document.visibilityState === "visible");
 }
 $("sceneX").onclick = () => { sceneOff = !sceneOff; ls.set("wowchat_scene_off", sceneOff ? "1" : "0"); sceneRun(); if (!sceneOff) { scene.resize(); syncScene(); } };
-document.addEventListener("visibilitychange", sceneRun);
-// 여관에 보일 사람: 나 + 지금 접속한 사람 + 최근 3시간 안에 말한 사람(조는 모습)
+document.addEventListener("visibilitychange", () => { sceneRun(); if (document.visibilityState === "visible") loadInn(); });
+// 홀: 나 + 지금 접속한 사람 / 침실: 최근에 말한 사람 + 예전에 왔던 사람 (자는 모습)
 function syncScene(){
   if (!me) return;
   const list = [], seen = new Set();
   const add = (p) => { if (!p.id || seen.has(p.id)) return; seen.add(p.id); list.push(p); };
   add({ id: me.id, name: me.name, race: me.race, cls: me.class, faction: me.faction, verified: me.verified !== false, level: me.level, realm: me.realm });
   for (const u of onlineUsers.values()) add({ id: u.id, name: u.name, race: u.race, cls: u.cls, faction: u.faction, verified: u.verified !== false, level: u.level, realm: u.realm });
-  const since = Date.now() - 3 * 3600e3;
-  for (let i = cache.length - 1; i >= 0 && list.length < 60; i--) {
+  const since = Date.now() - 24 * 3600e3;
+  for (let i = cache.length - 1; i >= 0 && list.length < 90; i--) {
     const m = cache[i];
     if (m.tag === "bot" || !m.player_id || new Date(m.created_at).getTime() < since || muted.has(m.player_id)) continue;
     if (myFactionOnly && m.sender_faction !== me.faction) continue;
     add({ id: m.player_id, name: m.sender_name, race: m.sender_race, cls: m.sender_class, faction: m.sender_faction,
       verified: m.sender_verified !== false, level: m.sender_level, realm: m.sender_realm, asleep: true });
+  }
+  for (const u of innRoster) {
+    if (list.length >= 90) break;
+    if (muted.has(u.id) || (myFactionOnly && u.faction !== me.faction)) continue;
+    add({ id: u.id, name: u.name, race: u.race, cls: u.cls, faction: u.faction, verified: u.verified !== false, level: u.level, realm: u.realm, asleep: true });
   }
   scene.setPeople(list);
 }
