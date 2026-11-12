@@ -31,6 +31,8 @@ export function createScene(canvas, opts = {}) {
   let meId = null, running = false, raf = 0, last = 0, firstFill = true;
   // 방 두 개: 0 = 홀(지금 있는 사람), 1 = 침실(자리 비운·예전 사람이 자는 곳). 옆으로 넘겨서 봄
   let view = 0, cam = 0, hallNew = false, bgs = [null, null], beds = [], floorY = 40, infoSig = "";
+  // 홀 오른쪽 벽 책장: 누르면 직업 도감(직업·특성 정리)으로
+  let shelf = { x: 96, y: 8, w: 16, h: 20 };
 
   /* ---------- 크기 ---------- */
   function resize() {
@@ -41,6 +43,7 @@ export function createScene(canvas, opts = {}) {
     W = Math.max(60, Math.floor(r.width / PX)); H = Math.max(40, Math.floor(r.height / PX));
     low.width = W; low.height = H; k = PX * dpr;
     wallH = Math.round(H * 0.4); barW = 20;
+    { const h = Math.min(wallH + 1, 22); shelf = { x: W - 24, w: 16, h, y: wallH + 3 - h }; }
     bgs = [makeBg(0), makeBg(1)];
     for (const a of people.values()) if (!a.asleep) clampPos(a);
     layBeds();
@@ -218,6 +221,36 @@ export function createScene(canvas, opts = {}) {
     c.fillStyle = gr; c.fillRect(0, wy, cw, ch - wy);
     c.fillStyle = "rgba(0,0,0,.35)"; c.fillRect(0, wy, cw, 2 * dpr);
     c.fillStyle = "rgba(255,255,255,.04)"; c.fillRect(0, wy + 2 * dpr, cw, 1 * dpr);
+    // 책장 (도트 칸에 맞춤)
+    {
+      const u = k, { w: sw, h: sh } = shelf;
+      const P = (x, y, w, h, col) => { c.fillStyle = col; c.fillRect((shelf.x + x) * u, (shelf.y + y) * u, w * u, h * u); };
+      P(-1, sh, sw + 3, 1, "rgba(0,0,0,.4)");
+      P(sw, 1, 1, sh, "rgba(0,0,0,.3)");
+      P(0, 0, sw, sh, "#4a2f17");
+      P(0, 0, sw, 1, "#7a5230");
+      P(1, 1, sw - 2, sh - 2, "#1c1009");
+      const rows = sh >= 18 ? 3 : 2, rowH = Math.floor((sh - 2) / rows) - 1;
+      let seed = 11;
+      const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+      const COL = ["#8b2b2b", "#2f5a8a", "#3f7a3a", "#a8862e", "#6a3d8a", "#b0582a", "#5b6f7a", "#7a2f55"];
+      for (let r = 0; r < rows; r++) {
+        const top = 1 + r * (rowH + 1), bot = top + rowH;
+        let x = 1;
+        while (x < sw - 1) {
+          if (rnd() < 0.1 && x > 2) { x += 1; continue; }        // 빈 칸
+          const bw = Math.min(sw - 1 - x, rnd() < 0.35 ? 2 : 1);
+          const bh = rowH - Math.floor(rnd() * 3);
+          const col = COL[Math.floor(rnd() * COL.length)];
+          P(x, bot - bh, bw, bh, col);
+          P(x, bot - bh, bw, 1, "rgba(255,255,255,.18)");
+          if (bh >= 4) P(x, bot - bh + 2, bw, 1, "rgba(255,215,130,.45)");   // 금박 띠
+          x += bw;
+        }
+        P(1, bot, sw - 2, 1, "#5a3a1c");
+      }
+      P(sw - 5, -2, 3, 2, "#e8dcc0"); P(sw - 4, -3, 1, 1, "#ffd36a");   // 위에 올린 두루마리
+    }
     // 따뜻한 불빛
     gr = c.createRadialGradient(cw * 0.78, wy * 0.9, 0, cw * 0.78, wy * 0.9, Math.max(cw, ch) * 0.6);
     gr.addColorStop(0, "rgba(255,170,80,.16)"); gr.addColorStop(1, "rgba(255,170,80,0)");
@@ -448,6 +481,7 @@ export function createScene(canvas, opts = {}) {
         }
       }
       if (R.rm === 0 && view === 0) label((bot.x + R.off) * k, (R.fairyTop - 1) * k, "포에버봇", "#e6c36a", false, false);
+      if (R.rm === 0) label((shelf.x + shelf.w / 2 + R.off) * k, (shelf.y + shelf.h + 1) * k + 12 * dpr, "📖 직업 도감", "#f0d48a", false, false);
     }
     // 말풍선은 맨 위에
     for (const R of rooms) {
@@ -487,6 +521,7 @@ export function createScene(canvas, opts = {}) {
       if (a.asleep) { if (Math.abs(lx - (a.x + (a.lie < 0 ? 3 : -3))) < 15 && ly <= a.y + 2 && ly >= a.y - 16) { opts.onTap?.(a); return; } continue; }
       if (Math.abs(lx - a.x) < 8 && ly <= a.y + 2 && ly >= a.y - (a.h || 22) - 2) { opts.onTap?.(a); return; }
     }
+    if (view === 0 && lx >= shelf.x - 2 && lx <= shelf.x + shelf.w + 2 && ly >= shelf.y - 3 && ly <= shelf.y + shelf.h + 6) opts.onTap?.({ shelf: true });
   });
 
   return {
