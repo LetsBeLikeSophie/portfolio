@@ -137,7 +137,7 @@ export function createScene(canvas, opts = {}) {
     const now = performance.now();
     const t = String(text || "").replace(/\s+/g, " ").trim();
     const dur = Math.min(9000, 3500 + t.length * 70);
-    if (o.bot) { bot.bubble = { text: t, until: now + dur, bot: true }; return; }
+    if (o.bot) { bot.bubble = { text: t, until: now + dur, bot: true }; if (view === 1) { hallNew = true; info(); } return; }
     if (!p || !p.id) return;
     const a = people.get(p.id) || upsert(p, { walkIn: !p.asleep });
     if (a.asleep) { wakeUp(a); a.alpha = 1; seatSleepers(); }
@@ -397,7 +397,7 @@ export function createScene(canvas, opts = {}) {
         }
       } else {
         for (const a of R.list) R.tops.set(a.id, person(a, now));
-        R.fairyTop = fairy(now);
+        if (view === 0) R.fairyTop = fairy(now);   // 포에버봇은 홀에만 (침실로 넘기면 안 보임)
       }
       g.restore();
     }
@@ -429,12 +429,12 @@ export function createScene(canvas, opts = {}) {
           ctx.fillText(emoteEmoji[a.emote.key], x * k, (top - 4) * k - 10 * dpr);
         }
       }
-      if (R.rm === 0) label((bot.x + R.off) * k, (R.fairyTop - 1) * k, "포에버봇", "#e6c36a", false, false);
+      if (R.rm === 0 && view === 0) label((bot.x + R.off) * k, (R.fairyTop - 1) * k, "포에버봇", "#e6c36a", false, false);
     }
     // 말풍선은 맨 위에
     for (const R of rooms) {
       for (const a of R.list) if (a.bubble && a.alpha > 0.3 && a.x + R.off > 0 && a.x + R.off < W) bubble((a.x + R.off) * k, (R.tops.get(a.id) - 1) * k - 13 * dpr, a.bubble);
-      if (R.rm === 0 && bot.bubble) bubble((bot.x + R.off) * k, (R.fairyTop - 1) * k - 13 * dpr, bot.bubble);
+      if (R.rm === 0 && view === 0 && R.off > -W / 3 && bot.bubble) bubble((bot.x + R.off) * k, (R.fairyTop - 1) * k - 13 * dpr, bot.bubble);
     }
   }
 
