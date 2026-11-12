@@ -46,7 +46,7 @@ export function createScene(canvas, opts = {}) {
     { const h = Math.min(wallH + 1, 22); shelf = { x: W - 24, w: 16, h, y: wallH + 3 - h }; }
     bgs = [makeBg(0), makeBg(1)];
     for (const a of people.values()) if (!a.asleep) clampPos(a);
-    layBeds();
+    layBeds(); layShops();
     draw(performance.now());
   }
   const ro = new ResizeObserver(resize); ro.observe(canvas);
@@ -100,8 +100,10 @@ export function createScene(canvas, opts = {}) {
       else { a.x = rnd(r.x0, r.x1); a.y = rnd(r.y0, r.y1); a.tx = a.x; a.ty = a.y; if (firstFill || p.asleep) a.alpha = 1; }
       people.set(p.id, a);
     }
+    const hadShop = a.shop;
     Object.assign(a, { name: p.name, race: p.race, cls: p.cls, faction: p.faction, verified: p.verified !== false,
-      level: p.level, realm: p.realm, gone: false });
+      level: p.level, realm: p.realm, gone: false, shop: p.shop || null });
+    if (hadShop && !a.shop) { a.stall = false; a.nextMove = performance.now() + rnd(800, 2500); }
     const wasAsleep = a.asleep; a.asleep = !!p.asleep;
     if (!a.asleep && wasAsleep) wakeUp(a);
     return a;
@@ -120,7 +122,22 @@ export function createScene(canvas, opts = {}) {
     });
     for (const a of people.values()) if (!keep.has(a.id) && !a.bubble) a.gone = true;
     firstFill = false;
-    seatSleepers(); info();
+    seatSleepers(); layShops(); info();
+  }
+  // 길드 모집 간판 든 사람: 홀 뒤쪽에 줄지어 가만히 서 있음 (메이플 개인상점처럼)
+  function layShops() {
+    const r = area(), list = [...people.values()].filter((a) => a.shop && !a.asleep && !a.gone).sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    const rows = r.y1 - r.y0 >= 20 ? 2 : 1, xa = 36, xb = Math.max(xa + 20, shelf.x - 6);
+    const n = list.length, perRow = [Math.ceil(n / rows), Math.floor(n / rows)];
+    list.forEach((a, i) => {
+      const row = rows === 2 ? i % 2 : 0, idx = rows === 2 ? Math.floor(i / 2) : i, cnt = perRow[row] || 1;
+      const slot = (xb - xa) / cnt;
+      a.stall = true;
+      a.tx = Math.round(xa + (idx + 0.5) * slot + (row ? Math.min(6, slot / 4) : 0));
+      a.ty = row ? Math.min(r.y1, r.y0 + 17) : r.y0 + 2;
+      if (a.alpha === 0 && !a.walking) { a.x = a.tx; a.y = a.ty; }
+      a.nextMove = Infinity;
+    });
   }
   function info() {
     let hall = 0, bed = 0;
@@ -152,7 +169,7 @@ export function createScene(canvas, opts = {}) {
       if (!t) return;
     }
     if (t) a.bubble = { text: t, until: now + dur, foreign: !!o.foreign };
-    a.tx = a.x; a.ty = a.y; a.nextMove = now + dur;  // 말할 때는 멈춰 섬
+    if (!a.stall) { a.tx = a.x; a.ty = a.y; a.nextMove = now + dur; }  // 말할 때는 멈춰 섬 (간판 든 사람은 원래 서 있음)
   }
 
   /* ---------- 움직임 ---------- */
@@ -164,7 +181,7 @@ export function createScene(canvas, opts = {}) {
       if (a.bubble && a.bubble.until < now) a.bubble = null;
       if (a.emote && a.emote.until < now) a.emote = null;
       if (a.asleep) { a.walking = false; continue; }
-      if (!a.asleep && !a.gone && now > a.nextMove && !a.bubble) {
+      if (!a.asleep && !a.gone && !a.stall && now > a.nextMove && !a.bubble) {
         a.tx = rnd(r.x0, r.x1); a.ty = rnd(r.y0, r.y1);
         a.nextMove = now + rnd(3500, 9000);
       }
@@ -174,7 +191,7 @@ export function createScene(canvas, opts = {}) {
       if (a.walking) {
         a.x += dx / d * Math.min(sp, d); a.y += dy / d * Math.min(sp, d);
         if (Math.abs(dx) > 0.3) a.dir = dx > 0 ? 1 : -1;
-      }
+      } else if (a.stall) a.dir = a.x < W / 2 ? 1 : -1;
     }
     if (bot.bubble && bot.bubble.until < now) bot.bubble = null;
     cam += (view - cam) * Math.min(1, dt * 9); if (Math.abs(view - cam) < 0.004) cam = view;
@@ -417,6 +434,28 @@ export function createScene(canvas, opts = {}) {
     for (const [dx, dy] of [[-o, 0], [o, 0], [0, -o], [0, o], [o, o]]) c.fillText(text, x + dx, y + dy);
     c.fillStyle = color; c.fillText(text, x, y);
   }
+  // 간판: 금테 두른 나무판에 '길드모집' + 길드 이름. 누를 자리를 도트 좌표로 돌려줌
+  function shopSign(cx, bottomY, guild, alpha) {
+    const c = ctx, u = dpr, snap = (v) => Math.round(v / (2 * u)) * 2 * u;
+    let name = String(guild);
+    c.font = font(11 * dpr);
+    while ([...name].length > 2 && c.measureText(name).width > 92 * dpr) name = [...name].slice(0, -2).join("") + "…";
+    const nw = c.measureText(name).width;
+    c.font = font(9 * dpr); const hw = c.measureText("길드모집").width;
+    const w = snap(Math.max(nw, hw) + 12 * dpr), h = snap(28 * dpr);
+    let x = snap(cx - w / 2); x = Math.max(2 * u, Math.min(canvas.width - w - 2 * u, x));
+    const y = snap(Math.max(2 * u, bottomY - h));
+    c.globalAlpha = alpha;
+    c.fillStyle = "rgba(0,0,0,.45)"; c.fillRect(x + 2 * u, y + 2 * u, w, h);
+    pixBox(c, x, y, w, h, 2 * u, "#1a110a", "#e6c36a");
+    pixBox(c, x + 2 * u, y + 2 * u, w - 4 * u, h - 4 * u, 2 * u, "#e6c36a", "#4a2f17");
+    c.fillStyle = "#6b4524"; c.fillRect(x + 4 * u, y + 4 * u, w - 8 * u, u);
+    c.textAlign = "center"; c.textBaseline = "top";
+    c.font = font(9 * dpr); c.fillStyle = "#ffcf5a"; c.fillText("길드모집", x + w / 2, y + 5 * u);
+    c.font = font(11 * dpr); c.fillStyle = "#fff3d6"; c.fillText(name, x + w / 2, y + 14 * u);
+    c.globalAlpha = 1;
+    return { x0: x / k, y0: y / k, x1: (x + w) / k, y1: (y + h) / k };
+  }
   function label(cx, y, text, color, dim, bold) {
     const c = ctx; c.textAlign = "center"; c.textBaseline = "bottom";
     outlined(text, Math.round(cx), Math.round(y), color, 11);
@@ -483,6 +522,15 @@ export function createScene(canvas, opts = {}) {
       if (R.rm === 0 && view === 0) label((bot.x + R.off) * k, (R.fairyTop - 1) * k, "포에버봇", "#e6c36a", false, false);
       if (R.rm === 0) label((shelf.x + shelf.w / 2 + R.off) * k, (shelf.y + shelf.h + 1) * k + 12 * dpr, "📖 직업 도감", "#f0d48a", false, false);
     }
+    // 길드 모집 간판 (이름표 위)
+    for (const R of rooms) {
+      if (R.rm !== 0) continue;
+      for (const a of R.list) {
+        if (!a.shop || a.alpha <= 0.05) { a.sign = null; continue; }
+        const top = R.tops.get(a.id) - 1;
+        a.sign = shopSign((a.x + R.off) * k, top * k - 14 * dpr, a.shop, a.alpha);
+      }
+    }
     // 말풍선은 맨 위에
     for (const R of rooms) {
       for (const a of R.list) if (a.bubble && a.alpha > 0.3 && a.x + R.off > 0 && a.x + R.off < W) bubble((a.x + R.off) * k, (R.tops.get(a.id) - 1) * k - 13 * dpr, a.bubble);
@@ -517,6 +565,7 @@ export function createScene(canvas, opts = {}) {
     const lx = (e.clientX - r.left) / PX, ly = (e.clientY - r.top) / PX;
     if (view === 0 && Math.abs(lx - bot.x) < 9 && ly > bot.y - 18 && ly < bot.y + 3) { opts.onTap?.({ bot: true }); return; }
     const list = [...people.values()].filter((a) => a.alpha > 0.3 && (a.asleep ? 1 : 0) === view).sort((a, b) => b.y - a.y);
+    if (view === 0) for (const a of list) if (a.sign && lx >= a.sign.x0 && lx <= a.sign.x1 && ly >= a.sign.y0 && ly <= a.sign.y1) { opts.onTap?.(a); return; }
     for (const a of list) {
       if (a.asleep) { if (Math.abs(lx - (a.x + (a.lie < 0 ? 3 : -3))) < 15 && ly <= a.y + 2 && ly >= a.y - 16) { opts.onTap?.(a); return; } continue; }
       if (Math.abs(lx - a.x) < 8 && ly <= a.y + 2 && ly >= a.y - (a.h || 22) - 2) { opts.onTap?.(a); return; }
