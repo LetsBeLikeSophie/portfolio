@@ -30,7 +30,7 @@ export function createScene(canvas, opts = {}) {
   const bot = { x: 12, y: 20, bubble: null };
   let meId = null, running = false, raf = 0, last = 0, firstFill = true;
   // 방 두 개: 0 = 홀(지금 있는 사람), 1 = 침실(자리 비운·예전 사람이 자는 곳). 옆으로 넘겨서 봄
-  let view = 0, cam = 0, hallNew = false, bgs = [null, null], beds = [], floorY = 40, infoSig = "";
+  let view = 0, cam = 0, hallNew = false, bgs = [null, null], infoSig = "";
   // 홀 오른쪽 벽 책장: 누르면 직업 도감(직업·특성 정리)으로
   let shelf = { x: 96, y: 8, w: 16, h: 20 };
 
@@ -46,7 +46,7 @@ export function createScene(canvas, opts = {}) {
     { const h = Math.min(wallH + 1, 22); shelf = { x: W - 24, w: 16, h, y: wallH + 3 - h }; }
     bgs = [makeBg(0), makeBg(1)];
     for (const a of people.values()) if (!a.asleep) clampPos(a);
-    layBeds(); layShops();
+    seatSleepers();
     draw(performance.now());
   }
   const ro = new ResizeObserver(resize); ro.observe(canvas);
@@ -57,37 +57,17 @@ export function createScene(canvas, opts = {}) {
     a.x = Math.min(r.x1, Math.max(r.x0, a.x)); a.y = Math.min(r.y1, Math.max(r.y0, a.y));
     a.tx = Math.min(r.x1, Math.max(r.x0, a.tx ?? a.x)); a.ty = Math.min(r.y1, Math.max(r.y0, a.ty ?? a.y));
   }
-  /* ---------- 침실: 침대 자리 (앞뒤 두 줄) ---------- */
-  function layBeds() {
-    const r = area(), out = [];
-    const cols = Math.max(1, Math.floor((W - 10) / 38));
-    const rowsY = r.y1 - r.y0 >= 22 ? [r.y0 + 5, r.y1 - 1] : [r.y1 - 1];
-    rowsY.forEach((fy, ri) => {
-      const step = (W - 8) / cols;
-      for (let c = 0; c < cols; c++) out.push({ bx: Math.round(4 + step * c + (step - 32) / 2 + (ri ? step / 4 : -step / 8)), fy, n: out.length });
-    });
-    beds = out;
-    floorY = rowsY.length > 1 ? rowsY[0] + 8 : r.y0 + 6;
-    seatSleepers();
-  }
-  // 최근에 본 사람부터 침대에, 침대가 모자라면 바닥에 아무렇게나 퍼질러 잠
+  /* ---------- 침실: 침대 없이 바닥 아무 데나 아무 방향으로 널브러져 잠 (몇 명은 담요) ---------- */
   function seatSleepers() {
     const r = area();
-    const list = [...people.values()].filter((a) => a.asleep && !a.gone).sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
-    const nFloor = Math.max(1, list.length - beds.length), span = r.x1 - r.x0 - 24;
-    list.forEach((a, i) => {
-      const bed = beds[i];
-      const sp = sleepSprite(a), head = FEET - 11 - sp.top;
-      a.bed = bed || null;
-      if (bed) { a.x = bed.bx + 3 + head; a.y = bed.fy - 7; a.lie = 1; }
-      else {
-        const h = hash(a.id);
-        a.lie = h & 1 ? 1 : -1;
-        const j = i - beds.length;   // 바닥: 가운데 통로에 고르게, 조금씩 삐뚤게
-        a.x = r.x0 + 12 + (j + 0.5) * span / nFloor + ((h >> 4) % 7) - 3; a.y = floorY + (j % 2 ? 3 : -1) + ((h >> 9) % 3);
-      }
+    for (const a of people.values()) {
+      if (!a.asleep || a.gone) continue;
+      const h = hash(a.id), sp = sleepSprite(a), head = FEET - 11 - sp.top, m = Math.max(head, 13);
+      a.bed = null; a.lie = h & 1 ? 1 : -1; a.blanket = (h >>> 7) % 3 !== 0;
+      a.x = r.x0 + m + ((h >>> 4) % 1000) / 1000 * Math.max(1, r.x1 - r.x0 - 2 * m);
+      a.y = r.y0 + 2 + ((h >>> 14) % 1000) / 1000 * Math.max(1, r.y1 - r.y0 - 2);
       a.tx = a.x; a.ty = a.y; a.walking = false;
-    });
+    }
   }
 
   /* ---------- 사람 목록 ---------- */
@@ -100,10 +80,8 @@ export function createScene(canvas, opts = {}) {
       else { a.x = rnd(r.x0, r.x1); a.y = rnd(r.y0, r.y1); a.tx = a.x; a.ty = a.y; if (firstFill || p.asleep) a.alpha = 1; }
       people.set(p.id, a);
     }
-    const hadShop = a.shop;
     Object.assign(a, { name: p.name, race: p.race, cls: p.cls, faction: p.faction, verified: p.verified !== false,
-      level: p.level, realm: p.realm, gone: false, shop: p.shop || null });
-    if (hadShop && !a.shop) { a.stall = false; a.nextMove = performance.now() + rnd(800, 2500); }
+      level: p.level, realm: p.realm, gone: false, lantern: !!p.lantern });
     const wasAsleep = a.asleep; a.asleep = !!p.asleep;
     if (!a.asleep && wasAsleep) wakeUp(a);
     return a;
@@ -122,19 +100,7 @@ export function createScene(canvas, opts = {}) {
     });
     for (const a of people.values()) if (!keep.has(a.id) && !a.bubble) a.gone = true;
     firstFill = false;
-    seatSleepers(); layShops(); info();
-  }
-  // 길드 모집·구함 글 쓴 사람: 글 쓴 그 자리(홀 안 0~1 비율)에 고정
-  function layShops() {
-    const r = area();
-    for (const a of people.values()) {
-      if (!a.shop || a.asleep || a.gone) continue;
-      const h = hash(a.id);
-      const fx = a.shop.fx ?? (h % 1000) / 1000, fy = a.shop.fy ?? ((h >>> 10) % 1000) / 1000;
-      const tx = r.x0 + (r.x1 - r.x0) * fx, ty = r.y0 + (r.y1 - r.y0) * fy;
-      if (!a.stall || Math.abs(a.tx - tx) > 0.5 || Math.abs(a.ty - ty) > 0.5) { a.x = a.tx = tx; a.y = a.ty = ty; }
-      a.stall = true; a.walking = false; a.nextMove = Infinity;
-    }
+    seatSleepers(); info();
   }
   function info() {
     let hall = 0, bed = 0;
@@ -166,7 +132,7 @@ export function createScene(canvas, opts = {}) {
       if (!t) return;
     }
     if (t) a.bubble = { text: t, until: now + dur, foreign: !!o.foreign };
-    if (!a.stall) { a.tx = a.x; a.ty = a.y; a.nextMove = now + dur; }  // 말할 때는 멈춰 섬 (간판 든 사람은 원래 서 있음)
+    a.tx = a.x; a.ty = a.y; a.nextMove = now + dur;  // 말할 때는 멈춰 섬
   }
 
   /* ---------- 움직임 ---------- */
@@ -178,7 +144,7 @@ export function createScene(canvas, opts = {}) {
       if (a.bubble && a.bubble.until < now) a.bubble = null;
       if (a.emote && a.emote.until < now) a.emote = null;
       if (a.asleep) { a.walking = false; continue; }
-      if (!a.asleep && !a.gone && !a.stall && now > a.nextMove && !a.bubble) {
+      if (!a.asleep && !a.gone && now > a.nextMove && !a.bubble) {
         a.tx = rnd(r.x0, r.x1); a.ty = rnd(r.y0, r.y1);
         a.nextMove = now + rnd(3500, 9000);
       }
@@ -188,7 +154,7 @@ export function createScene(canvas, opts = {}) {
       if (a.walking) {
         a.x += dx / d * Math.min(sp, d); a.y += dy / d * Math.min(sp, d);
         if (Math.abs(dx) > 0.3) a.dir = dx > 0 ? 1 : -1;
-      } else if (a.stall) a.dir = a.x < W / 2 ? 1 : -1;
+      }
     }
     if (bot.bubble && bot.bubble.until < now) bot.bubble = null;
     cam += (view - cam) * Math.min(1, dt * 9); if (Math.abs(view - cam) < 0.004) cam = view;
@@ -217,6 +183,12 @@ export function createScene(canvas, opts = {}) {
       c.fillStyle = "#f3eac0"; c.fillRect(wx + 10 * u, wyy + 2 * u, 3 * u, 3 * u); c.fillStyle = "#2f4277"; c.fillRect(wx + 11 * u, wyy + 2 * u, 2 * u, 2 * u);
       c.fillStyle = "#cfd8ff"; c.fillRect(wx + 3 * u, wyy + 3 * u, u, u); c.fillRect(wx + 6 * u, wyy + 6 * u, u, u);
       c.fillStyle = "#4a3420"; c.fillRect(wx + 8 * u - u / 2, wyy, u, wh); c.fillRect(wx, wyy + Math.round(wh / 2 / u) * u, ww, u);
+      { let sd = 7; const R = () => (sd = (sd * 9301 + 49297) % 233280) / 233280;
+        for (let i = 0; i < 6; i++) {
+          const bx = Math.round(4 + R() * (W - 14)), by = Math.round(wallH + 5 + R() * (H - wallH - 8)), P = (x, y, w, h, col) => { c.fillStyle = col; c.fillRect((bx + x) * u, (by + y) * u, w * u, h * u); };
+          if (R() < 0.3) { P(0, 0, 4, 3, "#1a110a"); P(1, 0, 2, 2, "#e9a72a"); P(0, 0, 1, 1, "#fff8e6"); }   // 엎어진 맥주잔
+          else { P(-1, 2, 8, 1, "rgba(0,0,0,.35)"); P(0, 0, 5, 2, "#2f6a33"); P(1, 0, 3, 1, "#5fa864"); P(5, 0, 1, 1, "#2f6a33"); P(6, 0, 1, 1, "#c9a46a"); }
+        } }
       gr = c.createRadialGradient(wx + ww / 2, wy, 0, wx + ww / 2, wy, Math.max(cw, ch) * 0.55);
       gr.addColorStop(0, "rgba(150,170,255,.14)"); gr.addColorStop(1, "rgba(150,170,255,0)");
       c.fillStyle = gr; c.fillRect(0, 0, cw, ch);
@@ -299,11 +271,29 @@ export function createScene(canvas, opts = {}) {
     // 자는 사람: 옆으로 누움 (침대 위거나 바닥에 아무렇게나)
     if (a.asleep) {
       const sp = sleepSprite(a), x = Math.round(a.x), y = Math.round(a.y);
-      if (!a.bed) { g.globalAlpha = a.alpha * 0.3; g.fillStyle = "#000"; g.fillRect(x - 15, y + 1, 28, 1); }
+      g.globalAlpha = a.alpha * 0.3; g.fillStyle = "#000"; g.fillRect(x - 15, y + 1, 28, 1);
       g.globalAlpha = a.alpha;
       g.save(); g.translate(x, y); if (a.lie < 0) g.scale(-1, 1); g.rotate(-Math.PI / 2);
       g.drawImage(sp.can, -(CX - 7), 11 - FEET);
-      g.restore(); g.globalAlpha = 1;
+      g.restore();
+      if (a.blanket) {   // 목 아래부터 발끝까지 덮고 들썩들썩
+        const hd = FEET - 11 - sp.top, br = Math.floor(now / 1100 + a.seed) % 2;
+        const x0 = a.lie > 0 ? x - hd + 7 : x - 12, x1 = a.lie > 0 ? x + 12 : x + hd - 7, len = x1 - x0;
+        const q = QUILT[hash(a.id) % QUILT.length], qs = shade(q, 0.72), ql = shade(q, 1.3);
+        // 몸 따라 봉긋하게: 어깨에서 엉덩이 쪽이 높고 발끝으로 낮아짐
+        for (let i = 0; i < len; i++) {
+          const u = a.lie > 0 ? i / len : 1 - i / len;
+          const hgt = Math.round(4 + 4 * Math.sin(Math.PI * Math.min(1, u * 1.25 + 0.08))) + (u < 0.7 ? br : 0);
+          const cx = x0 + i, ty = y - hgt;
+          g.fillStyle = "#1a110a"; g.fillRect(cx, ty - 1, 1, hgt + 2);
+          g.fillStyle = q; g.fillRect(cx, ty, 1, hgt + 1);
+          g.fillStyle = ql; g.fillRect(cx, ty, 1, 1);
+          if (i % 6 === 3) { g.fillStyle = qs; g.fillRect(cx, ty + 2, 1, 1); g.fillRect(cx, ty + 4, 1, 1); }
+        }
+        g.fillStyle = "#1a110a"; g.fillRect(x0 - 1, y - 4, 1, 5); g.fillRect(x1, y - 4, 1, 5);
+        g.fillStyle = qs; g.fillRect(x0, y, len, 1);
+      }
+      g.globalAlpha = 1;
       a.h = 14;
       return y - 14;
     }
@@ -325,42 +315,26 @@ export function createScene(canvas, opts = {}) {
     if (a.emote && /춤/.test(a.emote.key)) y -= Math.round(Math.abs(Math.sin(now / 110)) * 3);
     if (!a.verified && !a.asleep) x += Math.round(Math.sin(now / 380 + a.seed) * 1.4);
     if (pose === "stand" && Math.floor(now / 650 + a.seed) % 2 === 0) y += 0; else if (pose === "stand") y += 1;
-    const sit = a.shop?.kind === "seek" && a.stall && !a.walking;
-    if (sit) y += 3;
     g.globalAlpha = a.alpha * 0.32; g.fillStyle = "#000"; g.fillRect(Math.round(a.x) - 5, Math.round(a.y) + 1, 11, 1); g.fillRect(Math.round(a.x) - 3, Math.round(a.y) + 2, 7, 1);
     g.globalAlpha = a.alpha;
     drawSprite(sp, x, y, a.dir || 1);
-    if (sit) {
-      const bx = Math.round(a.x) - 6, by = Math.round(a.y) - 4, r = (x0, y0, w, h, c) => { g.fillStyle = c; g.fillRect(bx + x0, by + y0, w, h); };
-      r(0, 0, 13, 7, "#1a110a"); r(1, 1, 11, 5, "#9a6a3a"); r(1, 1, 11, 1, "#c08a50"); r(1, 3, 11, 1, "#7a4e26");
-      r(4, 1, 1, 5, "#5a3a1c"); r(8, 1, 1, 5, "#5a3a1c");
-    }
+    if (a.lantern) lantern(x + (a.dir || 1) * 6, y - 9, now);
     g.globalAlpha = 1;
     a.h = FEET - sp.top;
     return y - (FEET - sp.top);
   }
-  // 침대 (옆에서 본 모습). 뒤판·매트리스 → 사람 → 이불 순서로 그림
+  // 등불 (길드 찾는 중): 손에 들고 깜빡이는 불빛
+  function lantern(hx, hy, now) {
+    const fl = Math.floor(now / 170 + hx * 7) % 3;
+    lamps.push({ x: hx, y: hy + 3, fl });
+    g.fillStyle = "#1a110a"; g.fillRect(hx, hy - 2, 1, 2); g.fillRect(hx - 2, hy, 5, 6);
+    g.fillStyle = "#8a5a30"; g.fillRect(hx - 1, hy, 3, 1); g.fillRect(hx - 1, hy + 5, 3, 1);
+    g.fillStyle = fl ? "#ffd36a" : "#fff3b0"; g.fillRect(hx - 1, hy + 1, 3, 4);
+    g.fillStyle = "#ff8a2a"; g.fillRect(hx, hy + (fl === 2 ? 2 : 3), 1, 2);
+  }
+  // 담요 색
   const QUILT = ["#7a3b3b", "#3b5a7a", "#4f6b3a", "#6b4a7a", "#7a6236", "#3a6b66"];
-  function bedBack(b) {
-    const r = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(b.bx + x, b.fy + y, w, h); };
-    r(-1, -16, 5, 2, "#1a110a"); r(0, -15, 3, 13, "#1a110a"); r(1, -14, 1, 11, "#6b4423"); r(-1, -16, 5, 1, "#8a5a30");   // 머리판
-    r(29, -11, 3, 9, "#1a110a"); r(30, -10, 1, 7, "#6b4423"); r(28, -12, 5, 1, "#8a5a30");                                // 발판
-    r(3, -9, 26, 3, "#1a110a"); r(3, -9, 26, 2, "#e6dcc4"); r(3, -7, 26, 1, "#b9ab8c");                                 // 매트리스
-    r(3, -12, 8, 3, "#1a110a"); r(4, -12, 6, 2, "#f6f0e0"); r(4, -10, 6, 1, "#cfc2a2");                                // 베개
-  }
-  function bedFront(b, filled, now) {
-    const r = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(b.bx + x, b.fy + y, w, h); };
-    const q = QUILT[b.n % QUILT.length], qs = shade(q, 0.7), ql = shade(q, 1.25);
-    const breathe = filled ? (Math.floor(now / 1100 + b.n * 0.37) % 2) : 0;
-    const top = filled ? -14 + breathe : -10;
-    r(11, top - 1, 18, 1, "#1a110a"); r(10, top, 1, -top - 3, "#1a110a");
-    r(11, top, 18, -top - 3, q); r(11, top, 18, 1, ql);
-    for (let i = 13; i < 29; i += 4) r(i, top + 2, 1, -top - 6 > 0 ? -top - 6 : 1, qs);                                // 이불 무늬
-    r(11, -3, 18, 1, qs);
-    r(0, -3, 32, 1, "#1a110a"); r(0, -2, 32, 1, "#4a2e17");                                                           // 침대 옆판
-    r(1, -1, 2, 1, "#2a1a0d"); r(29, -1, 2, 1, "#2a1a0d");                                                           // 다리
-  }
-
+  const lamps = [];   // 이번 그림의 등불 자리 (불빛은 나중에 둥글게)
   const fairyFrames = [buildFairy(false, false), buildFairy(false, true), buildFairy(true, false)];
   function fairy(now) {
     const x = Math.round(bot.x), y = Math.round(bot.y);
@@ -438,49 +412,6 @@ export function createScene(canvas, opts = {}) {
     for (const [dx, dy] of [[-o, 0], [o, 0], [0, -o], [0, o], [o, o]]) c.fillText(text, x + dx, y + dy);
     c.fillStyle = color; c.fillText(text, x, y);
   }
-  // 간판: 모집은 금테 두른 나무판(문장 + 길드 이름), 구함은 흔들리는 박스 종이 팻말. 누를 자리를 도트 좌표로 돌려줌
-  const SEEK_TXT = ["길드 구해요 🥺", "데려가 주세요", "길드 없어요 ㅠ", "저 쓸만해요!"];
-  function shopSign(a, cx, bottomY, alpha, now) {
-    const c = ctx, u = dpr, s = a.shop, seek = s.kind === "seek", snap = (v) => Math.round(v / (2 * u)) * 2 * u;
-    const l1 = seek ? SEEK_TXT[hash(a.id) % SEEK_TXT.length] : "길드모집";
-    let l2 = seek ? (s.icons || "") : `${s.crest ? s.crest + " " : ""}${s.guild}`;
-    const f1 = seek ? 11 : 9, f2 = seek ? 10 : 11;
-    c.font = font(f2 * dpr);
-    while ([...l2].length > 2 && c.measureText(l2).width > 92 * dpr) l2 = [...l2].slice(0, -2).join("") + "…";
-    const w2 = l2 ? c.measureText(l2).width : 0;
-    c.font = font(f1 * dpr); const w1 = c.measureText(l1).width;
-    const w = snap(Math.max(w1, w2) + 12 * dpr), h = snap((l2 ? 28 : 18) * dpr);
-    let x = snap(cx - w / 2); x = Math.max(2 * u, Math.min(canvas.width - w - 2 * u, x));
-    const y = snap(Math.max(4 * u, bottomY - h));
-    c.save(); c.globalAlpha = alpha;
-    if (seek) {   // 팻말을 살랑살랑
-      const ang = Math.sin(now / 650 + a.seed) * 0.07;
-      c.translate(x + w / 2, y + h); c.rotate(ang); c.translate(-(x + w / 2), -(y + h));
-    }
-    c.fillStyle = "rgba(0,0,0,.45)"; c.fillRect(x + 2 * u, y + 2 * u, w, h);
-    if (seek) {
-      pixBox(c, x, y, w, h, 2 * u, "#4a3018", "#d9b57c");
-      c.fillStyle = "#c79e62"; c.fillRect(x + 4 * u, y + h - 5 * u, w - 8 * u, u);
-      c.fillStyle = "rgba(255,255,235,.75)"; c.fillRect(x + 3 * u, y - u, 6 * u, 3 * u); c.fillRect(x + w - 9 * u, y - u, 6 * u, 3 * u);   // 테이프
-    } else {
-      pixBox(c, x, y, w, h, 2 * u, "#1a110a", "#e6c36a");
-      pixBox(c, x + 2 * u, y + 2 * u, w - 4 * u, h - 4 * u, 2 * u, "#e6c36a", "#4a2f17");
-      c.fillStyle = "#6b4524"; c.fillRect(x + 4 * u, y + 4 * u, w - 8 * u, u);
-    }
-    c.textAlign = "center"; c.textBaseline = "top";
-    c.font = font(f1 * dpr); c.fillStyle = seek ? "#3a2410" : "#ffcf5a"; c.fillText(l1, x + w / 2, y + (seek ? 4 : 5) * u);
-    if (l2) { c.font = font(f2 * dpr); c.fillStyle = seek ? "#3a2410" : "#fff3d6"; c.fillText(l2, x + w / 2, y + (seek ? 15 : 14) * u); }
-    if (s.old) {   // 곧 내려가요: 귀퉁이에 거미줄
-      const ox = x + 2 * u, oy = y + 2 * u, R = 10 * u;
-      c.strokeStyle = "rgba(235,235,235,.75)"; c.lineWidth = u; c.beginPath();
-      for (const t of [0, 0.5, 1, 1.5]) { c.moveTo(ox, oy); c.lineTo(ox + Math.cos(t) * R, oy + Math.sin(t) * R); }
-      for (const rr of [4, 7]) { c.moveTo(ox + rr * u, oy); c.arc(ox, oy, rr * u, 0, Math.PI / 2); }
-      c.stroke();
-    }
-    if (s.apps && Math.floor(now / 450) % 2) { c.font = font(13 * dpr); c.textBaseline = "bottom"; c.fillText("📜", x + w - 2 * u, y + 4 * u); }
-    c.restore();
-    return { x0: x / k, y0: y / k, x1: (x + w) / k, y1: (y + h) / k, cx: (x + w / 2), top: y };
-  }
   function label(cx, y, text, color, dim, bold) {
     const c = ctx; c.textAlign = "center"; c.textBaseline = "bottom";
     outlined(text, Math.round(cx), Math.round(y), color, 11);
@@ -488,7 +419,7 @@ export function createScene(canvas, opts = {}) {
 
   function draw(now) {
     if (!low.width) return;
-    g.clearRect(0, 0, W, H);
+    g.clearRect(0, 0, W, H); lamps.length = 0;
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     // 보이는 방만 (넘기는 중이면 두 방 다)
@@ -502,14 +433,7 @@ export function createScene(canvas, opts = {}) {
     for (const R of rooms) {
       g.save(); g.translate(R.off, 0);
       if (R.rm === 1) {
-        // 침대와 바닥에 누운 사람을 앞뒤(y) 순서로
-        const items = beds.map((b) => ({ y: b.fy, b, who: R.list.find((a) => a.bed === b) }));
-        for (const a of R.list) if (!a.bed) items.push({ y: a.y, a });
-        items.sort((p, q) => p.y - q.y);
-        for (const it of items) {
-          if (it.b) { bedBack(it.b); if (it.who) R.tops.set(it.who.id, person(it.who, now)); bedFront(it.b, !!it.who, now); }
-          else R.tops.set(it.a.id, person(it.a, now));
-        }
+        for (const a of R.list) R.tops.set(a.id, person(a, now));   // 앞뒤(y) 순서
       } else {
         for (const a of R.list) R.tops.set(a.id, person(a, now));
         if (view === 0) R.fairyTop = fairy(now);   // 포에버봇은 홀에만 (침실로 넘기면 안 보임)
@@ -517,6 +441,12 @@ export function createScene(canvas, opts = {}) {
       g.restore();
     }
     ctx.drawImage(low, 0, 0, W * k, H * k);
+    for (const L of lamps) {
+      const cx = L.x * k, cy = L.y * k, rr = (L.fl ? 9 : 10) * k;
+      const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr);
+      gr.addColorStop(0, "rgba(255,210,110,.38)"); gr.addColorStop(1, "rgba(255,210,110,0)");
+      ctx.fillStyle = gr; ctx.fillRect(cx - rr, cy - rr, rr * 2, rr * 2);
+    }
     // 이름표
     for (const R of rooms) {
       for (const a of R.list) {
@@ -531,7 +461,7 @@ export function createScene(canvas, opts = {}) {
             ctx.globalAlpha = 1;
           }
         }
-        if (a.asleep && a.bed) {   // 침대에서 자는 사람만 Z z
+        if (a.asleep && a.blanket) {   // 담요 덮은 사람만 Z z
           ctx.textAlign = "center"; ctx.textBaseline = "bottom";
           const side = a.lie < 0 ? 1 : -1;
           const t = (now / 2200 + a.seed) % 1;
@@ -546,24 +476,6 @@ export function createScene(canvas, opts = {}) {
       }
       if (R.rm === 0 && view === 0) label((bot.x + R.off) * k, (R.fairyTop - 1) * k, "포에버봇", "#e6c36a", false, false);
       if (R.rm === 0) label((shelf.x + shelf.w / 2 + R.off) * k, (shelf.y + shelf.h + 1) * k + 12 * dpr, "📖 직업 도감", "#f0d48a", false, false);
-    }
-    // 길드 모집 간판 (이름표 위)
-    for (const R of rooms) {
-      if (R.rm !== 0) continue;
-      // 모집과 구함이 태그가 맞으면 가끔 둘 위에 💌
-      const shops = R.list.filter((a) => a.shop && a.alpha > 0.05), hit = new Set();
-      for (const r1 of shops) if (r1.shop.kind === "recruit") for (const s1 of shops)
-        if (s1.shop.kind === "seek" && r1.shop.tags.some((t) => s1.shop.tags.includes(t))) { hit.add(r1.id); hit.add(s1.id); }
-      const ph = (now / 1000) % 7;
-      for (const a of R.list) {
-        if (!a.shop || a.alpha <= 0.05) { a.sign = null; continue; }
-        const top = R.tops.get(a.id) - 1;
-        a.sign = shopSign(a, (a.x + R.off) * k, top * k - 14 * dpr, a.alpha, now);
-        if (hit.has(a.id) && ph < 1.6) {
-          ctx.globalAlpha = Math.min(1, (1.6 - ph) * 1.5); ctx.font = font(14 * dpr); ctx.textAlign = "center"; ctx.textBaseline = "bottom";
-          ctx.fillText("💌", a.sign.cx, a.sign.top - (2 + ph * 6) * dpr); ctx.globalAlpha = 1;
-        }
-      }
     }
     // 말풍선은 맨 위에
     for (const R of rooms) {
@@ -599,7 +511,6 @@ export function createScene(canvas, opts = {}) {
     const lx = (e.clientX - r.left) / PX, ly = (e.clientY - r.top) / PX;
     if (view === 0 && Math.abs(lx - bot.x) < 9 && ly > bot.y - 18 && ly < bot.y + 3) { opts.onTap?.({ bot: true }); return; }
     const list = [...people.values()].filter((a) => a.alpha > 0.3 && (a.asleep ? 1 : 0) === view).sort((a, b) => b.y - a.y);
-    if (view === 0) for (const a of list) if (a.sign && lx >= a.sign.x0 && lx <= a.sign.x1 && ly >= a.sign.y0 && ly <= a.sign.y1) { opts.onTap?.(a); return; }
     for (const a of list) {
       if (a.asleep) { if (Math.abs(lx - (a.x + (a.lie < 0 ? 3 : -3))) < 15 && ly <= a.y + 2 && ly >= a.y - 16) { opts.onTap?.(a); return; } continue; }
       if (Math.abs(lx - a.x) < 8 && ly <= a.y + 2 && ly >= a.y - (a.h || 22) - 2) { opts.onTap?.(a); return; }
@@ -616,12 +527,6 @@ export function createScene(canvas, opts = {}) {
       const a = people.get(id); if (!a) return; const r = area();
       a.x = a.tx = r.x0 + (r.x1 - r.x0) * fx; a.y = a.ty = r.y0 + (r.y1 - r.y0) * fy;
       a.dir = dir; a.alpha = 1; a.nextMove = Infinity;
-    },
-    // 지금 서 있는 자리 (홀 안 0~1 비율). 길드 간판 걸 때 씀
-    posOf(id) {
-      const a = people.get(id); if (!a || a.asleep) return null; const r = area();
-      const cl = (v) => Math.max(0, Math.min(1, v));
-      return { fx: cl((a.x - r.x0) / (r.x1 - r.x0)), fy: cl((a.y - r.y0) / (r.y1 - r.y0)) };
     },
     reset() { people.clear(); bot.bubble = null; firstFill = true; hallNew = false; infoSig = ""; },
     resize,

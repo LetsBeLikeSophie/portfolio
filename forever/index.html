@@ -433,60 +433,82 @@
   .bell{position:relative;background:#0006;border:1px solid var(--line);border-radius:999px;width:34px;height:34px;
     display:grid;place-items:center;color:var(--gold);cursor:pointer;flex:none;padding:0}
   body.sceneon:not(.kbd) #guideBtn{display:none}
-  /* 길드 탭: 채팅 목록 대신 모집 걸기 + 모집 중인 길드 */
+  /* 길드 탭: 채팅 대신 길드 광장(팻말 6자리) + 등불 */
   #guildPane{flex:1;min-height:0;overflow-y:auto;padding:10px 12px calc(16px + env(safe-area-inset-bottom));background:#100c08;-webkit-overflow-scrolling:touch}
   body:not(.gtab) #guildPane{display:none}
   body.gtab #list, body.gtab #send, body.gtab #tipBar, body.gtab #replyBar, body.gtab #photoBar{display:none!important}
-  .gbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:14px}
+  .plaza{position:relative;border:3px solid #4a2f17;border-radius:4px;margin:0 0 12px;box-shadow:0 0 0 1px #c9a25a55,0 6px 14px #000a;
+    background:repeating-linear-gradient(90deg,#0000000f 0 6px,transparent 6px 12px),repeating-linear-gradient(0deg,#0000000c 0 6px,transparent 6px 12px),
+      linear-gradient(#1c2740 0,#2c3a5a 26px,#3b5a2a 27px,#33502a 30px,#2b4422 100%)}
+  .plaza .ptitle{padding:6px 0 0;text-align:center;font:11px Galmuri11,system-ui,sans-serif;color:#f0d48a;text-shadow:1px 1px 0 #000}
+  .slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px;padding:14px 10px 10px}
+  .post{all:unset;display:flex;flex-direction:column;align-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0}
+  .post .bd{position:relative;width:100%;box-sizing:border-box;min-height:66px;padding:6px 4px 5px;background:#e3c58a;color:#3a2410;border:2px solid #2a1a0d;
+    box-shadow:inset 0 0 0 2px #f3dca8,inset 0 -3px 0 #c9a46a,3px 3px 0 #0007;text-align:center;font-family:Galmuri11,system-ui,sans-serif;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transform:rotate(var(--tilt,0deg))}
+  .post .cr{font-size:20px;line-height:1}
+  .post .gn{max-width:100%;font-size:12px;line-height:1.25;word-break:keep-all;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .post .ti{font-size:10px;line-height:1;letter-spacing:-1px}
+  .post .ch{position:absolute;top:-9px;right:-7px;font:700 10px system-ui;background:#1a110a;color:#ffd36a;border:1px solid #6b4524;border-radius:8px;padding:1px 4px}
+  .post .pole{width:6px;height:20px;background:linear-gradient(90deg,#5a3a1c 0 2px,#8a5a30 2px 4px,#5a3a1c 4px);border:1px solid #1a110a;border-top:0}
+  .post .dirt{width:24px;height:5px;background:#3a2a16;border-radius:50%;margin-top:-2px}
+  .post.empty .bd{background:#ffffff0a;border:2px dashed #ffffff3a;box-shadow:none;color:#ffffff99;font-size:12px}
+  .post.empty .pole{opacity:.3}
+  .post.mine .bd{box-shadow:inset 0 0 0 2px #f3dca8,0 0 0 2px #ffd36a,3px 3px 0 #0007}
+  .post.hot .bd{animation:hot 1.6s ease-in-out infinite}
+  @keyframes hot{50%{filter:brightness(1.12) drop-shadow(0 0 6px #ffd36a)}}
+  .post.old .bd::before{content:"🕸️";position:absolute;top:-7px;left:-7px;font-size:15px}
+  .post.hl .bd{outline:2px solid #fff;outline-offset:2px}
+  .gbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
   .gbox h3{margin:0 0 8px;font-size:15px;color:var(--gold)}
-  .gbox p{margin:0 0 10px;font-size:13px;color:var(--muted);line-height:1.5}
-  .gbox input,.gbox textarea,.gapply input{display:block;width:100%;box-sizing:border-box;background:#0d0b09;border:1px solid var(--line);border-radius:10px;padding:9px 10px;color:var(--text);font-size:16px;margin:0 0 8px;resize:none}
-  .gbox .gauto{font-size:12.5px;color:var(--body);background:#ffffff08;border-radius:8px;padding:6px 9px;margin:0 0 10px}
-  .grow{display:flex;gap:8px}
-  .gbtn{flex:1;border:0;border-radius:10px;padding:10px;font-weight:700;background:var(--gold);color:#1a1208;cursor:pointer}
-  .gbtn.ghost{flex:none;background:none;border:1px solid var(--line);color:var(--body);padding:10px 14px}
-  .gsec{font-size:13px;color:var(--muted);font-weight:700;margin:2px 2px 8px}
-  .gcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:9px}
-  .gcard.mine{border-color:var(--gold-dim)}
-  .gcard.hl{box-shadow:0 0 0 2px var(--gold)}
-  .gtop{display:flex;align-items:baseline;gap:8px}
-  .gname{font-size:16px;font-weight:700;color:#f0d48a;flex:1;min-width:0;overflow-wrap:anywhere}
-  .gname small{font-size:11px;font-weight:700;color:#1a1208;background:var(--gold-dim);border-radius:5px;padding:1px 5px;margin-left:6px;vertical-align:2px}
-  .gtime{font-size:11.5px;color:var(--muted);flex:none}
-  .gmemo{margin:5px 0 7px;font-size:14px;color:var(--body);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}
-  .gmemo:empty{display:none}
-  .gwho{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;min-width:0}
-  .gwho b{font-weight:700}
-  .gact{display:flex;gap:6px;margin-top:9px}
-  .gact button{flex:1;border:1px solid var(--line);background:#ffffff08;color:var(--body);border-radius:9px;padding:8px;font-size:13px;font-weight:700;cursor:pointer}
-  .gact button.pri{background:var(--gold);border-color:var(--gold);color:#1a1208}
-  .gapply{margin-top:9px}
-  .gapply input{margin:0 0 6px}
-  .gapp{display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
-  .gapp:first-of-type{border-top:0}
-  .gapp .gi{flex:1;min-width:0;font-size:13px;color:var(--muted)}
-  .gapp .gi b{font-size:14.5px}
-  .gapp .gi q{display:block;quotes:none;color:var(--body);margin-top:2px;overflow-wrap:anywhere}
-  .gapp button{flex:none;border:1px solid var(--line);background:#ffffff08;color:var(--body);border-radius:8px;padding:6px 9px;font-size:12.5px;font-weight:700;cursor:pointer}
-  #pGuild{margin:2px 0 10px;text-align:left}
-  #pGuild .gcard{margin:0;background:#ffffff06}
-  .gseg{display:flex;gap:4px;padding:3px;background:#0d0b09;border:1px solid var(--line);border-radius:12px;margin:0 0 12px}
-  .gseg button{flex:1;border:0;border-radius:9px;background:none;color:var(--muted);font-weight:700;font-size:13.5px;padding:8px 4px;cursor:pointer}
-  .gseg button[aria-pressed="true"]{background:var(--gold);color:#1a1208}
+  .lamp{display:flex;align-items:center;gap:10px}
+  .lamp b{flex:1;font-size:15px;color:var(--gold)}
+  .sw2{all:unset;flex:none;width:48px;height:28px;border-radius:14px;background:#ffffff1f;position:relative;cursor:pointer}
+  .sw2::after{content:"";position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;background:#aaa;transition:left .15s}
+  .sw2[aria-checked="true"]{background:#e9a72a}
+  .sw2[aria-checked="true"]::after{left:24px;background:#fff8e6}
+  .gbtn{flex:1;border:0;border-radius:10px;padding:10px 14px;font-weight:700;background:var(--gold);color:#1a1208;cursor:pointer}
   .glab{font-size:12.5px;font-weight:700;color:var(--muted);margin:2px 2px 6px}
+  .gedh{margin:0 0 10px;font-size:16px;color:var(--gold);text-align:center}
   .gcrest{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 10px}
-  .gcrest button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#ffffff08;font-size:19px;cursor:pointer;padding:0}
+  .gcrest button,.gcrest input{width:38px;height:38px;box-sizing:border-box;border-radius:10px;border:1px solid var(--line);background:#ffffff08;font-size:19px;cursor:pointer;padding:0;text-align:center;color:var(--text)}
+  .gcrest input{font-size:16px;cursor:text}
   .gcrest button[aria-pressed="true"]{border-color:var(--gold);background:#e6c36a2e;box-shadow:0 0 0 1px var(--gold)}
-  .gtags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+  .gin,.gapply input{display:block;width:100%;box-sizing:border-box;background:#0d0b09;border:1px solid var(--line);border-radius:10px;padding:9px 10px;color:var(--text);font-size:16px;margin:0 0 10px}
+  .gsave{font-size:12.5px;color:var(--muted);text-align:center;margin:4px 0 0}
+  .glink{all:unset;display:block;margin:14px auto 2px;font-size:13px;color:#ff8f7a;text-decoration:underline;cursor:pointer}
+  .gtags{display:flex;flex-wrap:wrap;gap:6px}
   .gtag{border:1px solid var(--line);background:#ffffff08;color:var(--muted);border-radius:999px;padding:6px 11px;font-size:13px;font-weight:700;cursor:pointer}
   .gtag[aria-pressed="true"]{background:#e6c36a24;border-color:var(--gold);color:var(--gold)}
   .gpills{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 0}
   .gpills:empty{display:none}
   .gpill{font-size:11.5px;color:var(--body);background:#ffffff0d;border-radius:999px;padding:2px 8px}
   .gpill.hit{background:#ff7ab22b;color:#ffb3d1}
-  .gmatch{display:inline-block;margin:6px 0 0;font-size:12px;font-weight:700;color:#ffb3d1;background:#ff7ab21f;border-radius:7px;padding:2px 8px}
-  .gcard.seek{background:linear-gradient(#2a2015,#211910);border-style:dashed;border-color:#7a5a30}
+  .gcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:9px}
+  .gcard.seek{background:linear-gradient(#2a2015,#211910);border-color:#7a5a30}
+  .gtop{display:flex;align-items:baseline;gap:8px}
+  .gname{font-size:16px;font-weight:700;color:#f0d48a;flex:1;min-width:0;overflow-wrap:anywhere}
+  .gtime{font-size:11.5px;color:var(--muted);flex:none}
+  .gmemo{margin:6px 0 0;font-size:13.5px;color:var(--body)}
+  .gwho{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;min-width:0;margin-top:8px}
+  .gwho b{font-weight:700}
+  .gact{display:flex;gap:6px;margin-top:10px}
+  .gact button{flex:1;border:1px solid var(--line);background:#ffffff08;color:var(--body);border-radius:9px;padding:9px 6px;font-size:13px;font-weight:700;cursor:pointer}
+  .gact button:last-child:not(.pri){flex:none;padding:9px 12px}
+  .gact button.pri{background:var(--gold);border-color:var(--gold);color:#1a1208}
+  .gact button:disabled{opacity:.6}
+  .gapply{margin-top:9px}
+  .gapply input{margin:0 0 6px}
+  .gapp{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line);width:100%;box-sizing:border-box}
+  .gbox h3 + .gapp{border-top:0}
+  .gapp .gi{flex:1;min-width:0;font-size:13px;color:var(--muted);text-align:left}
+  .gapp .gi b{font-size:14.5px}
   .gapp .gi .gg{display:block;color:#f0d48a;font-weight:700;margin-top:2px}
+  .gapp > button{flex:none;border:1px solid var(--line);background:#ffffff08;color:var(--body);border-radius:8px;padding:6px 10px;font-size:13px;font-weight:700;cursor:pointer}
+  button.seekrow{all:unset;display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line);width:100%;box-sizing:border-box;cursor:pointer}
+  .seekrow .done{flex:none;font-size:12px;color:var(--muted)}
+  #pGuild{margin:2px 0 10px;text-align:left}
+  #pGuild .gcard{margin:0;background:#ffffff06}
   .chip .cnum{display:inline-block;min-width:16px;margin-left:4px;padding:0 4px;border-radius:8px;background:#ff5a5a;color:#fff;font-size:11px;line-height:16px;text-align:center}
   .gdchip{flex:none;margin-left:auto;margin-right:8px;font-size:12px;font-weight:700;color:var(--gold);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 9px;background:#0006;white-space:nowrap}
   #pushBar{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 12px;background:#1d1710;border-bottom:1px solid var(--line);font-size:13px;line-height:1.4}
@@ -992,7 +1014,7 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
-import { createScene } from "./scene.js?v=13";
+import { createScene } from "./scene.js?v=14";
 
 const SUPABASE_URL = "https://ztxzqvnybiemgbhtrwiw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7";
@@ -2959,7 +2981,7 @@ function botShoo(){
 const scene = createScene($("sceneCv"), { classColor: CLASS_COLOR, emoteEmoji: EMOTE_EMOJI, onTap: (a) => {
   if (a.shelf) { track("shelf_tap"); location.href = "/forever/classes/"; return; }
   if (a.bot && isGuest()) { botShoo(); return; }
-  if (a.shop) { openGad(a.id); return; }
+  if (a.lantern) { openGad(a.id); return; }
   if (me?.spec) { toast(`${a.name} · 들어오면 프로필을 볼 수 있어요`); return; }
   if (a.bot) { openBotCard(); return; }
   openProfile({ player_id: a.id, sender_name: a.name, sender_class: a.cls, sender_race: a.race, sender_faction: a.faction,
@@ -2991,19 +3013,18 @@ function sceneRun(){
 $("sceneX").onclick = () => { sceneOff = !sceneOff; ls.set("wowchat_scene_off", sceneOff ? "1" : "0"); sceneRun(); if (!sceneOff) { scene.resize(); syncScene(); } };
 document.addEventListener("visibilitychange", () => { sceneRun(); if (document.visibilityState === "visible") loadInn(); });
 // 홀: 나 + 지금 접속한 사람 / 침실: 최근에 말한 사람 + 예전에 왔던 사람 (자는 모습)
-/* ---------- 길드 모집·구함: 메이플 개인상점처럼 글 쓴 자리에 간판 들고 서 있기 ---------- */
+/* ---------- 길드: 광장 팻말 6자리(먼저 꽂는 사람이 임자, 🍺 건배로 오래 남음) + 길드 찾는 사람은 홀에서 등불 ---------- */
 const GTAGS = [["newbie","🌱","초보환영"],["raid","⚔️","레이드"],["social","🍻","친목"],["night","🌙","밤에 접속"],["weekend","☀️","주말"],
   ["discord","🗣️","디코"],["tank","🛡️","탱"],["heal","✚","힐"],["dps","🗡️","딜"]];
 const GTAG = Object.fromEntries(GTAGS.map(([k, e, l]) => [k, { e, l }]));
 const CRESTS = ["🐺","🦁","🐉","🌙","🍄","🔥","🌸","🐻","🦉","⚔️"];
-const KIND_TXT = { recruit: { mode: "🏰 모집해요", list: "🏰 모집 중", got: "📜 받은 가입 신청", done: "신청함 · 취소" },
-                   seek:    { mode: "🎒 길드 구해요", list: "🎒 길드 구함", got: "💌 받은 길드 추천", done: "추천함 · 취소" } };
 const gadAsMsg = (a) => ({ player_id: a.id, sender_name: a.name, sender_class: a.cls, sender_race: a.race, sender_faction: a.faction,
   sender_level: a.level, sender_realm: a.realm, sender_verified: a.verified !== false, tag: "chat" });
 const myGad = () => gads.find((a) => a.mine);
 const tagMatch = (a) => { const m = myGad(); if (!m || m.kind === a.kind || a.mine) return 0; return (a.tags || []).filter((t) => (m.tags || []).includes(t)).length; };
-const shopOf = (a) => ({ kind: a.kind, guild: a.guild, crest: a.crest || "", tags: a.tags || [], icons: (a.tags || []).map((t) => GTAG[t]?.e || "").join(""),
-  apps: !!a.mine && gApps.length > 0, old: new Date(a.expires_at) - Date.now() < 864e5, fx: a.px, fy: a.py });
+const hashStr = (t) => { let h = 0; for (const c of String(t)) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };
+const facShort = () => (me.faction === "alliance" ? "얼라" : "호드");
+let gFlush = null;   // 팻말 고치는 중 아직 안 보낸 저장
 async function loadGuild(force){
   if (!me) return;
   if (!force && Date.now() - gadsAt < 60e3) return;
@@ -3024,73 +3045,63 @@ async function loadGuildApps(){
   const { data } = await sb.rpc("wow_guild_apps", { p_token: me.token });
   gApps = Array.isArray(data) ? data : [];
 }
-function showGuildTab(id){
-  const a = gads.find((x) => x.id === id);
-  filterTag = "guild"; gHl = id || null; if (a) gList = a.kind;
-  buildChips(); renderAll(); syncComposer(); loadGuild();
-  if (id) requestAnimationFrame(() => document.querySelector(`#guildPane .gcard[data-id="${id}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" }));
-}
-// 폼에 쓰던 내용은 다시 그려도 남게
-function gDraftFor(kind){
-  if (!gDraft[kind]) {
-    const m = myGad();
-    const src = m && m.kind === kind ? m : null;
-    gDraft[kind] = { guild: src?.guild || myGuild || "", memo: "", tags: new Set(src?.tags || []), crest: src?.crest || (kind === "recruit" ? CRESTS[0] : "") };
-  }
-  return gDraft[kind];
+function afterGuildChange(data){
+  if (Array.isArray(data)) gads = data;
+  gadsAt = Date.now(); buildChips(); syncScene();
 }
 function tagChips(sel, onChange){
   const w = document.createElement("div"); w.className = "gtags";
   GTAGS.forEach(([k, e, l]) => {
     const b = document.createElement("button"); b.type = "button"; b.className = "gtag"; b.textContent = `${e} ${l}`;
     b.setAttribute("aria-pressed", sel.has(k));
-    b.onclick = () => { if (sel.has(k)) sel.delete(k); else if (sel.size < 6) sel.add(k); else { toast("태그는 6개까지 고를 수 있어요"); return; }
+    b.onclick = () => { if (sel.has(k)) sel.delete(k); else if (sel.size < 6) sel.add(k); else { toast("태그는 6개까지예요"); return; }
       b.setAttribute("aria-pressed", sel.has(k)); onChange?.(); };
     w.appendChild(b);
   });
   return w;
 }
-function pills(tags, mineTags){
+function pills(tags, hit){
   const w = document.createElement("div"); w.className = "gpills";
-  (tags || []).forEach((t) => { if (!GTAG[t]) return; const s = document.createElement("span"); s.className = "gpill" + (mineTags?.includes(t) ? " hit" : "");
+  (tags || []).forEach((t) => { if (!GTAG[t]) return; const s = document.createElement("span"); s.className = "gpill" + (hit?.includes(t) ? " hit" : "");
     s.textContent = `${GTAG[t].e} ${GTAG[t].l}`; w.appendChild(s); });
   return w;
 }
+const canAct = () => me && !me.spec && !isGuest();
+// 카드: 팻말(모집) 또는 등불(구함)
 function guildCard(a, inProfile){
-  const seek = a.kind === "seek", T = KIND_TXT[a.kind] || KIND_TXT.recruit, my = myGad();
-  const card = document.createElement("div"); card.className = "gcard" + (seek ? " seek" : "") + (a.mine ? " mine" : "") + (gHl === a.id && !inProfile ? " hl" : ""); card.dataset.id = a.id;
+  const seek = a.kind === "seek", my = myGad();
+  const card = document.createElement("div"); card.className = "gcard" + (seek ? " seek" : "") + (a.mine ? " mine" : ""); card.dataset.id = a.id;
   const top = document.createElement("div"); top.className = "gtop";
-  const nm = document.createElement("div"); nm.className = "gname";
-  if (seek) { const b = document.createElement("b"); b.textContent = a.name; b.style.color = CLASS_COLOR[a.cls] || ""; nm.append("🎒 ", b, document.createTextNode(" 길드 구해요")); }
-  else nm.textContent = `${a.crest || "🏰"} ${a.guild}`;
-  if (a.mine) { const t = document.createElement("small"); t.textContent = "내 글"; nm.appendChild(t); }
-  const tm = document.createElement("span"); tm.className = "gtime"; tm.textContent = agoShort(a.created_at);
+  const nm = document.createElement("div"); nm.className = "gname"; nm.textContent = seek ? "🏮 길드 찾는 중" : `${a.crest || "🏰"} ${a.guild}`;
+  const tm = document.createElement("span"); tm.className = "gtime"; tm.textContent = seek ? agoShort(a.created_at) : `${a.cheers ? `🍺 ${a.cheers} · ` : ""}${agoShort(a.created_at)}`;
   top.append(nm, tm); card.appendChild(top);
-  const score = tagMatch(a);
-  if (score) { const mt = document.createElement("div"); mt.className = "gmatch"; mt.textContent = `💌 나랑 ${score}개 맞아요`; card.appendChild(mt); }
   card.appendChild(pills(a.tags, my && my.kind !== a.kind ? my.tags : null));
-  const memo = document.createElement("div"); memo.className = "gmemo";
-  if (a.memo) memo.textContent = a.memo;
-  else if (!(a.tags || []).length) { memo.classList.add("none"); memo.textContent = a.mine ? "태그를 골라 고쳐 보세요" : "귓속말로 물어보세요"; }
-  card.appendChild(memo);
+  if (!(a.tags || []).length) { const n = document.createElement("div"); n.className = "gmemo none"; n.textContent = a.mine ? "태그를 골라 보세요" : "귓속말로 물어보세요"; card.appendChild(n); }
   if (!inProfile) {
     const who = document.createElement("div"); who.className = "gwho";
     const b = document.createElement("b"); b.textContent = a.name; b.style.color = CLASS_COLOR[a.cls] || "";
     who.append(iconEl("class", a.cls, a.faction), b, document.createTextNode(` · ${a.race} ${a.cls}${a.level ? ` Lv.${a.level}` : ""}`));
-    who.onclick = () => { if (me?.spec) { toast("들어오면 프로필을 볼 수 있어요"); return; } $("gpop").classList.add("hidden"); openProfile(gadAsMsg(a)); };
+    who.onclick = () => { if (me?.spec) { toast("들어오면 프로필을 볼 수 있어요"); return; } closeGpop(); openProfile(gadAsMsg(a)); };
     card.appendChild(who);
   }
-  if (a.mine || !me || me.spec || isGuest()) return card;
   const act = document.createElement("div"); act.className = "gact";
-  if (!inProfile) { const dm = document.createElement("button"); dm.type = "button"; dm.textContent = "✉ 귓속말"; dm.onclick = () => { $("gpop").classList.add("hidden"); openDm(gadAsMsg(a)); }; act.appendChild(dm); }
-  const ap = document.createElement("button"); ap.type = "button";
-  const send = (guild) => { ap.disabled = true; return applyGuild(a, guild).finally(() => { ap.disabled = false; }); };
-  if (a.applied) { ap.textContent = T.done; ap.onclick = () => unapplyGuild(a); }
-  else if (!seek) { ap.className = "pri"; ap.textContent = "📜 가입 신청"; ap.onclick = () => send(null); }
-  else if (myGuild) { ap.className = "pri"; ap.textContent = `🏰 ${myGuild} 추천`; ap.onclick = () => send(null); }
-  else { ap.className = "pri"; ap.textContent = "🏰 우리 길드 추천"; ap.onclick = () => { gApplying = gApplying === a.id ? null : a.id; card.replaceWith(guildCard(a, inProfile)); }; }
-  act.appendChild(ap); card.appendChild(act);
-  if (gApplying === a.id && seek && !myGuild && !a.applied) {   // 처음 한 번만: 내 길드 이름
+  const btn = (txt, cls, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = txt; if (cls) b.className = cls; b.onclick = fn; act.appendChild(b); return b; };
+  if (a.mine) {
+    if (seek) btn("등불 끄기", "", () => setLantern(false));
+    else btn("✏️ 고치기", "pri", () => openSignEditor(a.slot));
+  } else if (canAct()) {
+    if (!seek) {
+      const c = btn(a.cheered ? `🍺 ${a.cheers || 0}` : "🍺 건배", "", () => cheer(a));
+      if (a.cheered) c.disabled = true;
+      if (a.applied) btn("신청함 · 취소", "", () => unapplyGuild(a));
+      else { const ap = btn("📜 가입 신청", "pri", () => { ap.disabled = true; applyGuild(a, null).finally(() => { ap.disabled = false; }); }); }
+    } else if (a.applied) btn("추천함 · 취소", "", () => unapplyGuild(a));
+    else if (myGuild) { const ap = btn(`🏰 ${myGuild} 추천`, "pri", () => { ap.disabled = true; applyGuild(a, null).finally(() => { ap.disabled = false; }); }); }
+    else btn("🏰 우리 길드 추천", "pri", () => { gApplying = gApplying === a.id ? null : a.id; card.replaceWith(guildCard(a, inProfile)); });
+    if (!inProfile) btn("✉", "", () => { closeGpop(); openDm(gadAsMsg(a)); });
+  }
+  if (act.children.length) card.appendChild(act);
+  if (seek && gApplying === a.id && !myGuild && !a.applied && canAct()) {   // 처음 한 번만: 내 길드 이름
     const f = document.createElement("form"); f.className = "gapply";
     const gi = document.createElement("input"); gi.maxLength = 24; gi.placeholder = "내 길드 이름 (한 번만)"; gi.enterKeyHint = "send";
     const go = document.createElement("button"); go.type = "submit"; go.className = "gbtn"; go.style.width = "100%"; go.textContent = "추천";
@@ -3114,135 +3125,201 @@ async function unapplyGuild(a){
   if (error) { toast(errMsg(error)); return; }
   a.applied = false; toast("취소했어요"); refreshGuildViews();
 }
+async function cheer(a){
+  const { data, error } = await sb.rpc("wow_guild_cheer", { p_token: me.token, p_owner: a.id });
+  if (error) { toast(errMsg(error)); return; }
+  a.cheers = data?.cheers ?? (a.cheers || 0) + 1; a.cheered = true; if (data?.expires_at) a.expires_at = data.expires_at;
+  track("guild_cheer"); toast("🍺 건배! 팻말이 1시간 더 남아요"); refreshGuildViews();
+}
+async function setLantern(on, tags){
+  const m = myGad();
+  const { data, error } = await sb.rpc("wow_guild_lantern", { p_token: me.token, p_on: on, p_tags: tags ?? (m?.kind === "seek" ? m.tags : []) });
+  if (error) { toast(errMsg(error)); renderGuild(); return false; }
+  if (on && !(m?.kind === "seek")) { track("guild_lantern"); toast("🏮 등불을 들었어요. 홀에서 누르면 보여요"); }
+  if (!on) { gApps = []; toast("등불을 껐어요"); }
+  closeGpop(); afterGuildChange(data); await loadGuildApps(); buildChips();
+  return true;
+}
 function refreshGuildViews(){
   if (filterTag === "guild") renderGuild();
   const gp = $("gpop"); if (!gp.classList.contains("hidden")) { const id = gp.querySelector(".gcard")?.dataset.id; if (id) openGad(id); }
   if (!$("prof").classList.contains("hidden") && profFor) { const a = gads.find((x) => x.id === profFor.player_id); const pg = $("pGuild"); pg.innerHTML = ""; if (a) pg.appendChild(guildCard(a, true)); }
 }
-function seg(opts, cur, onPick){
-  const w = document.createElement("div"); w.className = "gseg";
-  opts.forEach(([v, label]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = label;
-    b.setAttribute("aria-pressed", v === cur); b.onclick = () => onPick(v); w.appendChild(b); });
-  return w;
-}
 function renderGuild(){
   const pane = $("guildPane"); if (!me) return;
   const keep = pane.scrollTop; pane.innerHTML = "";
-  const mine = myGad();
-  if (!gMode) gMode = mine?.kind || "recruit";
-  if (!gList) gList = mine ? (mine.kind === "recruit" ? "seek" : "recruit") : "recruit";
-  const box = document.createElement("div"); box.className = "gbox";
-  if (me.spec || isGuest()) {
-    const h = document.createElement("h3"); h.textContent = "🏰 길드 모집 · 🎒 구함";
-    const p = document.createElement("p"); p.textContent = "로그인하면 홀에 간판을 걸 수 있어요";
-    const b = document.createElement("button"); b.type = "button"; b.className = "gbtn"; b.style.width = "100%"; b.textContent = "배틀넷 로그인";
-    b.onclick = () => $("soberGo").click();
-    box.append(h, p, b);
-  } else {
-    box.appendChild(seg([["recruit", KIND_TXT.recruit.mode], ["seek", KIND_TXT.seek.mode]], gMode, (v) => { gMode = v; renderGuild(); }));
-    const d = gDraftFor(gMode), rec = gMode === "recruit";
-    const f = document.createElement("form"); f.autocomplete = "off";
-    if (rec) {
-      const cl = document.createElement("div"); cl.className = "glab"; cl.textContent = "길드 문장"; f.appendChild(cl);
-      const cr = document.createElement("div"); cr.className = "gcrest";
-      CRESTS.forEach((e) => { const b = document.createElement("button"); b.type = "button"; b.textContent = e; b.setAttribute("aria-pressed", d.crest === e);
-        b.onclick = () => { d.crest = e; cr.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b)); }; cr.appendChild(b); });
-      f.appendChild(cr);
-      const gi = document.createElement("input"); gi.maxLength = 24; gi.placeholder = "길드 이름"; gi.value = d.guild; gi.enterKeyHint = "next";
-      gi.oninput = () => { d.guild = gi.value; }; f.appendChild(gi);
+  const mine = myGad(), signs = gads.filter((a) => a.kind === "recruit");
+  // 광장: 팻말 6자리
+  const pz = document.createElement("div"); pz.className = "plaza";
+  const tt = document.createElement("div"); tt.className = "ptitle"; tt.textContent = `🪧 길드 광장 · ${me.realm || "일반"} ${facShort()} · ${signs.length}/6`;
+  const grid = document.createElement("div"); grid.className = "slots";
+  for (let n = 1; n <= 6; n++) {
+    const a = signs.find((x) => x.slot === n);
+    const b = document.createElement("button"); b.type = "button"; b.className = "post";
+    const bd = document.createElement("div"); bd.className = "bd";
+    if (a) {
+      const old = new Date(a.expires_at) - Date.now() < 864e5;
+      b.classList.toggle("mine", !!a.mine); b.classList.toggle("old", old); b.classList.toggle("hot", (a.cheers || 0) >= 3); b.classList.toggle("hl", gHl === a.id);
+      b.style.setProperty("--tilt", `${((hashStr(a.id) % 5) - 2) * 0.8}deg`);
+      const cr = document.createElement("span"); cr.className = "cr"; cr.textContent = a.crest || "🏰";
+      const gn = document.createElement("span"); gn.className = "gn"; gn.textContent = a.guild;
+      const ti = document.createElement("span"); ti.className = "ti"; ti.textContent = (a.tags || []).map((t) => GTAG[t]?.e || "").join("");
+      bd.append(cr, gn, ti);
+      if (a.cheers) { const ch = document.createElement("span"); ch.className = "ch"; ch.textContent = `🍺${a.cheers}`; bd.appendChild(ch); }
+      b.setAttribute("aria-label", `${n}번 팻말: ${a.guild}`);
+      b.onclick = () => (a.mine ? openSignEditor(n) : openGad(a.id));
+    } else {
+      b.classList.add("empty"); bd.textContent = "＋ 빈 자리"; b.setAttribute("aria-label", `${n}번 빈 자리`);
+      b.onclick = () => {
+        if (!canAct()) { toast("로그인하면 팻말을 꽂을 수 있어요"); return; }
+        if (mine?.kind === "recruit") { toast("팻말은 하나만 꽂을 수 있어요"); return; }
+        openSignEditor(n);
+      };
     }
-    const tl = document.createElement("div"); tl.className = "glab"; tl.textContent = rec ? "이런 분 구해요" : "이런 길드 찾아요"; f.appendChild(tl);
-    f.appendChild(tagChips(d.tags));
-    const au = document.createElement("div"); au.className = "gauto";
-    au.textContent = `${me.realm || "일반"} · ${me.faction === "alliance" ? "얼라" : "호드"} · ${me.name} ${me.race} ${me.class}${me.level ? ` Lv.${me.level}` : ""}`;
-    f.appendChild(au);
-    const same = mine && mine.kind === gMode;
-    const row = document.createElement("div"); row.className = "grow";
-    const go = document.createElement("button"); go.type = "submit"; go.className = "gbtn"; go.textContent = same ? "고치기" : rec ? "🏰 간판 걸기" : "🎒 팻말 들기";
-    row.appendChild(go);
-    if (mine) { const x = document.createElement("button"); x.type = "button"; x.className = "gbtn ghost"; x.textContent = mine.kind === "recruit" ? "간판 내리기" : "팻말 내리기"; x.onclick = clearGuildAd; row.appendChild(x); }
-    f.appendChild(row);
-    if (mine && !same) { const p = document.createElement("p"); p.style.margin = "8px 0 0"; p.textContent = `지금 ${mine.kind === "recruit" ? "간판" : "팻말"}은 내려가요`; f.appendChild(p); }
-    f.onsubmit = async (e) => { e.preventDefault(); go.disabled = true;
-      const pos = scene.posOf(me.id) || {};
-      const { data, error } = await sb.rpc("wow_guild_ad_set", { p_token: me.token, p_kind: gMode, p_guild: d.guild, p_memo: "",
-        p_tags: [...d.tags], p_crest: rec ? d.crest : null, p_x: pos.fx ?? null, p_y: pos.fy ?? null });
-      go.disabled = false;
-      if (error) { toast(errMsg(error)); return; }
-      track(rec ? "guild_ad" : "guild_seek"); gads = Array.isArray(data) ? data : gads; gadsAt = Date.now();
-      gList = rec ? "seek" : "recruit";
-      if (rec) myGuild = d.guild.trim();
-      toast(same ? "고쳤어요" : rec ? "🏰 간판을 걸었어요" : "🎒 팻말을 들었어요");
-      document.activeElement?.blur?.(); await loadGuildApps(); buildChips(); syncScene();
+    const pole = document.createElement("div"); pole.className = "pole";
+    const dirt = document.createElement("div"); dirt.className = "dirt";
+    b.append(bd, pole, dirt); grid.appendChild(b);
+  }
+  pz.append(tt, grid); pane.appendChild(pz);
+  // 등불: 길드 찾는 중
+  const box = document.createElement("div"); box.className = "gbox";
+  if (!canAct()) {
+    const row = document.createElement("div"); row.className = "lamp";
+    const t = document.createElement("b"); t.textContent = "로그인하면 팻말·등불을 쓸 수 있어요";
+    const go = document.createElement("button"); go.type = "button"; go.className = "gbtn"; go.style.flex = "none"; go.textContent = "로그인";
+    go.onclick = () => $("soberGo").click();
+    row.append(t, go); box.appendChild(row);
+  } else {
+    const on = mine?.kind === "seek";
+    const row = document.createElement("div"); row.className = "lamp";
+    const t = document.createElement("b"); t.textContent = "🏮 길드 찾는 중";
+    const sw = document.createElement("button"); sw.type = "button"; sw.className = "sw2"; sw.setAttribute("role", "switch"); sw.setAttribute("aria-checked", on);
+    sw.setAttribute("aria-label", "길드 찾는 중");
+    sw.onclick = () => {
+      if (mine?.kind === "recruit") { toast("팻말을 꽂은 동안은 등불을 들 수 없어요"); return; }
+      sw.disabled = true; setLantern(!on).finally(() => { sw.disabled = false; });
     };
-    box.appendChild(f);
+    row.append(t, sw); box.appendChild(row);
+    if (on) {
+      const sel = new Set(mine.tags || []); let tm = 0;
+      const c = tagChips(sel, () => { clearTimeout(tm); tm = setTimeout(async () => {
+        const { data, error } = await sb.rpc("wow_guild_lantern", { p_token: me.token, p_on: true, p_tags: [...sel] });
+        if (error) { toast(errMsg(error)); return; } afterGuildChange(data); }, 600); });
+      c.style.marginTop = "10px"; box.appendChild(c);
+    }
   }
   pane.appendChild(box);
+  // 받은 신청·추천
   if (mine && gApps.length) {
     const ab = document.createElement("div"); ab.className = "gbox";
-    const ah = document.createElement("h3"); ah.textContent = `${KIND_TXT[mine.kind].got} ${gApps.length}`; ab.appendChild(ah);
+    const ah = document.createElement("h3"); ah.textContent = `${mine.kind === "recruit" ? "📜 받은 가입 신청" : "💌 받은 길드 추천"} ${gApps.length}`; ab.appendChild(ah);
     gApps.forEach((x) => {
       const r = document.createElement("div"); r.className = "gapp";
       const gi = document.createElement("div"); gi.className = "gi";
       const b = document.createElement("b"); b.textContent = x.name; b.style.color = CLASS_COLOR[x.cls] || "";
       gi.append(b, document.createTextNode(` · ${x.race} ${x.cls}${x.level ? ` Lv.${x.level}` : ""} · ${agoShort(x.created_at)}`));
       if (x.kind === "scout" && x.guild) { const g2 = document.createElement("span"); g2.className = "gg"; g2.textContent = `🏰 ${x.guild}`; gi.appendChild(g2); }
-      if (x.note) { const n = document.createElement("q"); n.textContent = x.note; gi.appendChild(n); }
-      const dm = document.createElement("button"); dm.type = "button"; dm.textContent = "✉ 귓속말";
+      const dm = document.createElement("button"); dm.type = "button"; dm.textContent = "✉";
       dm.onclick = () => openDm({ player_id: x.id, sender_name: x.name, sender_class: x.cls, sender_race: x.race, sender_faction: x.faction, sender_level: x.level, sender_realm: x.realm, sender_verified: true });
-      const del = document.createElement("button"); del.type = "button"; del.textContent = "지우기";
+      const del = document.createElement("button"); del.type = "button"; del.textContent = "✕"; del.setAttribute("aria-label", "지우기");
       del.onclick = async () => { const { data, error } = await sb.rpc("wow_guild_app_drop", { p_token: me.token, p_applicant: x.id });
-        if (error) { toast(errMsg(error)); return; } gApps = Array.isArray(data) ? data : []; buildChips(); syncScene(); };
+        if (error) { toast(errMsg(error)); return; } gApps = Array.isArray(data) ? data : []; buildChips(); };
       r.append(iconEl("class", x.cls, x.faction, true), gi, dm, del); ab.appendChild(r);
     });
     pane.appendChild(ab);
   }
-  const cnt = (k) => gads.filter((a) => a.kind === k).length;
-  pane.appendChild(seg([["recruit", `${KIND_TXT.recruit.list} ${cnt("recruit")}`], ["seek", `${KIND_TXT.seek.list} ${cnt("seek")}`]], gList, (v) => { gList = v; renderGuild(); }));
-  const sec = document.createElement("div"); sec.className = "gsec";
-  sec.textContent = `${me.realm || "일반"} · ${me.faction === "alliance" ? "얼라" : "호드"}${myGad() && myGad().kind !== gList ? " · 💌 잘 맞는 순서" : ""}`;
-  pane.appendChild(sec);
-  const list = gads.filter((a) => a.kind === gList).sort((a, b) => tagMatch(b) - tagMatch(a) || new Date(b.created_at) - new Date(a.created_at));
-  if (!list.length) { const e = document.createElement("div"); e.className = "empty"; e.style.marginTop = "18px";
-    e.textContent = "아직 없어요"; pane.appendChild(e); }
-  list.forEach((a) => pane.appendChild(guildCard(a, false)));
+  // 등불 든 사람들
+  const seekers = gads.filter((a) => a.kind === "seek" && !a.mine).sort((a, b) => tagMatch(b) - tagMatch(a) || new Date(b.created_at) - new Date(a.created_at));
+  if (seekers.length) {
+    const sb2 = document.createElement("div"); sb2.className = "gbox";
+    const h = document.createElement("h3"); h.textContent = `🏮 길드 찾는 사람 ${seekers.length}`; sb2.appendChild(h);
+    seekers.forEach((a) => {
+      const r = document.createElement("button"); r.type = "button"; r.className = "gapp seekrow";
+      const gi = document.createElement("div"); gi.className = "gi";
+      const b = document.createElement("b"); b.textContent = a.name; b.style.color = CLASS_COLOR[a.cls] || "";
+      gi.append(b, document.createTextNode(` · ${a.race} ${a.cls}${a.level ? ` Lv.${a.level}` : ""}`), pills(a.tags, mine?.kind === "recruit" ? mine.tags : null));
+      r.append(iconEl("class", a.cls, a.faction, true), gi);
+      if (a.applied) { const d = document.createElement("span"); d.className = "done"; d.textContent = "추천함"; r.appendChild(d); }
+      r.onclick = () => openGad(a.id);
+      sb2.appendChild(r);
+    });
+    pane.appendChild(sb2);
+  }
   pane.scrollTop = keep;
 }
-// 홀에서 간판·캐릭터를 누르면: 무슨 모집(구함)인지 바로 보여 줌
+// 팻말 꽂기·고치기: 바꾸면 바로 저장 (단추 없음). 내 팻말이면 맨 아래 '팻말 뽑기'만
+function openSignEditor(slot){
+  if (!canAct()) { toast("로그인하면 팻말을 꽂을 수 있어요"); return; }
+  const cur = myGad()?.kind === "recruit" ? myGad() : null;
+  const d = { guild: cur?.guild || myGuild || "", tags: new Set(cur?.tags || []), crest: cur?.crest || CRESTS[0] };
+  let claimed = !!cur, tm = 0, busy = false, again = false;
+  const body = $("gpopBody"); body.innerHTML = "";
+  const h = document.createElement("h3"); h.className = "gedh"; h.textContent = `🪧 ${cur ? cur.slot : slot}번 팻말`;
+  const cr = document.createElement("div"); cr.className = "gcrest";
+  const own = document.createElement("input"); own.maxLength = 4; own.placeholder = "😀"; own.setAttribute("aria-label", "문장 이모지 직접 넣기");
+  if (!CRESTS.includes(d.crest)) own.value = d.crest;
+  CRESTS.forEach((e) => { const b = document.createElement("button"); b.type = "button"; b.textContent = e; b.setAttribute("aria-pressed", d.crest === e);
+    b.onclick = () => { d.crest = e; own.value = ""; cr.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b)); later(0); }; cr.appendChild(b); });
+  own.oninput = () => { const v = own.value.trim(); if (!v) return; d.crest = v; cr.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", "false")); later(); };
+  cr.appendChild(own);
+  const gi = document.createElement("input"); gi.className = "gin"; gi.maxLength = 24; gi.placeholder = "길드 이름"; gi.value = d.guild; gi.enterKeyHint = "done";
+  gi.oninput = () => { d.guild = gi.value; later(); };
+  gi.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); gi.blur(); later(0); } };
+  const tl = document.createElement("div"); tl.className = "glab"; tl.textContent = "이런 분 구해요";
+  const st = document.createElement("div"); st.className = "gsave";
+  const say = () => { st.textContent = busy ? "저장 중…" : claimed ? "✓ 바로 저장돼요" : "길드 이름을 적으면 바로 꽂혀요"; };
+  body.append(h, cr, gi, tl, tagChips(d.tags, () => later(0)), st);
+  if (cur) { const x = document.createElement("button"); x.type = "button"; x.className = "glink"; x.textContent = "팻말 뽑기";
+    x.onclick = async () => { gFlush = null; clearTimeout(tm); await clearGuildAd(); closeGpop(); }; body.appendChild(x); }
+  say();
+  async function save(){
+    clearTimeout(tm); gFlush = null;
+    if (!d.guild.trim()) { say(); return; }
+    if (busy) { again = true; return; }
+    busy = true; say();
+    const { data, error } = await sb.rpc("wow_guild_sign", { p_token: me.token, p_slot: slot, p_guild: d.guild, p_tags: [...d.tags], p_crest: d.crest });
+    busy = false;
+    if (error) { toast(errMsg(error)); if (!claimed) { closeGpop(); renderGuild(); } say(); return; }
+    if (!claimed) { track("guild_sign"); toast("🪧 팻말을 꽂았어요"); }
+    claimed = true; myGuild = d.guild.trim();
+    afterGuildChange(data); await loadGuildApps(); say();
+    if (again) { again = false; save(); }
+  }
+  function later(ms = 700){ clearTimeout(tm); gFlush = save; tm = setTimeout(save, ms); }
+  $("gpop").classList.remove("hidden");
+  if (!d.guild) setTimeout(() => gi.focus(), 50);
+}
+// 팻말·등불 든 사람을 누르면 카드
 function openGad(id){
   const a = gads.find((x) => x.id === id);
-  if (!a) { toast("이미 내려간 간판이에요"); return; }
+  if (!a) { toast("이미 없어진 팻말이에요"); return; }
   const body = $("gpopBody"); body.innerHTML = "";
   body.appendChild(guildCard(a, false));
-  if (!a.mine && (me?.spec || isGuest())) {
+  if (!a.mine && !canAct()) {
     const n = document.createElement("p"); n.className = "gnote";
     n.textContent = a.kind === "seek" ? "로그인하면 길드 추천을 보낼 수 있어요" : "로그인하면 가입 신청할 수 있어요";
     body.appendChild(n);
   }
-  if (a.mine) {
-    const b = document.createElement("button"); b.type = "button"; b.className = "gbtn"; b.style.cssText = "width:100%;margin:0 0 10px";
-    b.textContent = "길드 탭에서 고치기"; b.onclick = () => { $("gpop").classList.add("hidden"); showGuildTab(a.id); };
-    body.appendChild(b);
-  }
   $("gpop").classList.remove("hidden");
 }
-$("gpopClose").onclick = () => $("gpop").classList.add("hidden");
-$("gpop").onclick = (e) => { if (e.target.id === "gpop") $("gpop").classList.add("hidden"); };
+function closeGpop(){ if (gFlush) { const f = gFlush; gFlush = null; f(); } $("gpop").classList.add("hidden"); }
+$("gpopClose").onclick = closeGpop;
+$("gpop").onclick = (e) => { if (e.target.id === "gpop") closeGpop(); };
 
 async function clearGuildAd(){
   const { data, error } = await sb.rpc("wow_guild_ad_clear", { p_token: me.token });
   if (error) { toast(errMsg(error)); return; }
-  gads = Array.isArray(data) ? data : []; gApps = []; gadsAt = Date.now(); gDraft = {};
-  toast("내렸어요"); buildChips(); syncScene();
+  gApps = []; toast("팻말을 뽑았어요"); afterGuildChange(data);
 }
 
 function syncScene(){
   if (!me) return;
-  const list = [], seen = new Set(), shopBy = new Map(gads.slice(0, 8).map((a) => [a.id, shopOf(a)]));
-  const add = (p) => { if (!p.id || seen.has(p.id)) return; seen.add(p.id); if (shopBy.has(p.id)) { p.shop = shopBy.get(p.id); p.asleep = false; } list.push(p); };
+  const lamps = gads.filter((a) => a.kind === "seek").slice(0, 8), lampIds = new Set(lamps.map((a) => a.id));
+  const list = [], seen = new Set();
+  const add = (p) => { if (!p.id || seen.has(p.id)) return; seen.add(p.id); if (lampIds.has(p.id)) { p.lantern = true; p.asleep = false; } list.push(p); };
   add({ id: me.id, name: me.name, race: me.race, cls: me.class, faction: me.faction, verified: me.verified !== false, level: me.level, realm: me.realm });
   for (const u of onlineUsers.values()) add({ id: u.id, name: u.name, race: u.race, cls: u.cls, faction: u.faction, verified: u.verified !== false, level: u.level, realm: u.realm });
-  for (const a of gads.slice(0, 8)) if (!muted.has(a.id)) add({ id: a.id, name: a.name, race: a.race, cls: a.cls, faction: a.faction, verified: a.verified !== false, level: a.level, realm: a.realm });
+  for (const a of lamps) if (!muted.has(a.id)) add({ id: a.id, name: a.name, race: a.race, cls: a.cls, faction: a.faction, verified: a.verified !== false, level: a.level, realm: a.realm });
   const since = Date.now() - 24 * 3600e3;
   for (let i = cache.length - 1; i >= 0 && list.length < 90; i--) {
     const m = cache[i];
