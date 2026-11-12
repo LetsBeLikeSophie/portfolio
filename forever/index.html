@@ -125,6 +125,13 @@
   #drunkBar span{flex:1}
   #drunkBar button{flex:none;background:linear-gradient(180deg,#1a8dff,#0060c7);color:#fff;border:0;border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;cursor:pointer}
   body.guest #camBtn, body.guest #dmBtn, body.guest #pushBtn{display:none}
+  /* 여관 장면 (위쪽) */
+  #scene{position:relative;flex:none;height:clamp(150px,30vh,240px);border-bottom:1px solid var(--line);background:#1a120a}
+  #scene canvas{display:block;width:100%;height:100%;cursor:pointer;touch-action:manipulation}
+  #sceneX{position:absolute;right:6px;bottom:6px;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:#000a;color:var(--muted);font-size:12px;line-height:1;cursor:pointer;padding:0}
+  #scene.off{height:auto;background:none}
+  #scene.off canvas{display:none}
+  #scene.off #sceneX{position:static;display:block;width:100%;height:auto;border-radius:0;border:0;background:#1d1710;padding:5px;font-size:12px;color:var(--gold)}
   /* 입장 카드 정리 */
   .card{position:relative}
   #join .logo{margin-top:16px}
@@ -717,6 +724,7 @@
   </header>
   <div class="online hidden" id="online">접속 중…</div>
   <div id="drunkBar" class="hidden"><span>🍺 취해서 글이 흐리게 보여요. 배틀넷으로 인증하면 술이 깨요</span><button type="button" id="soberGo">술 깨기</button></div>
+  <div id="scene"><canvas id="sceneCv" role="img" aria-label="여관: 지금 있는 사람들"></canvas><button type="button" id="sceneX" aria-label="여관 장면 접기">▴</button></div>
   <div id="pushBar" class="hidden"><span id="pushTxt"></span><button type="button" id="pushGo">알림 켜기</button><button type="button" id="pushX" aria-label="나중에">✕</button></div>
   <div id="list"></div>
   <div id="tipBar" class="hidden"><span class="tl">👾 이렇게 물어보세요</span></div>
@@ -907,6 +915,7 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
+import { createScene } from "./scene.js?v=1";
 
 const SUPABASE_URL = "https://ztxzqvnybiemgbhtrwiw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7";
@@ -2249,6 +2258,7 @@ function addMsg(m){
   if (cache.some(x=>x.id===m.id)) return;
   const prev=[...cache].reverse().find(visible);
   cache.push(m); if (cache.length>400) cache.splice(0, cache.length-400);
+  sceneSay(m);
   if (!visible(m)) return;
   if (m.tag==="emote" && m.emote_key) floatEmoji(m.emote_key);
   const l=$("list"); const stick=nearBottom(l) || m.player_id===me.id;
@@ -2297,6 +2307,7 @@ async function loadHistory(){
   const map = new Map(cache.map(x=>[x.id,x]));
   data.forEach(m=>map.set(m.id,m));
   cache = [...map.values()].sort((a,b)=>a.id-b.id);
+  syncScene();
   if (jumpNew && !newFrom){ const seen=Number(ls.get(readKey())||0);
     const f = seen ? cache.find(x=>x.id>seen && x.player_id!==me.id) : null; newFrom = f ? f.id : 0; if (!newFrom) jumpNew=false; }
   renderAll();
@@ -2332,8 +2343,9 @@ async function subscribe(){
       if (p.faction==="alliance") a++; else h++;
       if (p.id && p.name && p.id!==me.id) onlineUsers.set(p.id, p); });
     $("online").innerHTML = `<b>●</b> ${me.realm||"일반"} 서버 접속 ${a+h}명 · 얼라이언스 ${a} · 호드 ${h}`;
+    syncScene();
     $("onlBtn").textContent = `● ${a+h}`; $("onlBtn").title = `접속 ${a+h}명`; $("onlBtn").dataset.info = `${me.realm||"일반"} 서버 접속 ${a+h}명 · 얼라이언스 ${a} · 호드 ${h}`;
-  }).subscribe(async (s)=>{ if (s==="SUBSCRIBED") await presence.track({ id: me.id, faction: me.faction, name: me.name, cls: me.class }); });
+  }).subscribe(async (s)=>{ if (s==="SUBSCRIBED") await presence.track({ id: me.id, faction: me.faction, name: me.name, cls: me.class, race: me.race, verified: me.verified!==false, level: me.level, realm: me.realm }); });
 }
 
 function enterChat(player){
@@ -2342,6 +2354,7 @@ function enterChat(player){
   document.body.classList.toggle("guest", isGuest()); $("drunkBar").classList.toggle("hidden", !isGuest());
   cache = []; filterTag = "all"; newFrom = 0; jumpNew = true;
   show("chat");
+  scene.reset(); scene.setMe(me.id); scene.resize(); syncScene(); sceneRun();
   $("srvBadge").textContent = me.realm||"일반"; $("srvBadge").title = `${me.realm||"일반"} 서버`;
   $("srvBadge").className = "srv"+(me.realm==="PvP"?" pvp":"");
   const fi=document.createElement("span"); fi.className="icons"; fi.id="meIcons";
@@ -2651,6 +2664,7 @@ function leaveChat(){
   if (msgSub) sb.removeChannel(msgSub); if (presence) sb.removeChannel(presence);
   if (dmSub) sb.removeChannel(dmSub);
   document.body.classList.remove("guest"); $("drunkBar").classList.add("hidden");
+  scene.setRunning(false); scene.reset();
   msgSub=presence=dmSub=null; me=null; dmWith=null; dmConvs=[]; blocked=new Set(); $("dmDot").classList.add("hidden");
   $("dm").classList.add("hidden"); $("dmChat").classList.add("hidden");
   $("sheet").classList.add("hidden"); $("thread").classList.add("hidden"); hidePushBar(); pushEndpoint = null;
@@ -2789,6 +2803,50 @@ function openFromPushUrl(u){
 }
 try { navigator.serviceWorker?.addEventListener("message", (e) => { if (e.data?.type === "open" && e.data.url) openFromPushUrl(e.data.url); }); } catch {}
 $("iosGuide").onclick = (e) => { if (e.target.id==="iosGuide") $("iosGuide").classList.add("hidden"); };
+
+/* ---------- 여관 장면 ---------- */
+const scene = createScene($("sceneCv"), { classColor: CLASS_COLOR, emoteEmoji: EMOTE_EMOJI, onTap: (a) => {
+  if (a.bot) { if (isGuest()) toast(BOT_NO_DRUNK); else openBotCard(); return; }
+  openProfile({ player_id: a.id, sender_name: a.name, sender_class: a.cls, sender_race: a.race, sender_faction: a.faction,
+    sender_level: a.level, sender_realm: a.realm, sender_verified: a.verified, tag: "chat" });
+} });
+let sceneOff = ls.get("wowchat_scene_off") === "1";
+function sceneRun(){
+  $("scene").classList.toggle("off", sceneOff);
+  $("sceneX").textContent = sceneOff ? "🍺 여관 보기 ▾" : "▴";
+  $("sceneX").setAttribute("aria-label", sceneOff ? "여관 장면 펼치기" : "여관 장면 접기");
+  scene.setRunning(!!me && !sceneOff && !$("chat").classList.contains("hidden") && document.visibilityState === "visible");
+}
+$("sceneX").onclick = () => { sceneOff = !sceneOff; ls.set("wowchat_scene_off", sceneOff ? "1" : "0"); sceneRun(); if (!sceneOff) { scene.resize(); syncScene(); } };
+document.addEventListener("visibilitychange", sceneRun);
+// 여관에 보일 사람: 나 + 지금 접속한 사람 + 최근 3시간 안에 말한 사람(조는 모습)
+function syncScene(){
+  if (!me) return;
+  const list = [], seen = new Set();
+  const add = (p) => { if (!p.id || seen.has(p.id)) return; seen.add(p.id); list.push(p); };
+  add({ id: me.id, name: me.name, race: me.race, cls: me.class, faction: me.faction, verified: me.verified !== false, level: me.level, realm: me.realm });
+  for (const u of onlineUsers.values()) add({ id: u.id, name: u.name, race: u.race, cls: u.cls, faction: u.faction, verified: u.verified !== false, level: u.level, realm: u.realm });
+  const since = Date.now() - 3 * 3600e3;
+  for (let i = cache.length - 1; i >= 0 && list.length < 14; i--) {
+    const m = cache[i];
+    if (m.tag === "bot" || !m.player_id || new Date(m.created_at).getTime() < since || muted.has(m.player_id)) continue;
+    if (myFactionOnly && m.sender_faction !== me.faction) continue;
+    add({ id: m.player_id, name: m.sender_name, race: m.sender_race, cls: m.sender_class, faction: m.sender_faction,
+      verified: m.sender_verified !== false, level: m.sender_level, realm: m.sender_realm, asleep: true });
+  }
+  scene.setPeople(list);
+}
+const bubbleText = (b) => plainBody(String(b || "").replace(/⟦[^⟧]*⟧?/g, "▒▒")).replace(/\*\*/g, "");
+function sceneSay(m){
+  if (!me || m.hidden) return;
+  if (m.player_id !== me.id && muted.has(m.player_id)) return;
+  if (myFactionOnly && m.tag !== "bot" && m.sender_faction !== me.faction) return;
+  if (m.tag === "bot") { scene.say(null, bubbleText(m.body), { bot: true }); return; }
+  const p = { id: m.player_id, name: m.sender_name, race: m.sender_race, cls: m.sender_class, faction: m.sender_faction,
+    verified: m.sender_verified !== false, level: m.sender_level, realm: m.sender_realm };
+  if (m.tag === "emote") { scene.say(p, "", { emote: m.emote_key }); return; }
+  scene.say(p, m.photo && m.body === PHOTO_ONLY ? "📷 사진" : bubbleText(m.body), { foreign: !!m.foreign_lang });
+}
 
 /* ---------- 시작 ---------- */
 (async () => {
