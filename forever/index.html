@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>포에버 채팅 – 와우 포에버 실시간 채팅 (WoW Forever 일반·PvP 서버)</title>
 <meta name="description" content="와우 포에버(월드 오브 워크래프트: 포에버) 한국 서버 실시간 채팅. 배틀넷 로그인으로 내 캐릭터로 입장하고, 일반·PvP 서버별로 파티·공대 모집, 거래, 길드 모집, 질문을 나눠요. 상대 진영 채팅은 게임처럼 오크어·공용어로 보여요.">
 <meta name="keywords" content="와우 포에버, WoW Forever, 월드 오브 워크래프트 포에버, 와우 포에버 채팅, 와우 포에버 파티, 와우 포에버 공대, 와우 포에버 거래, 와우 포에버 길드, 와우 포에버 PvP">
@@ -333,6 +333,11 @@
   .batinfo{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.6}
   .charge{display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
   #prof{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:9}
+  #gpop{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:9}
+  #gpop .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto;overscroll-behavior:contain}
+  #gpop .gcard{margin:0 0 12px;background:#ffffff06}
+  #gpop .gnote{font-size:13px;color:var(--muted);margin:0 0 12px;text-align:center}
+  .gmemo.none{color:var(--muted);font-style:italic}
   #prof .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}
   .ph{display:flex;align-items:center;gap:12px}
   .ph .icons{margin:0}
@@ -434,7 +439,7 @@
   .gbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:14px}
   .gbox h3{margin:0 0 8px;font-size:15px;color:var(--gold)}
   .gbox p{margin:0 0 10px;font-size:13px;color:var(--muted);line-height:1.5}
-  .gbox input,.gbox textarea,.gapply input{display:block;width:100%;box-sizing:border-box;background:#0d0b09;border:1px solid var(--line);border-radius:10px;padding:9px 10px;color:var(--text);font-size:15px;margin:0 0 8px;resize:none}
+  .gbox input,.gbox textarea,.gapply input{display:block;width:100%;box-sizing:border-box;background:#0d0b09;border:1px solid var(--line);border-radius:10px;padding:9px 10px;color:var(--text);font-size:16px;margin:0 0 8px;resize:none}
   .gbox .gauto{font-size:12.5px;color:var(--body);background:#ffffff08;border-radius:8px;padding:6px 9px;margin:0 0 10px}
   .grow{display:flex;gap:8px}
   .gbtn{flex:1;border:0;border-radius:10px;padding:10px;font-weight:700;background:var(--gold);color:#1a1208;cursor:pointer}
@@ -949,6 +954,7 @@
   </div>
 </div>
 
+<div id="gpop" class="hidden"><div class="card"><div id="gpopBody"></div><button class="btn ghost sm" id="gpopClose" type="button">닫기</button></div></div>
 <div id="prof" class="hidden">
   <div class="card">
     <div class="ph" id="pHead"></div>
@@ -2952,7 +2958,7 @@ function botShoo(){
 const scene = createScene($("sceneCv"), { classColor: CLASS_COLOR, emoteEmoji: EMOTE_EMOJI, onTap: (a) => {
   if (a.shelf) { track("shelf_tap"); location.href = "/forever/classes/"; return; }
   if (a.bot && isGuest()) { botShoo(); return; }
-  if (a.shop && me?.spec) { showGuildTab(a.id); return; }
+  if (a.shop) { openGad(a.id); return; }
   if (me?.spec) { toast(`${a.name} · 들어오면 프로필을 볼 수 있어요`); return; }
   if (a.bot) { openBotCard(); return; }
   openProfile({ player_id: a.id, sender_name: a.name, sender_class: a.cls, sender_race: a.race, sender_faction: a.faction,
@@ -3061,17 +3067,20 @@ function guildCard(a, inProfile){
   const score = tagMatch(a);
   if (score) { const mt = document.createElement("div"); mt.className = "gmatch"; mt.textContent = `💌 나랑 ${score}개 맞아요`; card.appendChild(mt); }
   card.appendChild(pills(a.tags, my && my.kind !== a.kind ? my.tags : null));
-  const memo = document.createElement("div"); memo.className = "gmemo"; memo.textContent = a.memo || ""; card.appendChild(memo);
+  const memo = document.createElement("div"); memo.className = "gmemo";
+  if (a.memo) memo.textContent = a.memo;
+  else if (!(a.tags || []).length) { memo.classList.add("none"); memo.textContent = a.mine ? "아직 적은 내용이 없어요. 위에서 고치기로 적어 보세요" : "적은 내용이 없어요. 귓속말로 물어보세요"; }
+  card.appendChild(memo);
   if (!inProfile) {
     const who = document.createElement("div"); who.className = "gwho";
     const b = document.createElement("b"); b.textContent = a.name; b.style.color = CLASS_COLOR[a.cls] || "";
     who.append(iconEl("class", a.cls, a.faction), b, document.createTextNode(` · ${a.race} ${a.cls}${a.level ? ` Lv.${a.level}` : ""}`));
-    who.onclick = () => { if (me?.spec) { toast("들어오면 프로필을 볼 수 있어요"); return; } openProfile(gadAsMsg(a)); };
+    who.onclick = () => { if (me?.spec) { toast("들어오면 프로필을 볼 수 있어요"); return; } $("gpop").classList.add("hidden"); openProfile(gadAsMsg(a)); };
     card.appendChild(who);
   }
   if (a.mine || !me || me.spec || isGuest()) return card;
   const act = document.createElement("div"); act.className = "gact";
-  if (!inProfile) { const dm = document.createElement("button"); dm.type = "button"; dm.textContent = "✉ 귓속말"; dm.onclick = () => openDm(gadAsMsg(a)); act.appendChild(dm); }
+  if (!inProfile) { const dm = document.createElement("button"); dm.type = "button"; dm.textContent = "✉ 귓속말"; dm.onclick = () => { $("gpop").classList.add("hidden"); openDm(gadAsMsg(a)); }; act.appendChild(dm); }
   const ap = document.createElement("button"); ap.type = "button";
   if (a.applied) { ap.textContent = T.done; ap.onclick = () => unapplyGuild(a); }
   else { ap.className = "pri"; ap.textContent = T.act; ap.onclick = () => { gApplying = gApplying === a.id ? null : a.id; card.replaceWith(guildCard(a, inProfile)); }; }
@@ -3105,6 +3114,7 @@ async function unapplyGuild(a){
 }
 function refreshGuildViews(){
   if (filterTag === "guild") renderGuild();
+  const gp = $("gpop"); if (!gp.classList.contains("hidden")) { const id = gp.querySelector(".gcard")?.dataset.id; if (id) openGad(id); }
   if (!$("prof").classList.contains("hidden") && profFor) { const a = gads.find((x) => x.id === profFor.player_id); const pg = $("pGuild"); pg.innerHTML = ""; if (a) pg.appendChild(guildCard(a, true)); }
 }
 function seg(opts, cur, onPick){
@@ -3200,6 +3210,27 @@ function renderGuild(){
   list.forEach((a) => pane.appendChild(guildCard(a, false)));
   pane.scrollTop = keep;
 }
+// 홀에서 간판·캐릭터를 누르면: 무슨 모집(구함)인지 바로 보여 줌
+function openGad(id){
+  const a = gads.find((x) => x.id === id);
+  if (!a) { toast("이미 내려간 간판이에요"); return; }
+  const body = $("gpopBody"); body.innerHTML = "";
+  body.appendChild(guildCard(a, false));
+  if (!a.mine && (me?.spec || isGuest())) {
+    const n = document.createElement("p"); n.className = "gnote";
+    n.textContent = a.kind === "seek" ? "배틀넷으로 들어오면 스카우트 제안을 보낼 수 있어요" : "배틀넷으로 들어오면 가입 신청을 할 수 있어요";
+    body.appendChild(n);
+  }
+  if (a.mine) {
+    const b = document.createElement("button"); b.type = "button"; b.className = "gbtn"; b.style.cssText = "width:100%;margin:0 0 10px";
+    b.textContent = "길드 탭에서 고치기"; b.onclick = () => { $("gpop").classList.add("hidden"); showGuildTab(a.id); };
+    body.appendChild(b);
+  }
+  $("gpop").classList.remove("hidden");
+}
+$("gpopClose").onclick = () => $("gpop").classList.add("hidden");
+$("gpop").onclick = (e) => { if (e.target.id === "gpop") $("gpop").classList.add("hidden"); };
+
 async function clearGuildAd(){
   const { data, error } = await sb.rpc("wow_guild_ad_clear", { p_token: me.token });
   if (error) { toast(errMsg(error)); return; }
