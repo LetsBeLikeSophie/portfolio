@@ -104,6 +104,22 @@
   .safe svg{flex:none;color:#6fd04a}
   details.safeMore summary{font-size:12.5px;color:var(--gold-dim, #a8873e);padding:4px}
   details.safeMore .note{text-align:left;margin-top:4px}
+  /* 손님 = 취객 */
+  #guestBox .gi{font-size:13px;line-height:1.55;color:#cbbfa8;background:#ffffff06;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 2px}
+  #guestBox .seg{display:flex;gap:6px;flex-wrap:wrap}
+  #guestBox .seg button{flex:1 1 auto;padding:9px 10px;border-radius:9px;border:1px solid var(--line);background:#0a0806;color:#d8ccb4;font-size:14px;cursor:pointer;white-space:nowrap}
+  #guestBox .seg button.on{border-color:var(--gold);color:#f1dfae;background:#2a2112;font-weight:700}
+  #guestBox .seg.cls button{color:var(--cc)}
+  #guestBox .seg.cls button.on{border-color:var(--cc);background:#ffffff10}
+  #guestBox .seg .hint{font-size:12.5px;color:#7d7262;padding:6px 2px}
+  .blr{display:inline-block;filter:blur(3.2px);opacity:.85;user-select:none;-webkit-user-select:none;animation:wob 2.6s ease-in-out infinite}
+  @keyframes wob{50%{transform:translateY(1px) rotate(-2deg)}}
+  .drk{font-size:10.5px;margin-left:4px;padding:0 6px;border-radius:999px;border:1px solid #6d5a2e;color:#d9b45a;vertical-align:1px;white-space:nowrap}
+  #drunkBar{display:flex;align-items:center;gap:8px;padding:7px 8px 7px 12px;background:#221a0d;border-bottom:1px solid var(--line);font-size:12.5px;line-height:1.4;color:#e7d2a0}
+  #drunkBar.hidden{display:none}
+  #drunkBar span{flex:1}
+  #drunkBar button{flex:none;background:linear-gradient(180deg,#1a8dff,#0060c7);color:#fff;border:0;border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;cursor:pointer}
+  body.guest #camBtn, body.guest #dmBtn, body.guest #pushBtn{display:none}
   .legal{font-size:11px;color:#6d6354;text-align:center;margin-top:16px;line-height:1.5}
 
   .pick{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-top:8px;padding:10px 12px;
@@ -627,7 +643,21 @@
       <div class="err" id="bnetErr"></div>
       <p class="safe"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
         <span>비밀번호는 블리자드 화면에서만 입력해요</span></p>
+      <button class="btn ghost sm" id="guestBtn" type="button">🍺 로그인 없이 취객으로 들어가기</button>
 
+    </div>
+
+    <!-- 손님(취객) 입장 -->
+    <div id="guestBox" class="hidden">
+      <p class="gi">🍺 <b>취객</b>으로 들어가요. 술이 덜 깨서 같은 진영 글도 군데군데 <b>흐리게</b> 보이고, 말하면 <b>*딸꾹*</b>이 섞여요.<br>귓속말·파티 모집·사진·알림은 배틀넷으로 인증하면 열려요.</p>
+      <label>진영</label><div class="seg" id="gFac"></div>
+      <label>종족</label><div class="seg" id="gRace"></div>
+      <label>직업</label><div class="seg cls" id="gCls"></div>
+      <label>서버</label><div class="seg" id="gRealm"></div>
+      <label for="gName">이름</label><input id="gName" maxlength="12" placeholder="2~12자, 한글·영문·숫자" autocomplete="off" enterkeyhint="go">
+      <div class="err" id="gErr"></div>
+      <button class="btn" id="gGo" type="button" style="margin-top:6px">🍺 입장하기</button>
+      <button class="btn ghost sm" id="gBack" type="button">← 배틀넷 로그인으로</button>
     </div>
 
     <button class="btn ghost sm installBtn hidden" type="button">📲 홈 화면에 추가</button>
@@ -664,6 +694,7 @@
     </div>
   </header>
   <div class="online hidden" id="online">접속 중…</div>
+  <div id="drunkBar" class="hidden"><span>🍺 취해서 글이 흐리게 보여요. 배틀넷으로 인증하면 술이 깨요</span><button type="button" id="soberGo">술 깨기</button></div>
   <div id="pushBar" class="hidden"><span id="pushTxt"></span><button type="button" id="pushGo">알림 켜기</button><button type="button" id="pushX" aria-label="나중에">✕</button></div>
   <div id="list"></div>
   <div id="tipBar" class="hidden"><span class="tl">👾 이렇게 물어보세요</span></div>
@@ -1007,11 +1038,57 @@ async function startBnet(btn){
 $("bnetBtn").onclick = () => { track("login_click"); startBnet($("bnetBtn")); };
 $("refreshBtn").onclick = () => startBnet($("refreshBtn"));
 
-function showAlt(){ $("pickBox").classList.add("hidden"); $("altBox").classList.remove("hidden"); }
+function showAlt(){ $("pickBox").classList.add("hidden"); $("guestBox").classList.add("hidden"); $("altBox").classList.remove("hidden"); }
+
+/* ---------- 입장: 손님(취객) ---------- */
+const CLASS_RACES = {
+  "전사":["오크","언데드","타우렌","트롤","바람구체자 스카이본","인간","드워프","나이트 엘프","노움","고등 마법원 스카이본"],
+  "사냥꾼":["오크","타우렌","트롤","바람구체자 스카이본","인간","드워프","나이트 엘프","고등 마법원 스카이본"],
+  "마법사":["오크","언데드","트롤","인간","노움","고등 마법원 스카이본"],
+  "성기사":["언데드","인간","드워프"],
+  "사제":["언데드","트롤","인간","드워프","나이트 엘프","노움"],
+  "도적":["오크","언데드","트롤","바람구체자 스카이본","인간","드워프","나이트 엘프","노움","고등 마법원 스카이본"],
+  "주술사":["오크","타우렌","트롤","바람구체자 스카이본","드워프"],
+  "흑마법사":["오크","언데드","트롤","인간","노움"],
+  "드루이드":["타우렌","바람구체자 스카이본","나이트 엘프","고등 마법원 스카이본"],
+};
+const G = { fac:null, race:null, cls:null, realm:null };
+function segBtns(id, items, cur, onPick, hint){
+  const box=$(id); box.innerHTML="";
+  if (!items.length){ const h=document.createElement("span"); h.className="hint"; h.textContent=hint||""; box.appendChild(h); return; }
+  items.forEach(([v,label])=>{ const b=document.createElement("button"); b.type="button"; b.textContent=label;
+    if (v===cur) b.classList.add("on"); if (CLASS_COLOR[v]) b.style.setProperty("--cc", CLASS_COLOR[v]);
+    b.onclick=()=>onPick(v); box.appendChild(b); });
+}
+function renderGuest(){
+  segBtns("gFac", [["alliance","얼라이언스"],["horde","호드"]], G.fac, v=>{ G.fac=v; if (!RACES[v].includes(G.race)) { G.race=null; G.cls=null; } renderGuest(); });
+  segBtns("gRace", G.fac ? RACES[G.fac].map(r=>[r, r.replace(/^(고등 마법원|바람구체자) /,"")]) : [], G.race,
+    v=>{ G.race=v; if (G.cls && !CLASS_RACES[G.cls].includes(v)) G.cls=null; renderGuest(); }, "진영을 먼저 골라 주세요");
+  segBtns("gCls", G.race ? CLASSES.filter(c=>CLASS_RACES[c].includes(G.race)).map(c=>[c,c]) : [], G.cls,
+    v=>{ G.cls=v; renderGuest(); }, "종족을 먼저 골라 주세요");
+  segBtns("gRealm", [["일반","일반"],["PvP","PvP (전쟁)"]], G.realm, v=>{ G.realm=v; renderGuest(); });
+}
+$("guestBtn").onclick = () => { track("guest_open"); $("altBox").classList.add("hidden"); $("guestBox").classList.remove("hidden"); $("gErr").textContent=""; renderGuest(); };
+$("gBack").onclick = () => showAlt();
+$("gName").onkeydown = (e) => { if (e.key==="Enter") $("gGo").click(); };
+$("gGo").onclick = async () => {
+  $("gErr").textContent = "";
+  const name = $("gName").value.trim();
+  if (!G.fac || !G.race || !G.cls || !G.realm) { $("gErr").textContent = "진영·종족·직업·서버를 모두 골라 주세요"; return; }
+  if (name.length < 2) { $("gErr").textContent = "이름을 2자 이상 정해 주세요"; $("gName").focus(); return; }
+  $("gGo").disabled = true;
+  const { data, error } = await sb.rpc("wow_register", { p_name: name, p_realm: G.realm, p_race: G.race, p_class: G.cls });
+  $("gGo").disabled = false;
+  if (error) { $("gErr").textContent = errMsg(error); return; }
+  ls.set("wowchat_token", data.token);
+  track("guest_join");
+  enterChat(data);
+};
+const isGuest = () => !!me && me.verified === false;
 
 function showPicker(acc){
   show("join");
-  $("altBox").classList.add("hidden"); $("pickBox").classList.remove("hidden");
+  $("altBox").classList.add("hidden"); $("guestBox").classList.add("hidden"); $("pickBox").classList.remove("hidden");
   $("pkTag").textContent = acc.battletag ? `· ${acc.battletag}` : "";
   const list = $("pickList"); list.innerHTML = "";
   (acc.characters || []).forEach((c, i) => {
@@ -1132,6 +1209,7 @@ function renderMsg(m, inThread){
   ic.onclick=(e)=>{ e.stopPropagation(); openProfile(m); };
   if (me && m.player_id===me.id) el.classList.add("mine");
   el.append(t, ic, who);
+  if (m.sender_verified===false){ const d=document.createElement("span"); d.className="drk"; d.textContent="취객"; d.title="배틀넷 인증 없이 들어온 손님"; el.appendChild(d); }
   if (m.parent_id && !inThread){
     const pm=cache.find(x=>x.id===m.parent_id);
     const pn=m.parent_name ?? pm?.sender_name, pb=m.parent_body ?? (pm ? (pm.hidden ? "신고로 숨긴 글" : plainBody(pm.body).slice(0,40)) : null);
@@ -1346,7 +1424,7 @@ function syncComposer(){
   if (replyCtx) return;
   const inTab = filterTag!=="all";
   const wait = botWaitLeft();
-  $("msgInput").placeholder = botMode ? (wait>0 ? `${wait}초 뒤에 물어볼 수 있어요` : "포에버봇에게 물어보기") : inTab ? `${TAG_LABEL[filterTag]||""}에 글쓰기` : "메시지를 입력해 보세요";
+  $("msgInput").placeholder = botMode ? (wait>0 ? `${wait}초 뒤에 물어볼 수 있어요` : "포에버봇에게 물어보기") : inTab ? (isGuest() ? "모집 글은 배틀넷 인증 후에 쓸 수 있어요" : `${TAG_LABEL[filterTag]||""}에 글쓰기`) : "메시지를 입력해 보세요";
 }
 // 봇 단추: 켜 두면 쓰는 글이 모두 포에버봇에게 가는 질문이 됨 (다시 누르면 꺼짐)
 var botMode = false;
@@ -1358,7 +1436,7 @@ const QUALITY_COLOR = { POOR:"#9d9d9d", COMMON:"#ffffff", UNCOMMON:"#1eff00", RA
 const KIND_LABEL = { quest:"퀘스트", item:"아이템", npc:"NPC", spell:"주문", achievement:"업적" };
 // 주소는 영문·숫자·기호까지만 (뒤에 붙은 한글 조사나 괄호는 빼고)
 const LINK_RE = /\[\[(quest|item|npc|spell|achievement|talent):(\d+):([A-Z_]*):([^\]\n]{1,60})\]\]|https?:\/\/(?:[a-z]{2,4}\.)?wowhead\.com[\x21-\x7e]*/gi;
-const plainText = (t) => String(t||"").replace(/\[\[(?:quest|item|npc|spell|achievement|talent):\d+:[A-Z_]*:([^\]\n]{1,60})\]\]/g, "[$1]");
+const plainText = (t) => String(t||"").replace(/\[\[(?:quest|item|npc|spell|achievement|talent):\d+:[A-Z_]*:([^\]\n]{1,60})\]\]/g, "[$1]").replace(/⟦[^⟧]*⟧?/g, "~");
 function linkify(text){
   const frag=document.createDocumentFragment(); let last=0; text=String(text||"");
   for (const m of text.matchAll(LINK_RE)){
@@ -1394,8 +1472,22 @@ function linkify(text){
     frag.appendChild(a); last=m.index+consumed;
   }
   frag.appendChild(document.createTextNode(text.slice(last)));
+  blurify(frag);
   scheduleWhRefresh();
   return frag;
+}
+function blurify(root){
+  const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const nodes=[];
+  while (w.nextNode()) if (w.currentNode.nodeValue.includes("⟦")) nodes.push(w.currentNode);
+  nodes.forEach(n=>{
+    const s=n.nodeValue, f=document.createDocumentFragment(); let last=0;
+    for (const m of s.matchAll(/⟦([^⟧]*)⟧?/g)){
+      f.appendChild(document.createTextNode(s.slice(last, m.index)));
+      const sp=document.createElement("span"); sp.className="blr"; sp.textContent=m[1]; sp.setAttribute("aria-hidden","true");
+      f.appendChild(sp); last=m.index+m[0].length;
+    }
+    f.appendChild(document.createTextNode(s.slice(last))); n.replaceWith(f);
+  });
 }
 // 특성 정보(아이콘·설명)는 한 번에 모아서 받아 두고 다시 씀
 const talentInfo = new Map(); let talentWant = new Map(), talentTimer = null;
@@ -1699,7 +1791,7 @@ function openProfile(m){
   $("pEmotes").classList.add("hidden");
   $("pMute").classList.toggle("hidden", self);
   $("pMuteLbl").textContent = muted.has(m.player_id) ? "보이기" : "숨기기";
-  $("pDm").classList.toggle("hidden", self || m.tag==="bot" || m.sender_faction!==me.faction);
+  $("pDm").classList.toggle("hidden", self || m.tag==="bot" || m.sender_faction!==me.faction || isGuest() || m.sender_verified===false);
   $("pBlock").classList.toggle("hidden", self || m.tag==="bot");
   $("pBlockLbl").textContent = blocked.has(m.player_id) ? "차단 풀기" : "차단";
   $("prof").classList.remove("hidden");
@@ -1913,7 +2005,7 @@ function swipeClose(id){
   ov.addEventListener("touchmove", (e)=>{ if (!card.contains(e.target)) e.preventDefault(); }, { passive:false });
 }
 // 글 복사 창: 글자를 골라서 복사하거나, 전체 복사 단추로 한 번에
-const plainBody = (b) => String(b||"").replace(/\[\[(?:quest|item|npc|spell|achievement|talent):\d+:[A-Z_]*:([^\]\n]{1,60})\]\]/g, "$1");
+const plainBody = (b) => String(b||"").replace(/\[\[(?:quest|item|npc|spell|achievement|talent):\d+:[A-Z_]*:([^\]\n]{1,60})\]\]/g, "$1").replace(/⟦[^⟧]*⟧?/g, "~");
 function openCopy(m){ $("cpText").value = plainBody(m.body); $("copyCard").classList.remove("hidden"); }
 $("cpAll").onclick = async () => {
   const t=$("cpText").value; let ok=false;
@@ -2178,7 +2270,14 @@ async function subscribe(){
   const { data: topic, error } = await sb.rpc("wow_topic", { p_token: me.token });
   if (error || !topic) { toast("채팅 연결에 실패했어요. 새로고침해 주세요"); return; }
   msgSub = sb.channel(topic)
-    .on("broadcast", { event:"msg" }, ({ payload })=>{ if (payload && payload.channel===channel) addMsg(payload); })
+    .on("broadcast", { event:"msg" }, ({ payload })=>{
+      if (!payload || payload.channel!==channel) return;
+      if (isGuest() && payload.player_id===me.id && String(payload.body||"").includes("⟦")) {
+        sb.rpc("wow_bodies", { p_token: me.token, p_ids: [payload.id] })
+          .then(({ data })=>{ if (data?.[0]?.body) payload.body = data[0].body; addMsg(payload); }, ()=>addMsg(payload));
+        return;
+      }
+      addMsg(payload); })
     .on("broadcast", { event:"count" }, ({ payload })=>{ if (payload) updateReplyCount(payload.id, payload.reply_count); })
     .on("broadcast", { event:"hide" }, ({ payload })=>{ if (payload) markHidden(payload.id, payload.parent_id); })
     .subscribe((status)=>{
@@ -2202,6 +2301,7 @@ async function subscribe(){
 function enterChat(player){
   track("chat_enter");
   me = player; channel = chOf(me.realm);
+  document.body.classList.toggle("guest", isGuest()); $("drunkBar").classList.toggle("hidden", !isGuest());
   cache = []; filterTag = "all"; newFrom = 0; jumpNew = true;
   show("chat");
   $("srvBadge").textContent = me.realm||"일반"; $("srvBadge").title = `${me.realm||"일반"} 서버`;
@@ -2492,7 +2592,7 @@ $("meBtn").onclick = () => {
   loadCard(me.id).then(c=>{ if (c?.gender==="FEMALE" || c?.avatar) { const np=portraitEl(me, "sm", c.gender); if (c.avatar){ const f=np.querySelector(".face"); const im=document.createElement("img"); im.className="ic lg face"; im.src=c.avatar; im.referrerPolicy="no-referrer"; im.style.borderColor=CLASS_COLOR[me.class]||""; f.replaceWith(im); } pic.replaceWith(np); } });
   box.appendChild(head);
   [["서버", me.realm || "-"], ["종족·직업", `${me.race} ${me.class}`], ["레벨", me.level || "-"],
-   ["진영", me.faction==="alliance" ? "얼라이언스 (공용어)" : "호드 (오크어)"]].forEach(([k,v])=>{
+   ["진영", me.faction==="alliance" ? "얼라이언스 (공용어)" : "호드 (오크어)"], ...(isGuest() ? [["상태", "🍺 취객 (배틀넷 인증 전)"]] : [])].forEach(([k,v])=>{
     const d=document.createElement("div"); const b=document.createElement("span");
     b.style.color="var(--muted)"; b.textContent=k+"  "; d.append(b, document.createTextNode(v)); box.appendChild(d);
   });
@@ -2509,6 +2609,7 @@ function leaveChat(){
   if (replyCtx) cancelReply(); expanded.clear(); repliesMap.clear(); closeActions();
   if (msgSub) sb.removeChannel(msgSub); if (presence) sb.removeChannel(presence);
   if (dmSub) sb.removeChannel(dmSub);
+  document.body.classList.remove("guest"); $("drunkBar").classList.add("hidden");
   msgSub=presence=dmSub=null; me=null; dmWith=null; dmConvs=[]; blocked=new Set(); $("dmDot").classList.add("hidden");
   $("dm").classList.add("hidden"); $("dmChat").classList.add("hidden");
   $("sheet").classList.add("hidden"); $("thread").classList.add("hidden"); hidePushBar(); pushEndpoint = null;
@@ -2600,6 +2701,7 @@ async function disablePush(){
 }
 // 채팅에 들어올 때: 이미 켠 기기면 지금 캐릭터로 다시 연결(=보고 있음), 아니면 잠시 뒤 안내 줄
 async function pushOnEnter(){
+  if (isGuest()) { openFromPushUrl(); return; }
   getPushKey();
   const sub = await currentSub();
   if (sub && Notification.permission==="granted") { if (me) saveSub(sub); }
@@ -2615,7 +2717,7 @@ function pushAfter(kind, id){
     body: JSON.stringify({ token: me.token, kind, id }) }).catch(()=>{});
 }
 async function maybeShowPushBar(){
-  if (!me || $("chat").classList.contains("hidden")) return;
+  if (!me || isGuest() || $("chat").classList.contains("hidden")) return;
   if (Date.now() - Number(ls.get("wowchat_push_later") || 0) < 3*86400e3) return;
   if (pushOk()) {
     if (Notification.permission !== "default" || !(await getPushKey())) return;
@@ -2627,6 +2729,7 @@ async function maybeShowPushBar(){
 }
 function hidePushBar(){ $("pushBar").classList.add("hidden"); }
 $("pushGo").onclick = () => { hidePushBar(); enablePush(); };
+$("soberGo").onclick = () => { track("sober_click"); startBnet($("soberGo")); };
 $("pushX").onclick = () => { ls.set("wowchat_push_later", String(Date.now())); hidePushBar(); };
 // 알림을 눌러 들어오면: 귓속말 알림은 귓속말 목록을 열어 줌
 function openFromPushUrl(u){
