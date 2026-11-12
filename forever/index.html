@@ -180,7 +180,8 @@
   .me{display:flex;align-items:center;gap:6px;font-size:13px;background:#0006;border:1px solid var(--line);
     padding:4px 10px 4px 5px;border-radius:999px;cursor:pointer;max-width:58%}
   .me span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
-  .chiprow{display:flex;align-items:center;gap:8px;margin-top:9px}
+  .chiprow{display:flex;align-items:center;gap:8px}
+  #chat>.chiprow{flex:none;padding:7px 12px 6px;background:#15100b;border-bottom:1px solid var(--line)}
   .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;flex:1;min-width:0;
     -webkit-mask-image:linear-gradient(to right,#000 82%,transparent);mask-image:linear-gradient(to right,#000 82%,transparent);padding-right:24px}
   .sw{flex:none;display:flex;align-items:center;gap:6px;background:none;border:0;padding:0 2px;cursor:pointer;
@@ -816,18 +817,19 @@
       <button class="bell" id="dmBtn" type="button" aria-label="귓속말"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span class="bdot hidden" id="dmDot"></span></button>
       <button class="me" id="meBtn" type="button"><span class="icons" id="meIcons"></span><span id="meName"></span></button>
     </div>
-    <div class="chiprow">
-      <div class="chips" id="chips"></div>
-      <a class="gdchip" id="guideBtn" href="/forever/classes/" title="와우 포에버 직업·특성 정리">📘 직업·특성</a>
-      <button type="button" class="sw" id="enemySw" role="switch" aria-checked="true">
-        <span id="enemyLbl"></span><span class="eye" id="enemyEye"></span>
-      </button>
-    </div>
   </header>
   <div class="online hidden" id="online">접속 중…</div>
   <div id="drunkBar" class="hidden"><span id="drunkTxt">🍺 취해서 글이 흐리게 보여요. 배틀넷으로 인증하면 술이 깨요</span><button type="button" id="soberGo">술 깨기</button></div>
   <div id="scene"><canvas id="sceneCv" role="img" aria-label="여관: 지금 있는 사람들. 옆으로 밀면 침실"></canvas><div id="sceneTabs" role="tablist"><button type="button" role="tab" data-r="0" class="on"><i>🍺</i> 홀<b id="stHall"></b></button><button type="button" role="tab" data-r="1"><i>🛏️</i> 침실<b id="stBed"></b></button></div><button type="button" id="sceneX" aria-label="여관 장면 접기">▴</button></div>
   <div id="pushBar" class="hidden"><span id="pushTxt"></span><button type="button" id="pushGo">알림 켜기</button><button type="button" id="pushX" aria-label="나중에">✕</button></div>
+  <!-- 전체·파티·길드: 바로 아래 목록을 바꾸는 탭이라 목록 위에 붙임 -->
+  <div class="chiprow">
+    <div class="chips" id="chips"></div>
+    <a class="gdchip" id="guideBtn" href="/forever/classes/" title="와우 포에버 직업·특성 정리">📘 직업·특성</a>
+    <button type="button" class="sw" id="enemySw" role="switch" aria-checked="true">
+      <span id="enemyLbl"></span><span class="eye" id="enemyEye"></span>
+    </button>
+  </div>
   <div id="list"></div>
   <div id="guildPane"></div>
   <div id="tipBar" class="hidden"><span class="tl">👾 이렇게 물어보세요</span></div>
