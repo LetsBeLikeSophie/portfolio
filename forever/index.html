@@ -923,7 +923,7 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
-import { createScene } from "./scene.js?v=7";
+import { createScene } from "./scene.js?v=8";
 
 const SUPABASE_URL = "https://ztxzqvnybiemgbhtrwiw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7";
@@ -2864,9 +2864,19 @@ try { navigator.serviceWorker?.addEventListener("message", (e) => { if (e.data?.
 $("iosGuide").onclick = (e) => { if (e.target.id==="iosGuide") $("iosGuide").classList.add("hidden"); };
 
 /* ---------- 여관 장면 ---------- */
+// 취객·구경꾼이 포에버봇을 누르면 봇 머리 위에 랜덤 말풍선 (내 화면에만)
+const BOT_SHOO = ["취객은 상대 안 해요 🙅", "딸꾹… 술 냄새 나요 🍺", "실제 모험가한테만 대답해요!", "술 깨고 다시 와요 💧",
+  "저 지금 근무 중이에요 🤖", "배틀넷 인증하면 놀아 줄게요", "앗, 맥주 쏟지 마세요!", "물 한 잔 드릴까요? 🥛",
+  "쉿, 사장님이 보고 있어요 👀", "취한 손님은 출입 금지예요~"];
+let shooLast = -1;
+function botShoo(){
+  let i; do { i = Math.floor(Math.random() * BOT_SHOO.length); } while (i === shooLast && BOT_SHOO.length > 1);
+  shooLast = i; scene.say(null, BOT_SHOO[i], { bot: true });
+}
 const scene = createScene($("sceneCv"), { classColor: CLASS_COLOR, emoteEmoji: EMOTE_EMOJI, onTap: (a) => {
-  if (me?.spec) { toast(a.bot ? "포에버봇이에요. 배틀넷으로 들어오면 물어볼 수 있어요" : `${a.name} · 들어오면 프로필을 볼 수 있어요`); return; }
-  if (a.bot) { if (isGuest()) toast(BOT_NO_DRUNK); else openBotCard(); return; }
+  if (a.bot && isGuest()) { botShoo(); return; }
+  if (me?.spec) { toast(`${a.name} · 들어오면 프로필을 볼 수 있어요`); return; }
+  if (a.bot) { openBotCard(); return; }
   openProfile({ player_id: a.id, sender_name: a.name, sender_class: a.cls, sender_race: a.race, sender_faction: a.faction,
     sender_level: a.level, sender_realm: a.realm, sender_verified: a.verified, tag: "chat" });
 }, onInfo: ({ room, hall, bed, hallNew }) => {

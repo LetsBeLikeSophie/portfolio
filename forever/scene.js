@@ -339,23 +339,31 @@ export function createScene(canvas, opts = {}) {
     c.fillStyle = line; c.fillRect(x + u, y, w - 2 * u, h); c.fillRect(x, y + u, w, h - 2 * u);
     c.fillStyle = fill; c.fillRect(x + 2 * u, y + u, w - 4 * u, h - 2 * u); c.fillRect(x + u, y + 2 * u, w - 2 * u, h - 4 * u);
   }
-  function bubble(cx, bottomY, b) {
+  function bubble(cx, bottomY, b, sideY) {
     const c = ctx, u = 2 * dpr, fs = 11 * dpr, lh = 15 * dpr, pad = 5 * u, maxW = Math.min(170 * dpr, canvas.width * 0.66);
     const snap = (v) => Math.round(v / u) * u;
     c.font = font(fs);
     const lines = wrap(c, b.text, maxW - pad * 2, 2);
     const w = snap(Math.max(...lines.map((l) => c.measureText(l).width)) + pad * 2), h = snap(lines.length * lh + 3 * u * 2);
     cx = snap(cx);
-    let x = snap(cx - w / 2); x = Math.max(u * 2, Math.min(canvas.width - w - u * 2, x));
-    const y = snap(Math.max(u, bottomY - h - 3 * u));
+    // sideY가 있으면 캐릭터 오른쪽 옆에 (위쪽 탭에 안 가리게), 꼬리는 왼쪽
+    const side = sideY != null;
+    let x = side ? cx : snap(cx - w / 2); x = Math.max(u * 2, Math.min(canvas.width - w - u * 2, x));
+    const y = side ? snap(Math.max(u, sideY - h / 2)) : snap(Math.max(u, bottomY - h - 3 * u));
     const line = b.bot ? "#e6c36a" : "#1a110a", fill = b.bot ? "#2a2112" : "#f7ecd2";
     // 그림자 → 상자 → 꼬리
     pixBox(c, x + u, y + u, w, h, u, "rgba(0,0,0,.35)", "rgba(0,0,0,.35)");
     pixBox(c, x, y, w, h, u, line, fill);
     if (!b.bot) { c.fillStyle = "rgba(255,255,255,.55)"; c.fillRect(x + 2 * u, y + u, w - 4 * u, u); }
-    const tx = Math.max(x + 3 * u, Math.min(x + w - 4 * u, cx - u));
-    c.fillStyle = fill; c.fillRect(tx, y + h - u, 2 * u, u); c.fillRect(tx, y + h, 2 * u, u);
-    c.fillStyle = line; c.fillRect(tx - u, y + h, u, u); c.fillRect(tx + 2 * u, y + h, u, u); c.fillRect(tx, y + h + u, 2 * u, u);
+    if (side) {
+      const ty = snap(Math.min(y + h - 4 * u, Math.max(y + 2 * u, sideY - u)));
+      c.fillStyle = fill; c.fillRect(x, ty, u, 2 * u); c.fillRect(x - u, ty, u, 2 * u);
+      c.fillStyle = line; c.fillRect(x - u, ty - u, u, u); c.fillRect(x - u, ty + 2 * u, u, u); c.fillRect(x - 2 * u, ty, u, 2 * u);
+    } else {
+      const tx = Math.max(x + 3 * u, Math.min(x + w - 4 * u, cx - u));
+      c.fillStyle = fill; c.fillRect(tx, y + h - u, 2 * u, u); c.fillRect(tx, y + h, 2 * u, u);
+      c.fillStyle = line; c.fillRect(tx - u, y + h, u, u); c.fillRect(tx + 2 * u, y + h, u, u); c.fillRect(tx, y + h + u, 2 * u, u);
+    }
     c.fillStyle = b.bot ? "#f1dfae" : b.foreign ? "#8a7e6a" : "#2a1d10"; c.textBaseline = "top"; c.textAlign = "left";
     lines.forEach((l, i) => c.fillText(l, x + pad, y + 3 * u + i * lh + dpr));
   }
@@ -434,7 +442,7 @@ export function createScene(canvas, opts = {}) {
     // 말풍선은 맨 위에
     for (const R of rooms) {
       for (const a of R.list) if (a.bubble && a.alpha > 0.3 && a.x + R.off > 0 && a.x + R.off < W) bubble((a.x + R.off) * k, (R.tops.get(a.id) - 1) * k - 13 * dpr, a.bubble);
-      if (R.rm === 0 && view === 0 && R.off > -W / 3 && bot.bubble) bubble((bot.x + R.off) * k, (R.fairyTop - 1) * k - 13 * dpr, bot.bubble);
+      if (R.rm === 0 && view === 0 && R.off > -W / 3 && bot.bubble) bubble((bot.x + R.off + 11) * k, 0, bot.bubble, (bot.y - 8) * k);
     }
   }
 
