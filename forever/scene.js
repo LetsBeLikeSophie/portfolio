@@ -4,6 +4,15 @@
 
 import { buildSprite, buildFairy, buildDrunk, GW, FEET, CX } from "./sprites.js?v=4";
 
+// 도트 한글 글꼴 Galmuri11 (이민서, SIL Open Font License) - 여관 글자에만 씀
+const PF = "Galmuri11";
+let fontReady = false;
+try {
+  const ff = new FontFace(PF, "url(https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/Galmuri11.woff2) format('woff2')", { display: "swap" });
+  document.fonts.add(ff); ff.load().then(() => { fontReady = true; }, () => {});
+} catch {}
+const font = (px) => `${px}px ${fontReady ? PF + ", " : ""}system-ui, sans-serif`;
+
 const PX = 3;              // 화면 1px 도트 = CSS 3px
 const FPS = 20;
 const FACTION_CAPE = { alliance: "#2f5fb3", horde: "#9b2323" };
@@ -203,8 +212,7 @@ export function createScene(canvas, opts = {}) {
     return y - 17 + fr.top;
   }
 
-  /* ---------- 고해상도 글자 (이름·말풍선) ---------- */
-  function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  /* ---------- 글자·말풍선 (도트 느낌: 각진 테두리, 도트 글꼴) ---------- */
   function wrap(c, text, maxW, lines) {
     const out = []; let cur = "";
     for (const ch of [...text]) {
@@ -215,22 +223,41 @@ export function createScene(canvas, opts = {}) {
     if (out.length === lines && out.join("").length < [...text].length) out[lines - 1] = out[lines - 1].slice(0, -1) + "…";
     return out;
   }
+  // 계단 모서리 상자: 바깥 테두리 → 안쪽 채움 (u = 도트 한 칸)
+  function pixBox(c, x, y, w, h, u, line, fill) {
+    c.fillStyle = line; c.fillRect(x + u, y, w - 2 * u, h); c.fillRect(x, y + u, w, h - 2 * u);
+    c.fillStyle = fill; c.fillRect(x + 2 * u, y + u, w - 4 * u, h - 2 * u); c.fillRect(x + u, y + 2 * u, w - 2 * u, h - 4 * u);
+  }
   function bubble(cx, bottomY, b) {
-    const c = ctx, fs = 12 * dpr, pad = 6 * dpr, maxW = Math.min(160 * dpr, canvas.width * 0.62);
-    c.font = `${b.foreign ? "italic " : ""}${fs}px system-ui, sans-serif`;
+    const c = ctx, u = 2 * dpr, fs = 11 * dpr, lh = 15 * dpr, pad = 5 * u, maxW = Math.min(170 * dpr, canvas.width * 0.66);
+    const snap = (v) => Math.round(v / u) * u;
+    c.font = font(fs);
     const lines = wrap(c, b.text, maxW - pad * 2, 2);
-    const w = Math.max(...lines.map((l) => c.measureText(l).width)) + pad * 2, h = lines.length * fs * 1.3 + pad * 1.4;
-    let x = cx - w / 2; x = Math.max(3 * dpr, Math.min(canvas.width - w - 3 * dpr, x));
-    const y = Math.max(2 * dpr, bottomY - h - 5 * dpr);
-    c.fillStyle = b.bot ? "#2a2112" : "#f6ecd6"; c.strokeStyle = b.bot ? "#e6c36a" : "#00000055"; c.lineWidth = 1.2 * dpr;
-    rr(c, x, y, w, h, 7 * dpr); c.fill(); c.stroke();
-    c.beginPath(); c.moveTo(cx - 4 * dpr, y + h - 0.5); c.lineTo(cx, y + h + 5 * dpr); c.lineTo(cx + 4 * dpr, y + h - 0.5); c.fill();
-    c.fillStyle = b.bot ? "#f1dfae" : b.foreign ? "#6d6354" : "#1a1208"; c.textBaseline = "top"; c.textAlign = "left";
-    lines.forEach((l, i) => c.fillText(l, x + pad, y + pad * 0.7 + i * fs * 1.3));
+    const w = snap(Math.max(...lines.map((l) => c.measureText(l).width)) + pad * 2), h = snap(lines.length * lh + 3 * u * 2);
+    cx = snap(cx);
+    let x = snap(cx - w / 2); x = Math.max(u * 2, Math.min(canvas.width - w - u * 2, x));
+    const y = snap(Math.max(u, bottomY - h - 3 * u));
+    const line = b.bot ? "#e6c36a" : "#1a110a", fill = b.bot ? "#2a2112" : "#f7ecd2";
+    // 그림자 → 상자 → 꼬리
+    pixBox(c, x + u, y + u, w, h, u, "rgba(0,0,0,.35)", "rgba(0,0,0,.35)");
+    pixBox(c, x, y, w, h, u, line, fill);
+    if (!b.bot) { c.fillStyle = "rgba(255,255,255,.55)"; c.fillRect(x + 2 * u, y + u, w - 4 * u, u); }
+    const tx = Math.max(x + 3 * u, Math.min(x + w - 4 * u, cx - u));
+    c.fillStyle = fill; c.fillRect(tx, y + h - u, 2 * u, u); c.fillRect(tx, y + h, 2 * u, u);
+    c.fillStyle = line; c.fillRect(tx - u, y + h, u, u); c.fillRect(tx + 2 * u, y + h, u, u); c.fillRect(tx, y + h + u, 2 * u, u);
+    c.fillStyle = b.bot ? "#f1dfae" : b.foreign ? "#8a7e6a" : "#2a1d10"; c.textBaseline = "top"; c.textAlign = "left";
+    lines.forEach((l, i) => c.fillText(l, x + pad, y + 3 * u + i * lh + dpr));
+  }
+  // 도트 글자 + 한 칸 검은 테두리
+  function outlined(text, x, y, color, px) {
+    const c = ctx, o = dpr;
+    c.font = font(px * dpr); c.fillStyle = "#1a110a";
+    for (const [dx, dy] of [[-o, 0], [o, 0], [0, -o], [0, o], [o, o]]) c.fillText(text, x + dx, y + dy);
+    c.fillStyle = color; c.fillText(text, x, y);
   }
   function label(cx, y, text, color, dim, bold) {
-    const c = ctx; c.font = `${bold ? "700 " : "600 "}${10 * dpr}px system-ui, sans-serif`; c.textAlign = "center"; c.textBaseline = "bottom";
-    c.globalAlpha = dim ? 0.55 : 0.95; c.fillStyle = "#000a"; c.fillText(text, cx + dpr, y + dpr); c.fillStyle = color; c.fillText(text, cx, y); c.globalAlpha = 1;
+    const c = ctx; c.textAlign = "center"; c.textBaseline = "bottom";
+    outlined(text, Math.round(cx), Math.round(y), color, 11);
   }
 
   function draw(now) {
@@ -252,19 +279,19 @@ export function createScene(canvas, opts = {}) {
       if (!a.verified && !a.asleep) {   // 가끔 딸꾹!
         const ph = (now / 1000 + a.seed * 3) % 7;
         if (ph < 1.2) {
-          ctx.font = `800 ${10 * dpr}px system-ui`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
-          ctx.fillStyle = `rgba(255,179,193,${1 - ph / 1.2})`;
-          ctx.fillText("딸꾹!", (a.x + 6) * k, top * k - (11 + ph * 8) * dpr);
+          ctx.textAlign = "center"; ctx.textBaseline = "bottom"; ctx.globalAlpha = Math.max(0, 1 - ph / 1.2);
+          outlined("딸꾹!", (a.x + 6) * k, top * k - (13 + ph * 8) * dpr, "#ffb3c1", 11);
+          ctx.globalAlpha = 1;
         }
       }
       if (a.asleep && !a.walking) {
         ctx.textAlign = "center"; ctx.textBaseline = "bottom";
         for (let i = 0; i < 3; i++) {
           const t = ((now / 1400 + a.seed) + i / 3) % 1;
-          ctx.font = `800 ${(8 + i * 0 + t * 5) * dpr}px system-ui`;
-          ctx.fillStyle = `rgba(190,205,255,${Math.min(1, 1.2 - t)})`;
+          ctx.globalAlpha = Math.max(0, Math.min(1, 1.2 - t));
           const zx = a.verified ? a.x - 12 : a.x + 7, zy = a.verified ? a.y - 8 : top + 3;
-          ctx.fillText("Z", (zx - t * 4) * k, (zy - t * 9) * k);
+          outlined("Z", Math.round((zx - t * 4) * k), Math.round((zy - t * 9) * k), "#c9d4ff", t < 0.5 ? 11 : 22);
+          ctx.globalAlpha = 1;
         }
       }
       if (a.emote && emoteEmoji[a.emote.key]) {
@@ -274,8 +301,8 @@ export function createScene(canvas, opts = {}) {
     }
     label(bot.x * k, (fairyTop - 1) * k, "포에버봇", "#e6c36a", false, false);
     // 말풍선은 맨 위에
-    for (const a of list) if (a.bubble && a.alpha > 0.3) bubble(a.x * k, (tops.get(a.id) - 1) * k - 11 * dpr, a.bubble);
-    if (bot.bubble) bubble(bot.x * k, (fairyTop - 1) * k - 11 * dpr, bot.bubble);
+    for (const a of list) if (a.bubble && a.alpha > 0.3) bubble(a.x * k, (tops.get(a.id) - 1) * k - 13 * dpr, a.bubble);
+    if (bot.bubble) bubble(bot.x * k, (fairyTop - 1) * k - 13 * dpr, bot.bubble);
   }
 
   function loop(t) {
