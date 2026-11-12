@@ -138,6 +138,25 @@ dialog::backdrop{background:#000a}
 .ally{color:#8fb6ff} .horde{color:#ff8a7a}
 .others{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px} .others a{font-size:13px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;text-decoration:none}
 footer{margin-top:40px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+.flt{display:flex;flex-direction:column;gap:8px;margin:14px 0 12px;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.fr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fr>span{flex:none;width:34px;font-size:12px;color:var(--muted);font-weight:700}
+.fb{all:unset;cursor:pointer;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:#ffffff08;font-size:13.5px;font-weight:700;color:var(--muted);-webkit-tap-highlight-color:transparent}
+.fb[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#1a1208}
+.fr select{flex:1;min-width:0;max-width:260px;padding:6px 8px;border-radius:10px;border:1px solid var(--line);background:#0d0b09;color:var(--text);font:inherit;font-size:14px}
+.fr .clr{all:unset;cursor:pointer;margin-left:auto;font-size:12.5px;color:var(--gold-dim);text-decoration:underline}
+.cnt{font-size:12.5px;color:var(--muted);margin:0 0 8px}
+.cg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media (min-width:560px){.cg{grid-template-columns:repeat(9,1fr)}}
+.ct{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 4px 10px;background:var(--card);border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--text);text-align:center}
+.ct:hover,.ct:focus-visible{border-color:var(--gold-dim)}
+.ct img{width:46px;height:46px;border-radius:9px;box-shadow:0 0 0 1px #000a}
+.ct b{font-size:14px;line-height:1.2;word-break:keep-all}
+.ct small{font-size:11px;line-height:1.2;color:var(--muted)}
+.ct.off{display:none}
+.none{grid-column:1/-1;text-align:center;color:var(--muted);font-size:14px;padding:18px 0}
+.rinfo{margin:12px 0 0;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;font-size:14px}
+.rinfo b{font-size:16px} .rinfo p{margin:6px 0 0;color:var(--muted);font-size:13px}
 """
 
 def page(title, desc, path, body, ld):
@@ -316,31 +335,58 @@ for name, d in data.items():
     os.makedirs(os.path.join(ROOT, "classes"), exist_ok=True)
     open(os.path.join(ROOT, "classes", f"{slug}.html"), "w", encoding="utf-8", newline="\n").write(page(title, desc, path, body, ld))
 
-# ---------- 전체 직업 페이지 ----------
-cards = "".join(f'<a class="cls" href="/forever/classes/{SLUG[n]}.html"><img src="{ICON(CLASS_ICON[n])}" alt="{E(n)} 아이콘" width="44" height="44">'
-                f'<span><b style="color:{COLOR[n]}">{E(n)}</b><small>{E(ROLE[n])} · {E(" / ".join(d["specs"]))}</small></span></a>' for n, d in data.items())
+# ---------- 전체 직업 페이지: 아이콘 격자 + 역할·거리 다중 필터 + 종족 드롭다운 ----------
+ROLES = {"전사": ["tank", "dps"], "성기사": ["heal", "tank", "dps"], "사냥꾼": ["dps"], "도적": ["dps"],
+         "사제": ["heal", "dps"], "주술사": ["heal", "dps"], "마법사": ["dps"], "흑마법사": ["dps"],
+         "드루이드": ["heal", "tank", "dps"]}
+RANGE = {"전사": ["melee"], "성기사": ["melee"], "사냥꾼": ["ranged"], "도적": ["melee"], "사제": ["ranged"],
+         "주술사": ["melee", "ranged"], "마법사": ["ranged"], "흑마법사": ["ranged"], "드루이드": ["melee", "ranged"]}
+SHORT = {"tank": "탱", "dps": "딜", "heal": "힐"}
 class_names = list(data.keys())
-def race_card(r):
-    ic = RACE_ICON.get(r["race"])
-    img = f'<img src="{ICON(ic)}" alt="{E(r["race"])} 아이콘" loading="lazy" width="28" height="28">' if ic else ""
-    chips = "".join(f'<a class="chip" href="/forever/classes/{SLUG[n]}.html" style="color:{COLOR[n]}">'
-                    f'<img src="{ICON(CLASS_ICON[n])}" alt="" loading="lazy" width="18" height="18">{E(n)}</a>'
-                    for n in class_names if n in r["classes"])
-    return (f'<div class="race"><h3>{img}<span class="{faction_class(r["faction"])}">{E(r["race"])}</span>'
-            f'<small>직업 {sum(n in r["classes"] for n in class_names)}개</small></h3><div class="chips">{chips}</div></div>')
+cards = "".join(
+    f'<a class="ct" href="/forever/classes/{SLUG[n]}.html" data-c="{E(n)}" data-role="{" ".join(ROLES[n])}" data-range="{" ".join(RANGE[n])}">'
+    f'<img src="{ICON(CLASS_ICON[n])}" alt="" width="46" height="46"><b style="color:{COLOR[n]}">{E(n)}</b>'
+    f'<small>{"·".join(SHORT[r] for r in ["tank", "dps", "heal"] if r in ROLES[n])}</small></a>' for n in class_names)
 factions = []
 for r in races:
     if r["faction"] not in factions: factions.append(r["faction"])
-race_html = "".join(f'<div class="fac {faction_class(f)}">{E(f)}</div><div class="races">'
-                    + "".join(race_card(r) for r in races if r["faction"] == f) + "</div>" for f in factions)
+race_opts = "".join(f'<optgroup label="{E(f)}">' + "".join(f'<option value="{E(r["race"])}">{E(r["race"])}</option>'
+                    for r in races if r["faction"] == f) + "</optgroup>" for f in factions)
+race_js = json.dumps({r["race"]: {"f": r["faction"], "c": [n for n in class_names if n in r["classes"]]} for r in races}, ensure_ascii=False)
+FILTER_JS = """
+(()=>{const R=__RACES__;const st={role:new Set(),range:new Set(),race:""};
+const tiles=[...document.querySelectorAll('.ct')],sel=document.getElementById('race'),cnt=document.getElementById('cnt'),none=document.getElementById('none'),ri=document.getElementById('rinfo');
+function apply(){let n=0;tiles.forEach(t=>{const ro=t.dataset.role.split(' '),ra=t.dataset.range.split(' ');
+  const ok=(!st.role.size||ro.some(x=>st.role.has(x)))&&(!st.range.size||ra.some(x=>st.range.has(x)))&&(!st.race||R[st.race].c.includes(t.dataset.c));
+  t.classList.toggle('off',!ok);if(ok)n++;});
+  none.hidden=n>0;const any=st.role.size||st.range.size||st.race;cnt.textContent=any?`직업 9개 중 ${n}개`:'직업 9개';
+  document.getElementById('clr').hidden=!any;
+  if(st.race){const r=R[st.race];ri.hidden=false;ri.innerHTML='';const b=document.createElement('b');b.textContent=st.race;b.className=r.f.includes('얼라')?'ally':'horde';
+    const p=document.createElement('p');p.textContent=`${r.f} · 고를 수 있는 직업 ${r.c.length}개 (${r.c.join(', ')})`;ri.append(b,p);}else ri.hidden=true;
+  const q=new URLSearchParams();if(st.role.size)q.set('role',[...st.role].join(','));if(st.range.size)q.set('range',[...st.range].join(','));if(st.race)q.set('race',st.race);
+  history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:''));}
+document.querySelectorAll('.fb').forEach(b=>{b.onclick=()=>{const g=st[b.dataset.g],v=b.dataset.v;g.has(v)?g.delete(v):g.add(v);b.setAttribute('aria-pressed',g.has(v));apply();};});
+sel.onchange=()=>{st.race=sel.value;apply();};
+document.getElementById('clr').onclick=()=>{st.role.clear();st.range.clear();st.race='';sel.value='';document.querySelectorAll('.fb').forEach(b=>b.setAttribute('aria-pressed','false'));apply();};
+const q=new URLSearchParams(location.search);
+for(const g of ['role','range'])(q.get(g)||'').split(',').filter(Boolean).forEach(v=>{const b=document.querySelector(`.fb[data-g="${g}"][data-v="${v}"]`);if(b){st[g].add(v);b.setAttribute('aria-pressed','true');}});
+if(R[q.get('race')]){st.race=q.get('race');sel.value=st.race;}
+apply();})();
+""".replace("__RACES__", race_js)
 body = f"""
 <div class="crumb"><a href="/forever/">포에버 채팅</a> › 직업 정리</div>
 <h1>와우 포에버 직업 정리</h1>
-<div class="grid">{cards}</div>
+<div class="flt" role="group" aria-label="직업 거르기">
+  <div class="fr"><span>역할</span><button type="button" class="fb" data-g="role" data-v="tank" aria-pressed="false">🛡️ 탱커</button><button type="button" class="fb" data-g="role" data-v="dps" aria-pressed="false">⚔️ 딜러</button><button type="button" class="fb" data-g="role" data-v="heal" aria-pressed="false">✚ 힐러</button></div>
+  <div class="fr"><span>거리</span><button type="button" class="fb" data-g="range" data-v="melee" aria-pressed="false">근접</button><button type="button" class="fb" data-g="range" data-v="ranged" aria-pressed="false">원거리</button></div>
+  <div class="fr"><span>종족</span><select id="race" aria-label="종족"><option value="">모든 종족</option>{race_opts}</select><button type="button" class="clr" id="clr" hidden>모두 풀기</button></div>
+</div>
+<p class="cnt" id="cnt">직업 9개</p>
+<div class="cg">{cards}<p class="none" id="none" hidden>조건에 맞는 직업이 없어요</p></div>
+<div class="rinfo" id="rinfo" hidden></div>
 <a class="cta" href="/forever/"><span class="boti">{BOT_SVG}</span>포에버봇에게 물어보러 가기</a>
-<h2>종족별로 고를 수 있는 직업</h2>
-{race_html}
-<p class="lead" style="margin-top:10px">포에버에는 얼라이언스 「고등 마법원 스카이본」과 호드 「바람구체자 스카이본」 종족이 새로 있어요.</p>
+<p class="lead" style="margin-top:10px">역할·거리는 여러 개 고를 수 있어요. 포에버에는 얼라이언스 「고등 마법원 스카이본」과 호드 「바람구체자 스카이본」 종족이 새로 있어요.</p>
+<script>{FILTER_JS}</script>
 """
 title = "와우 포에버 직업 정리 – 9개 직업·전문화·특성, 종족별 직업 | 포에버 채팅"
 desc = "와우 포에버 직업 9개(전사, 성기사, 사냥꾼, 도적, 사제, 주술사, 마법사, 흑마법사, 드루이드)의 전문화와 특성 470개, 종족별로 고를 수 있는 직업을 블리자드 공식 데이터로 정리했어요."
