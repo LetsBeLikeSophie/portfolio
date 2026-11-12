@@ -104,6 +104,11 @@
   .safe svg{flex:none;color:#6fd04a}
   details.safeMore summary{font-size:12.5px;color:var(--gold-dim, #a8873e);padding:4px}
   details.safeMore .note{text-align:left;margin-top:4px}
+  /* 배틀넷 인증 배지 */
+  .vwrap{display:inline-block;width:14px;height:14px;margin-left:3px;vertical-align:-2px;line-height:0}
+  .vwrap.lg{width:18px;height:18px;margin-left:5px;vertical-align:-2px}
+  .vbadge{width:100%;height:100%;display:block}
+  .mblk>.msg:not(.emote) .vwrap,.mblk>.msg:not(.emote) .drk,#tList>.msg:not(.emote) .vwrap,#tList>.msg:not(.emote) .drk{order:1;align-self:center}
   /* 손님 = 취객 */
   #guestBox .gi{font-size:13px;line-height:1.55;color:#cbbfa8;background:#ffffff06;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 2px}
   #guestBox .seg{display:flex;gap:6px;flex-wrap:wrap}
@@ -643,13 +648,14 @@
       <div class="err" id="bnetErr"></div>
       <p class="safe"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
         <span>비밀번호는 블리자드 화면에서만 입력해요</span></p>
-      <button class="btn ghost sm" id="guestBtn" type="button">🍺 로그인 없이 취객으로 들어가기</button>
+      <p class="safe" style="margin-top:4px"><span class="vwrap"><svg class="vbadge" viewBox="0 0 24 24" aria-label="배틀넷 인증" role="img"><polygon points="12.00,1.00 14.48,2.73 17.50,2.47 18.79,5.21 21.53,6.50 21.27,9.52 23.00,12.00 21.27,14.48 21.53,17.50 18.79,18.79 17.50,21.53 14.48,21.27 12.00,23.00 9.52,21.27 6.50,21.53 5.21,18.79 2.47,17.50 2.73,14.48 1.00,12.00 2.73,9.52 2.47,6.50 5.21,5.21 6.50,2.47 9.52,2.73" fill="#2f8cf0" stroke="#2f8cf0" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.4 12.3l3.1 3.1 6.1-6.3" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>로그인하면 이름 옆에 인증 표시가 붙어요</span></p>
+      <button class="btn ghost sm" id="guestBtn" type="button">🍺 게스트(술 취한 취객)로 입장</button>
 
     </div>
 
     <!-- 손님(취객) 입장 -->
     <div id="guestBox" class="hidden">
-      <p class="gi">🍺 <b>취객</b>으로 들어가요. 술이 덜 깨서 같은 진영 글도 군데군데 <b>흐리게</b> 보이고, 말하면 <b>*딸꾹*</b>이 섞여요.<br>귓속말·파티 모집·사진·알림은 배틀넷으로 인증하면 열려요.</p>
+      <p class="gi">🍺 <b>취객</b>으로 들어가요. 술이 덜 깨서 같은 진영 글도 군데군데 <b>흐리게</b> 보이고, 말하면 <b>*딸꾹*</b>이 섞여요.<br>포에버봇은 취한 손님을 상대하지 않아요. 귓속말·파티 모집·사진·알림도 배틀넷으로 인증하면 열려요.</p>
       <label>진영</label><div class="seg" id="gFac"></div>
       <label>종족</label><div class="seg" id="gRace"></div>
       <label>직업</label><div class="seg cls" id="gCls"></div>
@@ -1085,6 +1091,22 @@ $("gGo").onclick = async () => {
   enterChat(data);
 };
 const isGuest = () => !!me && me.verified === false;
+const VBADGE = '<svg class="vbadge" viewBox="0 0 24 24" aria-label="배틀넷 인증" role="img"><polygon points="12.00,1.00 14.48,2.73 17.50,2.47 18.79,5.21 21.53,6.50 21.27,9.52 23.00,12.00 21.27,14.48 21.53,17.50 18.79,18.79 17.50,21.53 14.48,21.27 12.00,23.00 9.52,21.27 6.50,21.53 5.21,18.79 2.47,17.50 2.73,14.48 1.00,12.00 2.73,9.52 2.47,6.50 5.21,5.21 6.50,2.47 9.52,2.73" fill="#2f8cf0" stroke="#2f8cf0" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.4 12.3l3.1 3.1 6.1-6.3" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function vbadge(){ const s=document.createElement("span"); s.className="vwrap"; s.title="배틀넷 인증 캐릭터"; s.innerHTML=VBADGE; return s; }
+const BOT_NO_DRUNK = "포에버봇: 취한 손님은 상대하지 말라고 하셨어요 🍺 배틀넷으로 인증하고 술 깨고 오세요";
+const DRUNK_URL = `${SUPABASE_URL}/functions/v1/wow-drunk`;
+// 아주 가끔(7%) 취객이 보내려던 말을 AI가 혀 꼬인 말투로 바꿈. 실패하면 원래 말 그대로
+async function maybeSlur(text){
+  if (!isGuest() || Math.random() >= 0.07) return text;
+  try {
+    const ctl = new AbortController(); const t = setTimeout(()=>ctl.abort(), 5000);
+    const r = await fetch(DRUNK_URL, { method:"POST", signal: ctl.signal, headers:{ apikey: SUPABASE_KEY, "Content-Type":"application/json" },
+      body: JSON.stringify({ token: me.token, text }) });
+    clearTimeout(t);
+    const d = await r.json();
+    return d?.ok && d.text && d.text.length <= 300 ? d.text : text;
+  } catch { return text; }
+}
 
 function showPicker(acc){
   show("join");
@@ -1209,6 +1231,7 @@ function renderMsg(m, inThread){
   ic.onclick=(e)=>{ e.stopPropagation(); openProfile(m); };
   if (me && m.player_id===me.id) el.classList.add("mine");
   el.append(t, ic, who);
+  if (m.sender_verified) el.appendChild(vbadge());
   if (m.sender_verified===false){ const d=document.createElement("span"); d.className="drk"; d.textContent="취객"; d.title="배틀넷 인증 없이 들어온 손님"; el.appendChild(d); }
   if (m.parent_id && !inThread){
     const pm=cache.find(x=>x.id===m.parent_id);
@@ -1540,7 +1563,7 @@ const EXAMPLES = ["@포에버봇 가시멧돼지 어디 있어요?", "@포에버
 function exBtn(q){ const b=document.createElement("button"); b.type="button"; b.className="ex"; b.textContent=q.replace("@포에버봇 ","");
   b.onclick=()=>{ const i=$("msgInput"); setBotMode(true); i.value=q.replace("@"+BOT_NAME+" ",""); autoGrow(i); i.focus(); }; return b; }
 function setupTipBar(){
-  const bar=$("tipBar"); if (ls.get("wowchat_tip_bot")) { bar.classList.add("hidden"); return; }
+  const bar=$("tipBar"); if (ls.get("wowchat_tip_bot") || isGuest()) { bar.classList.add("hidden"); return; }
   bar.querySelectorAll(".exw,.x").forEach(x=>x.remove());
   const w=document.createElement("div"); w.className="exw";
   EXAMPLES.forEach(q=>{ const b=exBtn(q); const go=b.onclick; b.onclick=()=>{ go(); ls.set("wowchat_tip_bot","1"); bar.classList.add("hidden"); }; w.appendChild(b); });
@@ -1771,6 +1794,7 @@ function openProfile(m){
   const row=document.createElement("div"); row.className="nmrow";
   const nm=document.createElement("div"); nm.className="nm"; nm.style.color=color;
   nm.textContent=m.sender_name;
+  if (m.sender_verified){ const v=vbadge(); v.classList.add("lg"); nm.appendChild(v); }
   row.append(iconEl("faction", m.sender_faction, m.sender_faction), nm);
   const meta=document.createElement("div"); meta.className="meta2";
   meta.textContent=[m.sender_level?`Lv.${m.sender_level}`:null, `${m.sender_race} ${m.sender_class}`,
@@ -1882,7 +1906,7 @@ async function openBotCard(tab){
 }
 $("bcClose").onclick = () => $("botcard").classList.add("hidden");
 $("botBtn").innerHTML = classIcon(null, true).innerHTML;
-$("botBtn").onclick = () => { setBotMode(!botMode); toast(botMode ? "포에버봇에게 묻기 켰어요" : "포에버봇에게 묻기 껐어요"); $("msgInput").focus(); };
+$("botBtn").onclick = () => { if (isGuest()) { toast(BOT_NO_DRUNK); return; } setBotMode(!botMode); toast(botMode ? "포에버봇에게 묻기 켰어요" : "포에버봇에게 묻기 껐어요"); $("msgInput").focus(); };
 // 포에버봇 카드 댓글: 내 캐릭터 이름으로 공개되어 주렁주렁 달림
 async function loadComments(){
   const box=$("bcCmts"); if (!me) return;
@@ -2327,6 +2351,7 @@ $("send").onsubmit = async (ev) => {
   ev.preventDefault();
   const input=$("msgInput"); let body=input.value.trim(); if (!body && !pendingPhoto) return;
   if (botMode && !replyCtx && !body.startsWith("/") && !forBot(body)) body = ("@"+BOT_NAME+" "+body).trim();
+  if (isGuest() && forBot(body)){ toast(BOT_NO_DRUNK); return; }
   if (forBot(body) && botWaitLeft()>0){ toast(`포에버봇은 ${botWaitLeft()}초 뒤에 물어볼 수 있어요`); startCd(); return; }
   if (body.startsWith("/") && pendingPhoto){ toast("감정 표현에는 사진을 붙일 수 없어요"); return; }
   if (body.startsWith("/") && replyCtx){ toast("감정 표현은 답글로 못 해요. ✕를 눌러 답글을 취소해 주세요"); return; }
@@ -2350,7 +2375,8 @@ $("send").onsubmit = async (ev) => {
     finally { photoBusy=false; $("photoTxt").textContent="사진 1장"; }
   }
   input.value=""; autoGrow(input);
-  const { data: newId, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: sendBody, p_tag: tag, p_parent: parent, p_photo: photoId });
+  const finalBody = (!photoId && tag==="chat") ? await maybeSlur(sendBody) : sendBody;
+  const { data: newId, error } = await sb.rpc("wow_send", { p_token: me.token, p_channel: channel, p_body: finalBody, p_tag: tag, p_parent: parent, p_photo: photoId });
   if (error) { toast(errMsg(error)); if (!input.value) input.value=body; return; }
   if (photoId) clearPhoto();
   if (replyCtx) cancelReply();
@@ -2588,6 +2614,7 @@ $("meBtn").onclick = () => {
   const box=$("sheetInfo"); box.innerHTML="";
   const head=document.createElement("div"); head.style.cssText="display:flex;align-items:center;gap:10px;margin-bottom:8px";
   const nm=document.createElement("b"); nm.textContent=me.name; nm.style.color=CLASS_COLOR[me.class]||""; nm.style.fontSize="17px";
+  if (me.verified){ const v=vbadge(); v.classList.add("lg"); nm.appendChild(v); }
   const pic=portraitEl(me, "sm"); head.append(pic, nm);
   loadCard(me.id).then(c=>{ if (c?.gender==="FEMALE" || c?.avatar) { const np=portraitEl(me, "sm", c.gender); if (c.avatar){ const f=np.querySelector(".face"); const im=document.createElement("img"); im.className="ic lg face"; im.src=c.avatar; im.referrerPolicy="no-referrer"; im.style.borderColor=CLASS_COLOR[me.class]||""; f.replaceWith(im); } pic.replaceWith(np); } });
   box.appendChild(head);
