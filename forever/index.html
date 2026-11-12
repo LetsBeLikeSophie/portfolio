@@ -126,6 +126,8 @@
   #drunkBar span{flex:1}
   #drunkBar button{flex:none;background:linear-gradient(180deg,#1a8dff,#0060c7);color:#fff;border:0;border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;cursor:pointer}
   body.guest #camBtn, body.guest #dmBtn, body.guest #pushBtn{display:none}
+  body.spec #bellBtn{display:none}
+  body.spec #meName{opacity:.75}
   /* 여관 장면 (위쪽) */
   #scene{position:relative;z-index:2;flex:none;height:clamp(160px,32vh,250px);background:#1a120a;border-bottom:3px solid #4a2f17;box-shadow:0 1px 0 #c9a25a66,0 6px 14px #000c}
   #scene canvas{display:block;width:100%;height:100%;cursor:pointer;touch-action:pan-y}
@@ -729,7 +731,7 @@
     </div>
   </header>
   <div class="online hidden" id="online">접속 중…</div>
-  <div id="drunkBar" class="hidden"><span>🍺 취해서 글이 흐리게 보여요. 배틀넷으로 인증하면 술이 깨요</span><button type="button" id="soberGo">술 깨기</button></div>
+  <div id="drunkBar" class="hidden"><span id="drunkTxt">🍺 취해서 글이 흐리게 보여요. 배틀넷으로 인증하면 술이 깨요</span><button type="button" id="soberGo">술 깨기</button></div>
   <div id="scene"><canvas id="sceneCv" role="img" aria-label="여관: 지금 있는 사람들. 옆으로 밀면 침실"></canvas><div id="sceneTabs" role="tablist"><button type="button" role="tab" data-r="0" class="on"><i>🍺</i> 홀<b id="stHall"></b></button><button type="button" role="tab" data-r="1"><i>🛏️</i> 침실<b id="stBed"></b></button></div><button type="button" id="sceneX" aria-label="여관 장면 접기">▴</button></div>
   <div id="pushBar" class="hidden"><span id="pushTxt"></span><button type="button" id="pushGo">알림 켜기</button><button type="button" id="pushX" aria-label="나중에">✕</button></div>
   <div id="list"></div>
@@ -1463,6 +1465,7 @@ function syncComposer(){
   $("botBtn").setAttribute("aria-pressed", botMode?"true":"false");
   $("send").classList.toggle("botmode", botMode && !replyCtx);
   if (replyCtx) return;
+  if (me?.spec) { $("msgInput").placeholder = `눌러서 '${me.name}'(으)로 말 걸기`; return; }
   const inTab = filterTag!=="all";
   const wait = botWaitLeft();
   $("msgInput").placeholder = botMode ? (wait>0 ? `${wait}초 뒤에 물어볼 수 있어요` : "포에버봇에게 물어보기") : inTab ? (isGuest() ? "모집 글은 배틀넷 인증 후에 쓸 수 있어요" : `${TAG_LABEL[filterTag]||""}에 글쓰기`) : "메시지를 입력해 보세요";
@@ -2297,7 +2300,8 @@ function buildChips(){
 }
 
 async function loadHistory(){
-  const { data, error } = await sb.rpc("wow_history", { p_token: me.token, p_channel: channel, p_limit: 250 });
+  const { data, error } = me.spec ? await sb.rpc("wow_spec_history", { p_faction: me.faction, p_limit: 250 })
+    : await sb.rpc("wow_history", { p_token: me.token, p_channel: channel, p_limit: 250 });
   if (error) { toast("불러오기 실패: "+errMsg(error)); return; }
   const map = new Map(cache.map(x=>[x.id,x]));
   data.forEach(m=>map.set(m.id,m));
@@ -2311,7 +2315,8 @@ async function loadHistory(){
 async function subscribe(){
   if (msgSub) sb.removeChannel(msgSub);
   // 진영별 방송 채널: 같은 진영 글은 원문으로, 상대 진영 글은 바뀐 글로 서버가 바로 보내줌
-  const { data: topic, error } = await sb.rpc("wow_topic", { p_token: me.token });
+  const { data: topic, error } = me.spec ? await sb.rpc("wow_spec_topic", { p_faction: me.faction, p_realm: me.realm || "일반" })
+    : await sb.rpc("wow_topic", { p_token: me.token });
   if (error || !topic) { toast("채팅 연결에 실패했어요. 새로고침해 주세요"); return; }
   msgSub = sb.channel(topic)
     .on("broadcast", { event:"msg" }, ({ payload })=>{
@@ -2330,7 +2335,7 @@ async function subscribe(){
     });
 
   if (presence) sb.removeChannel(presence);
-  presence = sb.channel("wow-presence-"+channel, { config: { presence: { key: me.id } } });
+  presence = sb.channel("wow-presence-"+channel, { config: { presence: { key: me.id || ("spec-"+Math.random().toString(36).slice(2)) } } });
   presence.on("presence", { event:"sync" }, ()=>{
     let a=0,h=0;
     onlineUsers = new Map();
@@ -2340,13 +2345,70 @@ async function subscribe(){
     $("online").innerHTML = `<b>●</b> ${me.realm||"일반"} 서버 접속 ${a+h}명 · 얼라이언스 ${a} · 호드 ${h}`;
     syncScene();
     $("onlBtn").textContent = `● ${a+h}`; $("onlBtn").title = `접속 ${a+h}명`; $("onlBtn").dataset.info = `${me.realm||"일반"} 서버 접속 ${a+h}명 · 얼라이언스 ${a} · 호드 ${h}`;
-  }).subscribe(async (s)=>{ if (s==="SUBSCRIBED") await presence.track({ id: me.id, faction: me.faction, name: me.name, cls: me.class, race: me.race, verified: me.verified!==false, level: me.level, realm: me.realm }); });
+  }).subscribe(async (s)=>{ if (s==="SUBSCRIBED" && me && !me.spec) await presence.track({ id: me.id, faction: me.faction, name: me.name, cls: me.class, race: me.race, verified: me.verified!==false, level: me.level, realm: me.realm }); });
 }
+
+/* ---------- 구경 모드: 로그인 없이 바로 여관에. 입력창을 누르는 순간 랜덤 이름 손님으로 등록 ---------- */
+const NAME_ADJ = ["취한","졸린","녹슨","딸꾹대는","길잃은","배고픈","수상한","반짝이는","겁많은","시끄러운","느긋한","엉뚱한","수줍은","용감한","꼬질꼬질한","비틀대는","금간","낡은","축축한","덜익은","콧노래부르는","잠꼬대하는","외로운","신난"];
+const NAME_NOUN = ["멀록","코볼트","해골","늑대","멧돼지","거미","박쥐","곰","랩터","고블린","임프","횃불","곡괭이","양초","방패","단검","지팡이","물약","빵","치즈","버섯","사과","맥주잔","양털","망치","두루마리","생선","닭다리","부츠","망토"];
+const pickOne = (arr) => arr[Math.floor(Math.random() * arr.length)];
+function randName(){
+  for (let i = 0; i < 20; i++) { const n = pickOne(NAME_ADJ) + pickOne(NAME_NOUN); if (n.length <= 12) return n; }
+  return "취한멀록";
+}
+function specIdentity(){
+  try { const o = JSON.parse(ls.get("wowchat_spec") || "null"); if (o && o.name && o.race && o.class) return o; } catch (_) {}
+  const faction = pickOne(["alliance", "horde"]), race = pickOne(RACES[faction]);
+  const o = { name: randName(), faction, race, class: pickOne(CLASSES.filter(c => CLASS_RACES[c].includes(race))), realm: pickOne(["일반", "PvP"]) };
+  ls.set("wowchat_spec", JSON.stringify(o));
+  return o;
+}
+function enterSpec(){
+  track("spec_view");
+  const o = specIdentity();
+  enterChat({ spec: true, id: null, token: null, name: o.name, race: o.race, class: o.class, faction: o.faction, realm: o.realm, level: null, verified: false });
+}
+let joining = null;
+function joinFromSpec(){
+  if (!me?.spec) return Promise.resolve(true);
+  if (joining) return joining;
+  joining = (async () => {
+    const o = me; let name = o.name, data = null, error = null;
+    for (let i = 0; i < 4; i++) {
+      ({ data, error } = await sb.rpc("wow_register", { p_name: name, p_realm: o.realm, p_race: o.race, p_class: o.class }));
+      if (!error || !/이름/.test(error.message || "")) break;
+      name = randName() + (i ? String(Math.floor(Math.random() * 90) + 10) : "");
+      if (name.length > 12) name = name.slice(0, 12);
+    }
+    if (error) { toast(errMsg(error)); return false; }
+    ls.set("wowchat_token", data.token); ls.del("wowchat_spec");
+    track("guest_join");
+    const keep = $("msgInput").value;
+    leaveChat(); enterChat(data);
+    $("msgInput").value = keep; $("msgInput").focus();
+    setTimeout(() => toast(`🍺 '${data.name}'(으)로 들어왔어요 · 이름은 내 정보 → 캐릭터 바꾸기에서 바꿀 수 있어요`), 300);
+    return true;
+  })().finally(() => { joining = null; });
+  return joining;
+}
+// 구경 중: 입력창·글·단추를 누르면 먼저 들어가고, 탭 전환·장면·필터는 그대로
+$("chat").addEventListener("click", (e) => {
+  if (!me?.spec) return;
+  const t = e.target;
+  if (t.closest("#sceneTabs,#sceneX,#chips,#enemySw,#guideBtn,#soberGo,#onlBtn,#newBar,a[href]")) return;
+  if (t.closest("#list")) { e.preventDefault(); e.stopPropagation(); toast(`입력창을 누르면 '${me.name}'(으)로 들어가서 답글을 달 수 있어요`); return; }
+  if (t.closest("#send,#meBtn,#dmBtn,#tipBar")) { e.preventDefault(); e.stopPropagation(); joinFromSpec(); }
+}, true);
+$("msgInput").addEventListener("focus", () => { if (me?.spec) joinFromSpec(); });
 
 function enterChat(player){
   track("chat_enter");
   me = player; channel = chOf(me.realm);
+  const spec = !!me.spec;
   document.body.classList.toggle("guest", isGuest()); $("drunkBar").classList.toggle("hidden", !isGuest());
+  document.body.classList.toggle("spec", spec);
+  $("drunkTxt").textContent = spec ? `👀 구경 중이에요. 입력창을 누르면 '${me.name}'(으)로 들어가요` : "🍺 취해서 글이 흐리게 보여요. 배틀넷으로 인증하면 술이 깨요";
+  $("soberGo").textContent = spec ? "배틀넷 로그인" : "술 깨기";
   cache = []; filterTag = "all"; newFrom = 0; jumpNew = true;
   show("chat");
   innRoster = []; scene.reset(); scene.setMe(me.id); scene.resize(); syncScene(); sceneRun(); loadInn(true);
@@ -2361,10 +2423,11 @@ function enterChat(player){
   $("list").innerHTML = '<div class="empty">불러오는 중…</div>';
   buildChips();
   subscribe();
-  loadNotifs();
-  loadBlocked(); loadDmConvs(); subscribeDm();
   loadEmotes();
   setupTipBar();
+  if (spec) return;
+  loadNotifs();
+  loadBlocked(); loadDmConvs(); subscribeDm();
   pushOnEnter();
   if (!ls.get("wowchat_tip_reply")) { ls.set("wowchat_tip_reply","1"); setTimeout(()=>toast("글을 누르면 답글을 달 수 있어요"), 1800); }
 }
@@ -2658,7 +2721,7 @@ function leaveChat(){
   if (replyCtx) cancelReply(); expanded.clear(); repliesMap.clear(); closeActions();
   if (msgSub) sb.removeChannel(msgSub); if (presence) sb.removeChannel(presence);
   if (dmSub) sb.removeChannel(dmSub);
-  document.body.classList.remove("guest"); $("drunkBar").classList.add("hidden");
+  document.body.classList.remove("guest", "spec"); $("drunkBar").classList.add("hidden");
   scene.setRunning(false); scene.reset();
   msgSub=presence=dmSub=null; me=null; dmWith=null; dmConvs=[]; blocked=new Set(); $("dmDot").classList.add("hidden");
   $("dm").classList.add("hidden"); $("dmChat").classList.add("hidden");
@@ -2802,6 +2865,7 @@ $("iosGuide").onclick = (e) => { if (e.target.id==="iosGuide") $("iosGuide").cla
 
 /* ---------- 여관 장면 ---------- */
 const scene = createScene($("sceneCv"), { classColor: CLASS_COLOR, emoteEmoji: EMOTE_EMOJI, onTap: (a) => {
+  if (me?.spec) { toast(a.bot ? "포에버봇이에요. 배틀넷으로 들어오면 물어볼 수 있어요" : `${a.name} · 들어오면 프로필을 볼 수 있어요`); return; }
   if (a.bot) { if (isGuest()) toast(BOT_NO_DRUNK); else openBotCard(); return; }
   openProfile({ player_id: a.id, sender_name: a.name, sender_class: a.cls, sender_race: a.race, sender_faction: a.faction,
     sender_level: a.level, sender_realm: a.realm, sender_verified: a.verified, tag: "chat" });
@@ -2816,7 +2880,8 @@ let innRoster = [], innAt = 0;
 async function loadInn(force){
   if (!me || (!force && Date.now() - innAt < 5 * 60e3)) return;
   innAt = Date.now();
-  const { data } = await sb.rpc("wow_inn_roster", { p_token: ls.get("wowchat_token") });
+  const { data } = me.spec ? await sb.rpc("wow_spec_roster", { p_realm: me.realm || "일반" })
+    : await sb.rpc("wow_inn_roster", { p_token: ls.get("wowchat_token") });
   if (Array.isArray(data)) { innRoster = data; syncScene(); }
 }
 let sceneOff = ls.get("wowchat_scene_off") === "1";
@@ -2843,9 +2908,10 @@ function syncScene(){
     add({ id: m.player_id, name: m.sender_name, race: m.sender_race, cls: m.sender_class, faction: m.sender_faction,
       verified: m.sender_verified !== false, level: m.sender_level, realm: m.sender_realm, asleep: true });
   }
+  const names = new Set(list.map((p) => p.faction + ":" + p.name));
   for (const u of innRoster) {
     if (list.length >= 90) break;
-    if (muted.has(u.id) || (myFactionOnly && u.faction !== me.faction)) continue;
+    if (muted.has(u.id) || (myFactionOnly && u.faction !== me.faction) || names.has(u.faction + ":" + u.name)) continue;
     add({ id: u.id, name: u.name, race: u.race, cls: u.cls, faction: u.faction, verified: u.verified !== false, level: u.level, realm: u.realm, asleep: true });
   }
   scene.setPeople(list);
@@ -2873,7 +2939,7 @@ function sceneSay(m){
     ls.del("wowchat_token");
   }
   if (await openPickerFromAccount()) return;
-  show("join");
+  enterSpec();
 })();
 </script>
 <script src="/forever/swipe.js" defer></script>
