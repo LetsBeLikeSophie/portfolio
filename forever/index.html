@@ -426,6 +426,7 @@
   /* 알림 */
   .bell{position:relative;background:#0006;border:1px solid var(--line);border-radius:999px;width:34px;height:34px;
     display:grid;place-items:center;color:var(--gold);cursor:pointer;flex:none;padding:0}
+  body.sceneon:not(.kbd) #guideBtn{display:none}
   .gdchip{flex:none;margin-left:auto;margin-right:8px;font-size:12px;font-weight:700;color:var(--gold);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 9px;background:#0006;white-space:nowrap}
   #pushBar{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 12px;background:#1d1710;border-bottom:1px solid var(--line);font-size:13px;line-height:1.4}
   #pushBar.hidden{display:none}
@@ -927,7 +928,7 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
-import { createScene } from "./scene.js?v=10";
+import { createScene } from "./scene.js?v=11";
 
 const SUPABASE_URL = "https://ztxzqvnybiemgbhtrwiw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7";
@@ -2885,6 +2886,7 @@ function botShoo(){
   shooLast = i; scene.say(null, BOT_SHOO[i], { bot: true });
 }
 const scene = createScene($("sceneCv"), { classColor: CLASS_COLOR, emoteEmoji: EMOTE_EMOJI, onTap: (a) => {
+  if (a.shelf) { track("shelf_tap"); location.href = "/forever/classes/"; return; }
   if (a.bot && isGuest()) { botShoo(); return; }
   if (me?.spec) { toast(`${a.name} · 들어오면 프로필을 볼 수 있어요`); return; }
   if (a.bot) { openBotCard(); return; }
@@ -2908,6 +2910,7 @@ async function loadInn(force){
 let sceneOff = ls.get("wowchat_scene_off") === "1";
 function sceneRun(){
   $("scene").classList.toggle("off", sceneOff);
+  document.body.classList.toggle("sceneon", !sceneOff);
   $("sceneX").textContent = sceneOff ? "🍺 여관 보기 ▾" : "▴";
   $("sceneX").setAttribute("aria-label", sceneOff ? "여관 장면 펼치기" : "여관 장면 접기");
   scene.setRunning(!!me && !sceneOff && !$("chat").classList.contains("hidden") && document.visibilityState === "visible");
