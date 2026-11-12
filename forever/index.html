@@ -438,34 +438,35 @@
   #guildPane{flex:1;min-height:0;overflow-y:auto;padding:10px 12px calc(16px + env(safe-area-inset-bottom));background:#100c08;-webkit-overflow-scrolling:touch}
   body:not(.gtab) #guildPane{display:none}
   body.gtab #list, body.gtab #send, body.gtab #tipBar, body.gtab #replyBar, body.gtab #photoBar{display:none!important}
-  .plaza{position:relative;border:3px solid #4a2f17;border-radius:4px;margin:0 0 12px;box-shadow:0 0 0 1px #c9a25a55,0 6px 14px #000a;
-    background:repeating-linear-gradient(90deg,#0000000f 0 6px,transparent 6px 12px),repeating-linear-gradient(0deg,#0000000c 0 6px,transparent 6px 12px),
-      linear-gradient(#1c2740 0,#2c3a5a 26px,#3b5a2a 27px,#33502a 30px,#2b4422 100%)}
-  .plaza .ptitle{padding:6px 0 0;text-align:center;font:11px Galmuri11,system-ui,sans-serif;color:#f0d48a;text-shadow:1px 1px 0 #000}
-  .phint{min-height:15px;text-align:center;font-size:11.5px;color:#ffffffa0;margin-top:2px}
+  .plaza{position:relative;margin:0 0 12px;border:3px solid #4a2f17;box-shadow:0 0 0 1px #c9a25a66,0 6px 14px #000c;
+    background:#2c4520 center/100% 100% no-repeat;image-rendering:pixelated}
+  .plaza .ptitle{display:table;margin:6px auto 0;padding:4px 9px;background:#0d0906d9;border:2px solid #4a2f17;border-radius:3px;
+    font:11px Galmuri11,system-ui,sans-serif;line-height:1;color:#e6c36a}
+  .phint{min-height:14px;text-align:center;font:11px Galmuri11,system-ui,sans-serif;color:#e8dcc0;text-shadow:1px 1px 0 #000,-1px 0 0 #000;margin-top:5px}
   .field{position:relative;height:290px;margin:0 6px 6px;cursor:crosshair;-webkit-tap-highlight-color:transparent}
   .post{all:unset;position:absolute;width:31%;max-width:120px;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
-  .post.horde{--fc:#b8322a} .post.ally{--fc:#2f62b8}
+  .post.horde{--fc:#a8302a} .post.ally{--fc:#2f5aa8}
   .post.mine{touch-action:none}
-  .post.drag{z-index:300!important;filter:drop-shadow(0 10px 8px #000a)}
-  .post.drag .bd{transform:rotate(0deg) scale(1.06)}
+  .post.drag{z-index:300!important}
+  .post.drag .bd{translate:0 -6px;box-shadow:inset 0 3px 0 #e0b878,inset 0 -3px 0 #8a5a30,6px 9px 0 #0007}
   .gbtn.plant{display:block;width:100%;margin-top:12px;padding:12px;font-size:15px}
   .gbtn:disabled{opacity:.45}
-  .post .bd{position:relative;width:100%;box-sizing:border-box;min-height:66px;padding:5px 4px 5px;background:#e3c58a;color:#3a2410;border:2px solid #2a1a0d;border-top:6px solid var(--fc,#2a1a0d);
-    box-shadow:inset 0 0 0 2px #f3dca8,inset 0 -3px 0 #c9a46a,3px 3px 0 #0007;text-align:center;font-family:Galmuri11,system-ui,sans-serif;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transform:rotate(var(--tilt,0deg))}
-  .post .cr{font-size:20px;line-height:1}
-  .post .gn{max-width:100%;font-size:12px;line-height:1.25;word-break:keep-all;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .post .bd{position:relative;width:100%;box-sizing:border-box;min-height:66px;padding:4px 3px;color:#2a1608;
+    background:#c99a5c repeating-linear-gradient(180deg,transparent 0 12px,#a87a40 12px 15px);
+    border:3px solid #1a110a;border-top:6px solid var(--fc,#1a110a);box-shadow:inset 0 3px 0 #e0b878,inset 0 -3px 0 #8a5a30,3px 3px 0 #0008;
+    text-align:center;font-family:Galmuri11,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .post .cr{font-size:18px;line-height:1}
+  .post .gn{max-width:100%;font-size:11px;line-height:1.3;word-break:keep-all;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .post .ti{font-size:10px;line-height:1;letter-spacing:-1px}
-  .post .ch{position:absolute;top:-9px;right:-7px;font:700 10px system-ui;background:#1a110a;color:#ffd36a;border:1px solid #6b4524;border-radius:8px;padding:1px 4px}
-  .post .pole{width:6px;height:20px;background:linear-gradient(90deg,#5a3a1c 0 2px,#8a5a30 2px 4px,#5a3a1c 4px);border:1px solid #1a110a;border-top:0}
-  .post .dirt{width:24px;height:5px;background:#3a2a16;border-radius:50%;margin-top:-2px}
-  .post.enemy .bd{background:#cdb68a;filter:saturate(.7) brightness(.9)}
-  .post.enemy .gn{font-style:italic;opacity:.8}
-  .post.mine .bd{box-shadow:inset 0 0 0 2px #f3dca8,0 0 0 2px #ffd36a,3px 3px 0 #0007}
-  .post.hot .bd{animation:hot 1.6s ease-in-out infinite}
-  @keyframes hot{50%{filter:brightness(1.12) drop-shadow(0 0 6px #ffd36a)}}
-  .post.old .bd::before{content:"🕸️";position:absolute;top:-7px;left:-7px;font-size:15px}
+  .post .ch{position:absolute;top:-12px;right:-9px;font:10px Galmuri11,system-ui,sans-serif;line-height:1;background:#1a110a;color:#ffd36a;border:2px solid #6b4524;padding:2px 3px}
+  .post .pole{width:6px;height:21px;background:#6b4423;border:3px solid #1a110a;border-top:0;box-shadow:inset 3px 0 0 #8a5a30}
+  .post .dirt{width:18px;height:6px;background:#3a2a16;box-shadow:6px 0 0 #3a2a16,-6px 0 0 #3a2a16,0 3px 0 #0004;margin-top:-3px}
+  .post.enemy .bd{filter:saturate(.55) brightness(.82)}
+  .post.enemy .gn{opacity:.85}
+  .post.mine .bd{outline:3px solid #ffd36a}
+  .post.hot .bd{animation:hot 1.2s steps(2) infinite}
+  @keyframes hot{50%{filter:brightness(1.18)}}
+  .post.old .bd::before{content:"🕸️";position:absolute;top:-9px;left:-9px;font-size:15px}
   .gcard.enemy{opacity:.92}
   .gbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
   .gbox h3{margin:0 0 8px;font-size:15px;color:var(--gold)}
@@ -1052,7 +1053,7 @@ const TAGS = [
 ];
 const TAG_LABEL = Object.fromEntries(TAGS.map(t => [t.id, t.label]));
 // 위쪽 탭은 전체 · 파티 · 길드만. 잡담·질문·거래는 따로 나누지 않고 전체에서 (예전 글의 말머리는 그대로 둠)
-const TAB_TAGS = ["party","guild"].map(id => TAGS.find(t => t.id===id));
+const TAB_TAGS = ["guild"].map(id => TAGS.find(t => t.id===id));   // 파티 탭은 없앰 (예전 파티 글은 전체에)
 
 // 블리자드 공식 아이콘 서버 (불러오지 못하면 글자 배지로 대체)
 const ICON = (n) => `https://render.worldofwarcraft.com/us/icons/56/${n}.jpg`;
@@ -3155,6 +3156,37 @@ function refreshGuildViews(){
   const gp = $("gpop"); if (!gp.classList.contains("hidden")) { const id = gp.querySelector(".gcard")?.dataset.id; if (id) openGad(id); }
   if (!$("prof").classList.contains("hidden") && profFor) { const a = gads.find((x) => x.id === profFor.player_id); const pg = $("pGuild"); pg.innerHTML = ""; if (a) pg.appendChild(guildCard(a, true)); }
 }
+// 광장 배경 (도트 한 칸 = 3px, 여관 장면과 같은 색)
+let plazaBgCache = { key: "", url: "" };
+function plazaBg(w, h){
+  const W = Math.max(40, Math.ceil(w / 3)), H = Math.max(40, Math.ceil(h / 3)), key = W + "x" + H;
+  if (plazaBgCache.key === key) return plazaBgCache.url;
+  const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
+  const P = (x, y, ww, hh, col) => { g.fillStyle = col; g.fillRect(x, y, ww, hh); };
+  let sd = 3; const R = () => (sd = (sd * 9301 + 49297) % 233280) / 233280;
+  const hz = Math.round(H * 0.2);
+  const sky = ["#121527", "#161a30", "#1a1f38", "#1f2440", "#22283f"];
+  for (let y = 0; y < hz; y++) P(0, y, W, 1, sky[Math.min(sky.length - 1, Math.floor(y / hz * sky.length))]);
+  for (let i = 0; i < W / 6; i++) P(Math.floor(R() * W), Math.floor(R() * (hz - 4)), 1, 1, R() < 0.3 ? "#fff3b0" : "#cfd8ff");
+  { const mx = W - 20, my = 3, disc = (ox, col) => { P(mx + ox + 1, my, 3, 1, col); P(mx + ox, my + 1, 5, 3, col); P(mx + ox + 1, my + 4, 3, 1, col); };
+    disc(0, "#f3eac0"); disc(2, "#121527"); }   // 초승달
+  for (let x = 0; x < W; x++) { const t = Math.max(1, Math.round(3 + 2 * Math.sin(x / 7) + Math.sin(x / 3.1))); P(x, hz - t, 1, t, "#121812"); }
+  P(0, hz, W, H - hz, "#2c4520");
+  for (let y = hz; y < H; y++) for (let x = y % 2; x < W; x += 2) if (R() < 0.16) P(x, y, 1, 1, "#33502a");
+  for (let i = 0; i < W * H / 45; i++) { const x = Math.floor(R() * W), y = hz + 3 + Math.floor(R() * (H - hz - 3)); P(x, y, 1, 2, "#3f6a2c"); P(x + 1, y + 1, 1, 1, "#22361a"); }
+  for (let i = 0; i < 5; i++) { const x = Math.floor(R() * (W - 10)), y = hz + 8 + Math.floor(R() * (H - hz - 12)); P(x + 1, y - 1, 6, 1, "#4a3a22"); P(x, y, 8, 2, "#4a3a22"); P(x + 1, y + 2, 6, 1, "#4a3a22"); }
+  P(0, hz - 3, W, 1, "#6b4423"); P(0, hz - 1, W, 1, "#5a3a1c");   // 울타리
+  for (let x = 1; x < W; x += 6) { P(x, hz - 5, 2, 6, "#1a110a"); P(x, hz - 5, 1, 5, "#8a5a30"); }
+  for (const tx of [4, W - 6]) {   // 횃불
+    P(tx, hz - 3, 2, 11, "#4a2f17"); P(tx - 1, hz - 5, 4, 2, "#1a110a"); P(tx, hz - 7, 2, 2, "#ff8a2a"); P(tx, hz - 8, 1, 1, "#ffd36a"); P(tx + 1, hz - 6, 1, 1, "#ffd36a");
+    const gr = g.createRadialGradient(tx + 1, hz - 6, 0, tx + 1, hz - 6, Math.max(W, H) * 0.42);
+    gr.addColorStop(0, "rgba(255,170,80,.24)"); gr.addColorStop(1, "rgba(255,170,80,0)"); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  }
+  const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.75);
+  vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.45)"); g.fillStyle = vg; g.fillRect(0, 0, W, H);
+  plazaBgCache = { key, url: c.toDataURL() };
+  return plazaBgCache.url;
+}
 function renderGuild(){
   const pane = $("guildPane"); if (!me) return;
   const keep = pane.scrollTop; pane.innerHTML = "";
@@ -3172,7 +3204,6 @@ function renderGuild(){
     const old = new Date(a.expires_at) - Date.now() < 864e5;
     b.classList.toggle("mine", !!a.mine); b.classList.toggle("enemy", !!a.enemy); b.classList.toggle("old", old); b.classList.toggle("hot", (a.cheers || 0) >= 3);
     b.style.left = `${(a.px ?? 0.5) * 100}%`; b.style.top = `${(a.py ?? 0.6) * 100}%`; b.style.zIndex = String(Math.round((a.py ?? 0.6) * 100));
-    b.style.setProperty("--tilt", `${((hashStr(a.id) % 5) - 2) * 0.8}deg`);
     const bd = document.createElement("div"); bd.className = "bd";
     const cr = document.createElement("span"); cr.className = "cr"; cr.textContent = a.crest || "🏰";
     const gn = document.createElement("span"); gn.className = "gn"; gn.textContent = a.guild;
@@ -3214,6 +3245,7 @@ function renderGuild(){
     openSignEditor({ x: fx, y: fy });
   };
   pz.append(tt, hint, field); pane.appendChild(pz);
+  pz.style.backgroundImage = `url(${plazaBg(pz.clientWidth, pz.clientHeight)})`;
   // 등불: 길드 찾는 중
   const box = document.createElement("div"); box.className = "gbox";
   if (!canAct()) {
