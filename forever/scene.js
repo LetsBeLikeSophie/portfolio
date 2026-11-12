@@ -2,7 +2,7 @@
 // 그림은 모두 코드로 찍은 우리 도트예요 (게임 그림을 가져오지 않음). 종족은 키·귀·뿔·피부색, 직업은 옷 색, 진영은 망토 색.
 // 포에버봇은 로봇 머리를 한 작은 요정으로 바 위를 떠다녀요.
 
-import { buildSprite, buildFairy, GW, FEET, CX } from "./sprites.js?v=2";
+import { buildSprite, buildFairy, buildDrunk, GW, FEET, CX } from "./sprites.js?v=4";
 
 const PX = 3;              // 화면 1px 도트 = CSS 3px
 const FPS = 20;
@@ -19,7 +19,7 @@ export function createScene(canvas, opts = {}) {
   let W = 120, H = 70, wallH = 30, barW = 26, dpr = 1, k = PX;
   const people = new Map();     // id → 캐릭터
   const bot = { x: 12, y: 20, bubble: null };
-  let meId = null, running = false, raf = 0, last = 0, firstFill = true, fire = [];
+  let meId = null, running = false, raf = 0, last = 0, firstFill = true, bg = null;
 
   /* ---------- 크기 ---------- */
   function resize() {
@@ -29,13 +29,14 @@ export function createScene(canvas, opts = {}) {
     canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
     W = Math.max(60, Math.floor(r.width / PX)); H = Math.max(40, Math.floor(r.height / PX));
     low.width = W; low.height = H; k = PX * dpr;
-    wallH = Math.round(H * 0.4); barW = Math.max(20, Math.min(34, Math.round(W * 0.2)));
+    wallH = Math.round(H * 0.4); barW = 20;
+    bg = makeBg();
     for (const a of people.values()) clampPos(a);
     draw(performance.now());
   }
   const ro = new ResizeObserver(resize); ro.observe(canvas);
 
-  const area = () => ({ x0: barW + 5, x1: W - 6, y0: wallH + 9, y1: H - 3 });
+  const area = () => ({ x0: 8, x1: W - 8, y0: wallH + 10, y1: H - 3 });
   function clampPos(a) {
     const r = area();
     a.x = Math.min(r.x1, Math.max(r.x0, a.x)); a.y = Math.min(r.y1, Math.max(r.y0, a.y));
@@ -43,23 +44,23 @@ export function createScene(canvas, opts = {}) {
   }
   function restSpot(a) {
     const r = area(), h = hash(a.id);
-    return { x: r.x0 + (h % Math.max(1, r.x1 - r.x0)), y: r.y0 + ((h >> 8) % 3) };
+    return { x: r.x0 + 6 + (h % Math.max(1, r.x1 - r.x0 - 12)), y: r.y0 + 4 + ((h >> 8) % Math.max(1, r.y1 - r.y0 - 4)) };
   }
 
   /* ---------- 사람 목록 ---------- */
   function upsert(p, { walkIn = false } = {}) {
-    let a = people.get(p.id);
+    let a = people.get(p.id); const isNew = !a;
     if (!a) {
       const r = area(), h = hash(p.id);
       a = { id: p.id, seed: (h % 1000) / 160, nextMove: performance.now() + rnd(500, 4000), dir: h & 1 ? 1 : -1, alpha: 0, gone: false };
       if (walkIn) { a.x = W + 4; a.y = rnd(r.y0, r.y1); a.tx = rnd(r.x0 + 10, r.x1 - 6); a.ty = a.y; a.dir = -1; }
-      else { a.x = rnd(r.x0, r.x1); a.y = rnd(r.y0, r.y1); a.tx = a.x; a.ty = a.y; }
+      else { a.x = rnd(r.x0, r.x1); a.y = rnd(r.y0, r.y1); a.tx = a.x; a.ty = a.y; if (firstFill) a.alpha = 1; }
       people.set(p.id, a);
     }
     Object.assign(a, { name: p.name, race: p.race, cls: p.cls, faction: p.faction, verified: p.verified !== false,
       level: p.level, realm: p.realm, gone: false });
     const wasAsleep = a.asleep; a.asleep = !!p.asleep;
-    if (a.asleep && !wasAsleep) { const s = restSpot(a); a.tx = s.x; a.ty = s.y; }
+    if (a.asleep && !wasAsleep) { const s = restSpot(a); a.tx = s.x; a.ty = s.y; if (isNew) { a.x = s.x; a.y = s.y; } }
     if (!a.asleep && wasAsleep) a.nextMove = performance.now() + rnd(300, 1500);
     return a;
   }
@@ -92,7 +93,7 @@ export function createScene(canvas, opts = {}) {
   function step(dt, now) {
     const r = area();
     for (const a of [...people.values()]) {
-      a.alpha = a.gone ? Math.max(0, a.alpha - dt * 1.5) : Math.min(a.asleep ? 0.55 : 1, a.alpha + dt * 2);
+      a.alpha = a.gone ? Math.max(0, a.alpha - dt * 1.5) : Math.min(1, a.alpha + dt * 2);
       if (a.gone && a.alpha <= 0) { people.delete(a.id); continue; }
       if (a.bubble && a.bubble.until < now) a.bubble = null;
       if (a.emote && a.emote.until < now) a.emote = null;
@@ -112,44 +113,28 @@ export function createScene(canvas, opts = {}) {
     bot.x = barW / 2 + Math.sin(now / 1700) * 3; bot.y = wallH - 1 + Math.sin(now / 420) * 1.5;
   }
 
-  /* ---------- 그리기 (저해상도 도트) ---------- */
-  const px = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, h); };
-  function room(now) {
-    // 벽 (나무 판자)
-    px(0, 0, W, wallH, "#3a2716");
-    for (let x = 3; x < W; x += 8) px(x, 0, 1, wallH, "#2f1f11");
-    px(0, 0, W, 2, "#24170c"); px(0, wallH - 1, W, 1, "#1d130a");
-    // 바닥
-    px(0, wallH, W, H - wallH, "#2b1d11");
-    for (let y = wallH + 4; y < H; y += 5) px(0, y, W, 1, "#24180e");
-    // 창문 (밤하늘)
-    const wx = Math.round(W * 0.42), wy = 5;
-    px(wx - 1, wy - 1, 16, 12, "#5a3d22"); px(wx, wy, 14, 10, "#1b2747");
-    px(wx + 7, wy, 1, 10, "#5a3d22"); px(wx, wy + 5, 14, 1, "#5a3d22");
-    px(wx + 10, wy + 2, 2, 2, "#f3ecc8"); px(wx + 2, wy + 7, 1, 1, "#cfd8ff"); px(wx + 4, wy + 2, 1, 1, "#cfd8ff");
-    // 진영 깃발 둘
-    const fx = wx + 22;
-    if (fx + 16 < W - 24) {
-      px(fx, 4, 6, 10, "#2f5fb3"); px(fx, 4, 6, 1, "#e6c36a"); px(fx + 2, 7, 2, 3, "#e6c36a"); px(fx + 1, 14, 1, 1, "#2f5fb3"); px(fx + 4, 14, 1, 1, "#2f5fb3");
-      px(fx + 9, 4, 6, 10, "#9b2323"); px(fx + 9, 4, 6, 1, "#1c1c1c"); px(fx + 11, 7, 2, 3, "#1c1c1c"); px(fx + 10, 14, 1, 1, "#9b2323"); px(fx + 13, 14, 1, 1, "#9b2323");
-    }
-    // 벽난로 (오른쪽)
-    const hx = W - 20, hy = wallH - 15;
-    px(hx - 2, hy - 2, 18, 19, "#5b5650"); px(hx - 2, hy - 2, 18, 2, "#6d675f");
-    px(hx + 2, hy + 4, 10, 11, "#120c08");
-    if (fire.length === 0 || Math.random() < 0.35) {
-      fire = [];
-      for (let i = 0; i < 12; i++) fire.push([hx + 3 + Math.floor(Math.random() * 8), hy + 8 + Math.floor(Math.random() * 7), Math.random()]);
-    }
-    for (const [x, y, c] of fire) px(x, y, 1, 1, c < 0.4 ? "#ffd84a" : c < 0.8 ? "#ff8a2a" : "#d23a1a");
-    px(hx + 3, hy + 14, 8, 1, "#ffb347");
-    // 바 (왼쪽): 선반·병·카운터
-    px(0, wallH - 16, barW, 1, "#5a3d22");
-    const bottles = ["#3f8f4f", "#8a2f2f", "#c9a24c", "#2f6f9f", "#6b3f8f"];
-    for (let i = 0, x = 2; x < barW - 2; x += 4, i++) { const c = bottles[i % bottles.length]; px(x, wallH - 20, 2, 4, c); px(x + 0.5, wallH - 21, 1, 1, c); }
-    px(0, wallH + 1, barW, 2, "#8a5a32"); px(0, wallH + 3, barW, 8, "#5a3a1e");
-    for (let x = 4; x < barW; x += 6) px(x, wallH + 4, 1, 6, "#4a2f17");
-    px(barW - 6, wallH - 1, 3, 2, "#c9a24c"); px(barW - 6, wallH - 2, 3, 1, "#fff3d6");   // 맥주잔
+  /* ---------- 배경: 움직이지 않는 부드러운 그림 한 장 (크기 바뀔 때만 다시) ---------- */
+  function makeBg() {
+    const b = document.createElement("canvas"); b.width = canvas.width; b.height = canvas.height;
+    const c = b.getContext("2d"), wy = wallH * k, cw = b.width, ch = b.height;
+    let gr = c.createLinearGradient(0, 0, 0, wy);
+    gr.addColorStop(0, "#22170d"); gr.addColorStop(1, "#3b2817");
+    c.fillStyle = gr; c.fillRect(0, 0, cw, wy);
+    c.fillStyle = "rgba(0,0,0,.13)";
+    for (let x = 18 * dpr; x < cw; x += 34 * dpr) c.fillRect(x, 0, 1.5 * dpr, wy);
+    gr = c.createLinearGradient(0, wy, 0, ch);
+    gr.addColorStop(0, "#33231a"); gr.addColorStop(1, "#1b120b");
+    c.fillStyle = gr; c.fillRect(0, wy, cw, ch - wy);
+    c.fillStyle = "rgba(0,0,0,.35)"; c.fillRect(0, wy, cw, 2 * dpr);
+    c.fillStyle = "rgba(255,255,255,.04)"; c.fillRect(0, wy + 2 * dpr, cw, 1 * dpr);
+    // 따뜻한 불빛
+    gr = c.createRadialGradient(cw * 0.78, wy * 0.9, 0, cw * 0.78, wy * 0.9, Math.max(cw, ch) * 0.6);
+    gr.addColorStop(0, "rgba(255,170,80,.16)"); gr.addColorStop(1, "rgba(255,170,80,0)");
+    c.fillStyle = gr; c.fillRect(0, 0, cw, ch);
+    gr = c.createRadialGradient(cw / 2, ch / 2, Math.min(cw, ch) * 0.3, cw / 2, ch / 2, Math.max(cw, ch) * 0.75);
+    gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,.35)");
+    c.fillStyle = gr; c.fillRect(0, 0, cw, ch);
+    return b;
   }
 
   // 그림은 한 번 만들어 두고 재사용 (종족·직업·진영·자세·취함)
@@ -165,9 +150,30 @@ export function createScene(canvas, opts = {}) {
     else { g.save(); g.scale(-1, 1); g.drawImage(sp.can, -(x + CX + 1) + 0, y - FEET); g.restore(); }
   }
   function person(a, now) {
+    // 취객(손님)은 종족과 상관없이 술 취한 유령
+    if (!a.verified) {
+      const sleep = a.asleep && !a.walking, fr = Math.floor(now / 260) % 2;
+      const key = "drunk|" + (sleep ? "s" : fr);
+      let sp = cache.get(key); if (!sp) { sp = buildDrunk(sleep ? 0 : fr, sleep); cache.set(key, sp); }
+      const x = Math.round(a.x + (sleep ? 0 : Math.sin(now / 380 + a.seed) * 1.6));
+      const y = Math.round(a.y - 2 + (sleep ? 0 : Math.sin(now / 520 + a.seed) * 1.5));
+      g.globalAlpha = a.alpha * 0.25; g.fillStyle = "#000"; g.fillRect(Math.round(a.x) - 5, Math.round(a.y) + 1, 11, 1);
+      g.globalAlpha = a.alpha; drawSprite(sp, x, y, a.dir || 1); g.globalAlpha = 1;
+      a.h = FEET - sp.top + 2;
+      return y - (FEET - sp.top);
+    }
+    if (a.asleep && !a.walking) {
+      const sp = spriteOf(a, "sleep"), x = Math.round(a.x), y = Math.round(a.y);
+      g.globalAlpha = a.alpha * 0.3; g.fillStyle = "#000"; g.fillRect(x - 13, y + 1, 26, 1);
+      g.globalAlpha = a.alpha;
+      g.save(); g.translate(x, y); g.rotate(-Math.PI / 2);
+      g.drawImage(sp.can, -(CX - 7), 11 - FEET);
+      g.restore(); g.globalAlpha = 1;
+      a.h = 14;
+      return y - 14;
+    }
     let pose = "stand";
-    if (a.asleep) pose = "sit";
-    else if (a.emote && /(인사|안녕|손|경례|환영|작별|잘가)/.test(a.emote.key)) pose = Math.floor(now / 220) % 2 ? "wave" : "stand";
+    if (a.emote && /(인사|안녕|손|경례|환영|작별|잘가)/.test(a.emote.key)) pose = Math.floor(now / 220) % 2 ? "wave" : "stand";
     else if (a.walking) pose = Math.floor(now / 170) % 2 ? "walk1" : "walk2";
     const sp = spriteOf(a, pose);
     let x = Math.round(a.x), y = Math.round(a.y);
@@ -230,23 +236,36 @@ export function createScene(canvas, opts = {}) {
   function draw(now) {
     if (!low.width) return;
     g.clearRect(0, 0, W, H);
-    room(now);
     const list = [...people.values()].sort((a, b) => a.y - b.y);
     const tops = new Map();
     for (const a of list) tops.set(a.id, person(a, now));
     const fairyTop = fairy(now);
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (bg) ctx.drawImage(bg, 0, 0);
     ctx.drawImage(low, 0, 0, W * k, H * k);
     // 이름표
     for (const a of list) {
       if (a.alpha <= 0.05) continue;
       const top = tops.get(a.id) - 1;
-      label(a.x * k, top * k, a.name || "", classColor[a.cls] || "#ddd", a.asleep, a.id === meId);
-      if (a.asleep) {
-        const t = (now / 900 + a.seed) % 1;
-        ctx.font = `700 ${9 * dpr}px system-ui`; ctx.fillStyle = `rgba(200,210,255,${0.8 - t * 0.7})`;
-        ctx.fillText("z", (a.x + 3 + t * 3) * k, (top - 3 - t * 5) * k);
+      label(a.x * k, top * k, a.name || "", a.verified ? (classColor[a.cls] || "#ddd") : "#d9d3ff", false, a.id === meId);
+      if (!a.verified && !a.asleep) {   // 가끔 딸꾹!
+        const ph = (now / 1000 + a.seed * 3) % 7;
+        if (ph < 1.2) {
+          ctx.font = `800 ${10 * dpr}px system-ui`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+          ctx.fillStyle = `rgba(255,179,193,${1 - ph / 1.2})`;
+          ctx.fillText("딸꾹!", (a.x + 6) * k, top * k - (11 + ph * 8) * dpr);
+        }
+      }
+      if (a.asleep && !a.walking) {
+        ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+        for (let i = 0; i < 3; i++) {
+          const t = ((now / 1400 + a.seed) + i / 3) % 1;
+          ctx.font = `800 ${(8 + i * 0 + t * 5) * dpr}px system-ui`;
+          ctx.fillStyle = `rgba(190,205,255,${Math.min(1, 1.2 - t)})`;
+          const zx = a.verified ? a.x - 12 : a.x + 7, zy = a.verified ? a.y - 8 : top + 3;
+          ctx.fillText("Z", (zx - t * 4) * k, (zy - t * 9) * k);
+        }
       }
       if (a.emote && emoteEmoji[a.emote.key]) {
         ctx.font = `${16 * dpr}px system-ui`; ctx.textAlign = "center";
@@ -278,7 +297,8 @@ export function createScene(canvas, opts = {}) {
     if (Math.abs(lx - bot.x) < 9 && ly > bot.y - 18 && ly < bot.y + 3) { opts.onTap?.({ bot: true }); return; }
     const list = [...people.values()].filter((a) => a.alpha > 0.3).sort((a, b) => b.y - a.y);
     for (const a of list) {
-      if (Math.abs(lx - a.x) < 8 && ly <= a.y + 2 && ly >= a.y - (a.h || 22) - 2) { opts.onTap?.(a); return; }
+      const hw = a.asleep && !a.walking ? 14 : 8;
+      if (Math.abs(lx - a.x) < hw && ly <= a.y + 2 && ly >= a.y - (a.h || 22) - 2) { opts.onTap?.(a); return; }
     }
   });
 

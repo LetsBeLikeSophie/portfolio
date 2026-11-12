@@ -680,11 +680,7 @@
 
     <!-- 손님(취객) 입장 -->
     <div id="guestBox" class="hidden">
-      <p class="gi">🍺 <b>취객</b>으로 들어가요. 술이 덜 깨서 같은 진영 글도 군데군데 <b>흐리게</b> 보이고, 말하면 <b>*딸꾹*</b>이 섞여요.<br>포에버봇은 취한 손님을 상대하지 않아요. 귓속말·파티 모집·사진·알림도 배틀넷으로 인증하면 열려요.</p>
-      <label>진영</label><div class="seg" id="gFac"></div>
-      <label>종족</label><div class="seg" id="gRace"></div>
-      <label>직업</label><div class="seg cls" id="gCls"></div>
-      <label>서버</label><div class="seg" id="gRealm"></div>
+      <p class="gi">🍺 <b>이름만 정하면 들어가요.</b> 진영·종족·직업·서버는 술김에 <b>랜덤</b>으로 정해져요 🎲 여관에서는 <b>술 취한 유령</b> 👻으로 보여요.<br>취해서 같은 진영 글도 군데군데 흐리게 보이고, 말하면 <b>*딸꾹*</b>이 섞여요. 포에버봇은 취한 손님을 상대하지 않아요. 귓속말·파티 모집·사진·알림은 배틀넷으로 인증하면 열려요.</p>
       <label for="gName">이름</label><input id="gName" maxlength="12" placeholder="2~12자, 한글·영문·숫자" autocomplete="off" enterkeyhint="go">
       <div class="err" id="gErr"></div>
       <button class="btn" id="gGo" type="button" style="margin-top:6px">🍺 입장하기</button>
@@ -915,7 +911,7 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
-import { createScene } from "./scene.js?v=2";
+import { createScene } from "./scene.js?v=4";
 
 const SUPABASE_URL = "https://ztxzqvnybiemgbhtrwiw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7";
@@ -1081,37 +1077,25 @@ const CLASS_RACES = {
   "흑마법사":["오크","언데드","트롤","인간","노움"],
   "드루이드":["타우렌","바람구체자 스카이본","나이트 엘프","고등 마법원 스카이본"],
 };
-const G = { fac:null, race:null, cls:null, realm:null };
-function segBtns(id, items, cur, onPick, hint){
-  const box=$(id); box.innerHTML="";
-  if (!items.length){ const h=document.createElement("span"); h.className="hint"; h.textContent=hint||""; box.appendChild(h); return; }
-  items.forEach(([v,label])=>{ const b=document.createElement("button"); b.type="button"; b.textContent=label;
-    if (v===cur) b.classList.add("on"); if (CLASS_COLOR[v]) b.style.setProperty("--cc", CLASS_COLOR[v]);
-    b.onclick=()=>onPick(v); box.appendChild(b); });
-}
-function renderGuest(){
-  segBtns("gFac", [["alliance","얼라이언스"],["horde","호드"]], G.fac, v=>{ G.fac=v; if (!RACES[v].includes(G.race)) { G.race=null; G.cls=null; } renderGuest(); });
-  segBtns("gRace", G.fac ? RACES[G.fac].map(r=>[r, r.replace(/^(고등 마법원|바람구체자) /,"")]) : [], G.race,
-    v=>{ G.race=v; if (G.cls && !CLASS_RACES[G.cls].includes(v)) G.cls=null; renderGuest(); }, "진영을 먼저 골라 주세요");
-  segBtns("gCls", G.race ? CLASSES.filter(c=>CLASS_RACES[c].includes(G.race)).map(c=>[c,c]) : [], G.cls,
-    v=>{ G.cls=v; renderGuest(); }, "종족을 먼저 골라 주세요");
-  segBtns("gRealm", [["일반","일반"],["PvP","PvP (전쟁)"]], G.realm, v=>{ G.realm=v; renderGuest(); });
-}
-$("guestBtn").onclick = () => { track("guest_open"); $("altBox").classList.add("hidden"); $("guestBox").classList.remove("hidden"); $("gErr").textContent=""; renderGuest(); };
+$("guestBtn").onclick = () => { track("guest_open"); $("altBox").classList.add("hidden"); $("guestBox").classList.remove("hidden"); $("gErr").textContent=""; setTimeout(()=>$("gName").focus(), 50); };
 $("gBack").onclick = () => showAlt();
 $("gName").onkeydown = (e) => { if (e.key==="Enter") $("gGo").click(); };
 $("gGo").onclick = async () => {
   $("gErr").textContent = "";
   const name = $("gName").value.trim();
-  if (!G.fac || !G.race || !G.cls || !G.realm) { $("gErr").textContent = "진영·종족·직업·서버를 모두 골라 주세요"; return; }
   if (name.length < 2) { $("gErr").textContent = "이름을 2자 이상 정해 주세요"; $("gName").focus(); return; }
+  // 진영·종족·직업·서버는 랜덤
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const fac = pick(["alliance", "horde"]), race = pick(RACES[fac]);
+  const cls = pick(CLASSES.filter(c => CLASS_RACES[c].includes(race))), realm = pick(["일반", "PvP"]);
   $("gGo").disabled = true;
-  const { data, error } = await sb.rpc("wow_register", { p_name: name, p_realm: G.realm, p_race: G.race, p_class: G.cls });
+  const { data, error } = await sb.rpc("wow_register", { p_name: name, p_realm: realm, p_race: race, p_class: cls });
   $("gGo").disabled = false;
   if (error) { $("gErr").textContent = errMsg(error); return; }
   ls.set("wowchat_token", data.token);
   track("guest_join");
   enterChat(data);
+  setTimeout(() => toast(`🎲 ${fac === "alliance" ? "얼라이언스" : "호드"} ${race} ${cls}(으)로 정해졌어요 · ${realm} 서버`), 600);
 };
 const isGuest = () => !!me && me.verified === false;
 const VBADGE = '<svg class="vbadge" viewBox="0 0 24 24" aria-label="배틀넷 인증" role="img"><polygon points="12.00,1.00 14.48,2.73 17.50,2.47 18.79,5.21 21.53,6.50 21.27,9.52 23.00,12.00 21.27,14.48 21.53,17.50 18.79,18.79 17.50,21.53 14.48,21.27 12.00,23.00 9.52,21.27 6.50,21.53 5.21,18.79 2.47,17.50 2.73,14.48 1.00,12.00 2.73,9.52 2.47,6.50 5.21,5.21 6.50,2.47 9.52,2.73" fill="#2f8cf0" stroke="#2f8cf0" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.4 12.3l3.1 3.1 6.1-6.3" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';

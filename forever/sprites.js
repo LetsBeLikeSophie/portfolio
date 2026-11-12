@@ -183,7 +183,7 @@ export function buildSprite(raceName, cls, faction, pose, drunk, clothHex) {
   // 눈
   const ec = R.eye || "#1a1010";
   const eye = (x) => {
-    if (sit) { rect(x, eyeY + 1, 2, 1, "#3a2420"); return; }
+    if (sit || pose === "sleep") { rect(x, eyeY + 1, 2, 1, "#3a2420"); return; }
     rect(x, eyeY, 2, 2, ec);
     if (!R.eye) set(x, eyeY, "#ffffff");
   };
@@ -201,7 +201,7 @@ export function buildSprite(raceName, cls, faction, pose, drunk, clothHex) {
     rect(hl + 4, ht + R.hh + 2, R.hw - 5, 1, H); set(hl + 6, ht + R.hh + 3, H); set(hr - 3, eyeY + 2, shade(s, 0.5));
   }
   if (kind === "rogue" && !R.beard && !R.snout) rect(hl + 3, ht + R.hh - 3, R.hw - 3, 2, "#2b2b33");
-  if (drunk && !sit) { set(hr, eyeY + 2, "#e46a6a"); set(hr - 7, eyeY + 2, "#e46a6a"); }
+  if (drunk && !sit && pose !== "sleep") { set(hr, eyeY + 2, "#e46a6a"); set(hr - 7, eyeY + 2, "#e46a6a"); }
 
   return toCanvas(G);
 }
@@ -225,5 +225,42 @@ export function buildFairy(blink, glow) {
   set(7, 10, "#fff3b0");
   set(4, 11, m); set(10, 11, m);
   set(6, 14, m); set(8, 14, m); set(6, 15, mS); set(8, 15, mS);
+  return toCanvas(G);
+}
+
+// 취객(손님) 전용: 술 취한 유령. 종족·직업과 상관없이 모두 이 모습이에요.
+export function buildDrunk(frame, sleep) {
+  const G = grid(GW, GH), { set, rect } = G;
+  const b = "#f1efff", bS = "#cbcbee", bL = "#ffffff";
+  const top = FEET - 17, cx = CX + 1;
+  const widths = [6, 8, 10, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12];
+  widths.forEach((w, y) => {
+    const x0 = cx - w / 2;
+    for (let i = 0; i < w; i++) set(x0 + i, top + y, i >= w - 2 ? bS : (y < 3 && i < 3) ? bL : b);
+  });
+  // 흔들리는 꼬리
+  const x0 = cx - 6;
+  for (let i = 0; i < 12; i++) {
+    const on = frame ? (i % 4 === 2 || i % 4 === 3) : (i % 4 === 0 || i % 4 === 1);
+    set(x0 + i, top + 14, on ? (i >= 10 ? bS : b) : (i % 2 ? null : b));
+    if (on && i % 2 === 0) set(x0 + i, top + 15, bS);
+  }
+  rect(x0, top + 14, 12, 0, b);
+  // 얼굴: 어지러운 > < 눈, 빨간 볼, 물결 입
+  const ey = top + 5, ink = "#3a2a4a";
+  if (sleep) { rect(cx - 4, ey + 1, 2, 1, ink); rect(cx + 2, ey + 1, 2, 1, ink); }
+  else {
+    set(cx - 4, ey, ink); set(cx - 3, ey + 1, ink); set(cx - 4, ey + 2, ink);
+    set(cx + 3, ey, ink); set(cx + 2, ey + 1, ink); set(cx + 3, ey + 2, ink);
+  }
+  rect(cx - 5, ey + 3, 2, 1, "#ff8a9a"); rect(cx + 3, ey + 3, 2, 1, "#ff8a9a");
+  set(cx - 1, ey + 5, ink); set(cx, ey + 4, ink); set(cx + 1, ey + 5, ink);
+  // 팔과 맥주잔
+  if (!sleep) {
+    set(cx + 6, top + 8, b); set(cx + 7, top + 8, bS);
+    const my = top + 6;
+    rect(cx + 7, my + 1, 3, 3, "#d9a63a"); rect(cx + 7, my, 3, 1, "#fff3d6"); set(cx + 8, my - 1, "#fff3d6");
+    set(cx + 9, my + 2, "#b07e26"); set(cx + 10, my + 2, "#d9a63a"); set(cx + 10, my + 3, "#d9a63a");
+  }
   return toCanvas(G);
 }
