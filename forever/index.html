@@ -108,6 +108,7 @@
   .vwrap{display:inline-block;width:14px;height:14px;margin-left:3px;vertical-align:-2px;line-height:0}
   .vwrap.lg{width:18px;height:18px;margin-left:5px;vertical-align:-2px}
   .vbadge{width:100%;height:100%;display:block}
+  .pkOut{display:block;margin:14px auto 0;padding:6px 10px;border:0;background:none;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
   .mblk>.msg:not(.emote) .vwrap,.mblk>.msg:not(.emote) .drk,#tList>.msg:not(.emote) .vwrap,#tList>.msg:not(.emote) .drk{order:1;align-self:center}
   /* 손님 = 취객 */
   #guestBox .gi{font-size:13px;line-height:1.55;color:#cbbfa8;background:#ffffff06;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 2px}
@@ -664,6 +665,7 @@
       <div id="pickList"></div>
       <div class="err" id="pickErr"></div>
       <button class="btn ghost sm" id="refreshBtn" type="button">배틀넷에서 캐릭터 다시 불러오기</button>
+      <button class="pkOut" id="pickOut" type="button">로그아웃 · 다른 방법으로 들어가기</button>
     </div>
 
     <!-- 처음 화면 -->
@@ -1246,7 +1248,8 @@ function renderMsg(m, inThread){
   ic.onclick=(e)=>{ e.stopPropagation(); openProfile(m); };
   if (me && m.player_id===me.id) el.classList.add("mine");
   el.append(t, ic, who);
-  if (m.sender_verified) el.appendChild(vbadge());
+  const mine = me && m.player_id===me.id;   // 내 글에는 이름이 안 보이니 인증 표시도 뺌
+  if (m.sender_verified && !mine) el.appendChild(vbadge());
   if (m.sender_verified===false){ const d=document.createElement("span"); d.className="drk"; d.textContent="취객"; d.title="배틀넷 인증 없이 들어온 손님"; el.appendChild(d); }
   if (m.parent_id && !inThread){
     const pm=cache.find(x=>x.id===m.parent_id);
@@ -2666,6 +2669,7 @@ $("switchBtn").onclick = async () => {
   leaveChat(); ls.del("wowchat_token");
   if (!(await openPickerFromAccount())) { show("join"); showAlt(); }
 };
+$("pickOut").onclick = () => { ls.del("wowchat_token"); ls.del("wowchat_account"); $("pickErr").textContent = ""; showAlt(); };
 $("logoutBtn").onclick = () => {
   leaveChat(); ls.del("wowchat_token"); ls.del("wowchat_account");
   show("join"); showAlt();
