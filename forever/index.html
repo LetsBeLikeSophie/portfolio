@@ -915,7 +915,7 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
-import { createScene } from "./scene.js?v=1";
+import { createScene } from "./scene.js?v=2";
 
 const SUPABASE_URL = "https://ztxzqvnybiemgbhtrwiw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7";
@@ -2827,7 +2827,7 @@ function syncScene(){
   add({ id: me.id, name: me.name, race: me.race, cls: me.class, faction: me.faction, verified: me.verified !== false, level: me.level, realm: me.realm });
   for (const u of onlineUsers.values()) add({ id: u.id, name: u.name, race: u.race, cls: u.cls, faction: u.faction, verified: u.verified !== false, level: u.level, realm: u.realm });
   const since = Date.now() - 3 * 3600e3;
-  for (let i = cache.length - 1; i >= 0 && list.length < 14; i--) {
+  for (let i = cache.length - 1; i >= 0 && list.length < 60; i--) {
     const m = cache[i];
     if (m.tag === "bot" || !m.player_id || new Date(m.created_at).getTime() < since || muted.has(m.player_id)) continue;
     if (myFactionOnly && m.sender_faction !== me.faction) continue;

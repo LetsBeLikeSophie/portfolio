@@ -2,20 +2,10 @@
 // 그림은 모두 코드로 찍은 우리 도트예요 (게임 그림을 가져오지 않음). 종족은 키·귀·뿔·피부색, 직업은 옷 색, 진영은 망토 색.
 // 포에버봇은 로봇 머리를 한 작은 요정으로 바 위를 떠다녀요.
 
-const PX = 4;              // 화면 1px 도트 = CSS 4px
+import { buildSprite, buildFairy, GW, FEET, CX } from "./sprites.js?v=2";
+
+const PX = 3;              // 화면 1px 도트 = CSS 3px
 const FPS = 20;
-const SKIN = {
-  "인간":            { legs: 4, torso: 5, tw: 6, head: 4, hw: 5, skin: "#e8b98f", hair: "#6b4423" },
-  "드워프":          { legs: 2, torso: 5, tw: 7, head: 4, hw: 5, skin: "#e3a982", hair: "#a0522d", beard: true },
-  "노움":            { legs: 2, torso: 3, tw: 5, head: 5, hw: 6, skin: "#f2cba4", hair: "#ff7fbf", tufts: true },
-  "나이트 엘프":     { legs: 5, torso: 6, tw: 6, head: 4, hw: 5, skin: "#9a86dc", hair: "#2fb3a4", ears: true },
-  "고등 마법원 스카이본": { legs: 4, torso: 5, tw: 6, head: 4, hw: 5, skin: "#cfe3f5", hair: "#ffd76a", crest: true, wing: "#eef6ff" },
-  "오크":            { legs: 4, torso: 6, tw: 8, head: 4, hw: 5, skin: "#5f9e3f", hair: "#1c1c1c", tusks: true, topknot: true },
-  "언데드":          { legs: 4, torso: 5, tw: 5, head: 4, hw: 5, skin: "#a2b3a0", hair: "#3a3a3a", glow: true },
-  "타우렌":          { legs: 4, torso: 7, tw: 9, head: 5, hw: 6, skin: "#7a5230", hair: "#4a3020", horns: true },
-  "트롤":            { legs: 5, torso: 5, tw: 6, head: 4, hw: 5, skin: "#4f8fb0", hair: "#d0402a", tusks: true, mohawk: true },
-  "바람구체자 스카이본": { legs: 4, torso: 5, tw: 6, head: 4, hw: 5, skin: "#b4a4dc", hair: "#ff8a4a", crest: true, wing: "#f3e2ff" },
-};
 const FACTION_CAPE = { alliance: "#2f5fb3", horde: "#9b2323" };
 const hash = (s) => { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -119,7 +109,7 @@ export function createScene(canvas, opts = {}) {
       }
     }
     if (bot.bubble && bot.bubble.until < now) bot.bubble = null;
-    bot.x = barW / 2 + Math.sin(now / 1700) * 3; bot.y = wallH - 6 + Math.sin(now / 420) * 1.5;
+    bot.x = barW / 2 + Math.sin(now / 1700) * 3; bot.y = wallH - 1 + Math.sin(now / 420) * 1.5;
   }
 
   /* ---------- 그리기 (저해상도 도트) ---------- */
@@ -162,79 +152,49 @@ export function createScene(canvas, opts = {}) {
     px(barW - 6, wallH - 1, 3, 2, "#c9a24c"); px(barW - 6, wallH - 2, 3, 1, "#fff3d6");   // 맥주잔
   }
 
-  function charHeight(s) { return s.legs + s.torso + s.head; }
-  function person(a, now) {
-    const s = SKIN[a.race] || (a.faction === "horde" ? SKIN["오크"] : SKIN["인간"]);
-    const cloth = classColor[a.cls] || "#9c8d77";
-    const dir = a.dir || 1;
-    let x = Math.round(a.x), y = Math.round(a.y);
-    let legs = a.asleep ? 1 : s.legs;
-    // 춤: 통통 / 취객: 비틀 / 서 있을 때 숨쉬기
-    if (a.emote && /춤/.test(a.emote.key)) y -= Math.round(Math.abs(Math.sin(now / 110)) * 3);
-    if (!a.verified && !a.asleep) x += Math.round(Math.sin(now / 380 + a.seed) * 1.2);
-    const breathe = !a.walking && !a.asleep && Math.floor((now / 600) + a.seed) % 2 === 0 ? 1 : 0;
-    const top = y - legs - s.torso - s.head + breathe;
-    const cx = x;
-    // 그림자
-    g.globalAlpha = a.alpha * 0.35; px(cx - 4, y, 9, 1, "#000"); g.globalAlpha = a.alpha;
-    // 다리 (걸을 때 번갈아)
-    const f = a.walking ? Math.floor(now / 160) % 2 : 0;
-    const lx = cx - 2, rx = cx + 1;
-    px(lx, y - legs + (f ? 1 : 0), 2, legs - (f ? 1 : 0), "#3b2f25");
-    px(rx, y - legs + (f ? 0 : 0), 2, legs - (a.walking && !f ? 1 : 0), "#3b2f25");
-    px(lx, y - 1, 2, 1, "#1f160e"); px(rx, y - 1, 2, 1, "#1f160e");
-    // 망토 (진영 색, 등 쪽)
-    const tl = cx - Math.floor(s.tw / 2), tt = y - legs - s.torso + breathe;
-    px(dir > 0 ? tl - 1 : tl + s.tw, tt + 1, 1, s.torso + (a.asleep ? 0 : 1), FACTION_CAPE[a.faction] || "#555");
-    // 스카이본 날개
-    if (s.wing) px(dir > 0 ? tl - 2 : tl + s.tw + 1, tt, 1, 3, s.wing);
-    // 몸통 (직업 색) + 허리띠
-    px(tl, tt, s.tw, s.torso, cloth); px(tl, tt + s.torso - 1, s.tw, 1, "#2a2015");
-    // 팔·손
-    const hand = dir > 0 ? tl + s.tw : tl - 1;
-    const wave = a.emote && /(인사|안녕|손|경례|환영)/.test(a.emote.key) && Math.floor(now / 200) % 2 === 0;
-    if (wave) { px(hand, tt - 3, 1, 3, cloth); px(hand, tt - 4, 1, 1, s.skin); }
-    else { px(hand, tt + 1, 1, s.torso - 2, cloth); px(hand, tt + s.torso - 1, 1, 1, s.skin); }
-    // 취객: 맥주잔
-    if (!a.verified && !a.asleep && !wave) { const mx = dir > 0 ? hand + 1 : hand - 2; px(mx, tt + s.torso - 3, 2, 2, "#c9a24c"); px(mx, tt + s.torso - 4, 2, 1, "#fff3d6"); }
-    // 머리
-    const hl = cx - Math.floor(s.hw / 2), ht = top;
-    px(hl, ht, s.hw, s.head, s.skin);
-    px(hl, ht, s.hw, 1, s.hair);
-    const eyeY = ht + Math.floor(s.head / 2), eyeX = dir > 0 ? hl + s.hw - 2 : hl + 1;
-    px(eyeX, eyeY, 1, 1, a.asleep ? s.skin : s.glow ? "#ffd84a" : "#141010");
-    if (a.asleep) px(eyeX - (dir > 0 ? 0 : 0), eyeY, 1, 1, "#3a2a20");
-    if (!a.verified && !a.asleep) px(dir > 0 ? eyeX - 1 : eyeX + 1, eyeY + 1, 1, 1, "#e0606a");   // 빨간 볼
-    if (s.ears) { px(hl - 1, eyeY - 1, 1, 1, s.skin); px(hl - 2, eyeY - 2, 1, 1, s.skin); px(hl + s.hw, eyeY - 1, 1, 1, s.skin); px(hl + s.hw + 1, eyeY - 2, 1, 1, s.skin); }
-    if (s.horns) { px(hl - 1, ht, 1, 1, "#efe6cf"); px(hl - 2, ht - 1, 1, 1, "#efe6cf"); px(hl + s.hw, ht, 1, 1, "#efe6cf"); px(hl + s.hw + 1, ht - 1, 1, 1, "#efe6cf"); px(dir > 0 ? hl + s.hw - 1 : hl, ht + s.head - 1, 1, 1, "#c9a24c"); }
-    if (s.tusks) px(dir > 0 ? hl + s.hw - 1 : hl, ht + s.head - 1, 1, 1, "#f4f0e0");
-    if (s.beard) { px(hl, ht + s.head - 2, s.hw, 2, s.hair); px(tl + 1, tt, s.tw - 2, 2, s.hair); px(eyeX, eyeY, 1, 1, "#141010"); }
-    if (s.tufts) { px(hl - 1, ht + 1, 1, 2, s.hair); px(hl + s.hw, ht + 1, 1, 2, s.hair); }
-    if (s.topknot) { px(cx, ht - 2, 1, 2, s.hair); }
-    if (s.mohawk) { px(cx - 1, ht - 1, 2, 1, s.hair); px(cx, ht - 3, 1, 2, s.hair); }
-    if (s.crest) { px(cx - 1, ht - 1, 1, 1, s.hair); px(cx, ht - 3, 1, 3, s.hair); px(cx + 1, ht - 2, 1, 2, s.hair); }
-    g.globalAlpha = 1;
-    return top;
+  // 그림은 한 번 만들어 두고 재사용 (종족·직업·진영·자세·취함)
+  const cache = new Map();
+  function spriteOf(a, pose) {
+    const key = [a.race, a.cls, a.faction, pose, a.verified ? 0 : 1].join("|");
+    let sp = cache.get(key);
+    if (!sp) { sp = buildSprite(a.race, a.cls, a.faction, pose, !a.verified, classColor[a.cls]); cache.set(key, sp); }
+    return sp;
   }
-
+  function drawSprite(sp, x, y, dir) {
+    if (dir >= 0) g.drawImage(sp.can, x - CX, y - FEET);
+    else { g.save(); g.scale(-1, 1); g.drawImage(sp.can, -(x + CX + 1) + 0, y - FEET); g.restore(); }
+  }
+  function person(a, now) {
+    let pose = "stand";
+    if (a.asleep) pose = "sit";
+    else if (a.emote && /(인사|안녕|손|경례|환영|작별|잘가)/.test(a.emote.key)) pose = Math.floor(now / 220) % 2 ? "wave" : "stand";
+    else if (a.walking) pose = Math.floor(now / 170) % 2 ? "walk1" : "walk2";
+    const sp = spriteOf(a, pose);
+    let x = Math.round(a.x), y = Math.round(a.y);
+    if (a.emote && /춤/.test(a.emote.key)) y -= Math.round(Math.abs(Math.sin(now / 110)) * 3);
+    if (!a.verified && !a.asleep) x += Math.round(Math.sin(now / 380 + a.seed) * 1.4);
+    if (pose === "stand" && Math.floor(now / 650 + a.seed) % 2 === 0) y += 0; else if (pose === "stand") y += 1;
+    g.globalAlpha = a.alpha * 0.32; g.fillStyle = "#000"; g.fillRect(Math.round(a.x) - 5, Math.round(a.y) + 1, 11, 1); g.fillRect(Math.round(a.x) - 3, Math.round(a.y) + 2, 7, 1);
+    g.globalAlpha = a.alpha;
+    drawSprite(sp, x, y, a.dir || 1);
+    g.globalAlpha = 1;
+    a.h = FEET - sp.top;
+    return y - (FEET - sp.top);
+  }
+  const fairyFrames = [buildFairy(false, false), buildFairy(false, true), buildFairy(true, false)];
   function fairy(now) {
     const x = Math.round(bot.x), y = Math.round(bot.y);
-    const flap = Math.floor(now / 140) % 2;
-    g.globalAlpha = 0.7;
-    if (flap) { px(x - 5, y - 3, 3, 2, "#bfe9ff"); px(x + 3, y - 3, 3, 2, "#bfe9ff"); px(x - 4, y - 1, 2, 1, "#bfe9ff"); px(x + 3, y - 1, 2, 1, "#bfe9ff"); }
-    else { px(x - 4, y - 4, 2, 3, "#bfe9ff"); px(x + 3, y - 4, 2, 3, "#bfe9ff"); }
+    const flap = Math.floor(now / 130) % 2;
+    // 날개 (반투명)
+    g.globalAlpha = 0.65; g.fillStyle = "#bfe9ff";
+    if (flap) { g.fillRect(x - 9, y - 12, 4, 3); g.fillRect(x - 8, y - 9, 3, 2); g.fillRect(x + 6, y - 12, 4, 3); g.fillRect(x + 6, y - 9, 3, 2); }
+    else { g.fillRect(x - 7, y - 15, 3, 5); g.fillRect(x - 6, y - 10, 2, 2); g.fillRect(x + 5, y - 15, 3, 5); g.fillRect(x + 5, y - 10, 2, 2); }
     g.globalAlpha = 1;
-    // 드레스
-    px(x - 1, y - 1, 3, 1, "#e6c36a"); px(x - 1, y, 4, 1, "#e6c36a"); px(x - 2, y + 1, 5, 1, "#d9b04f");
-    px(x - 1, y + 2, 1, 1, "#e8b98f"); px(x + 1, y + 2, 1, 1, "#e8b98f");
-    // 로봇 머리
-    px(x - 2, y - 6, 5, 5, "#c9d2dc"); px(x - 2, y - 6, 5, 1, "#e3e9ef");
-    px(x - 1, y - 4, 1, 1, "#4fd1ff"); px(x + 1, y - 4, 1, 1, "#4fd1ff"); px(x - 1, y - 2, 3, 1, "#6b7785");
-    px(x - 3, y - 4, 1, 2, "#9aa5b1"); px(x + 3, y - 4, 1, 2, "#9aa5b1");
-    px(x, y - 8, 1, 2, "#9aa5b1"); px(x, y - 9, 1, 1, Math.floor(now / 300) % 2 ? "#ffd84a" : "#fff3b0");
-    // 반짝이
-    if (Math.random() < 0.5) px(x + Math.round(rnd(-6, 6)), y + Math.round(rnd(-8, 4)), 1, 1, "#fff3b0");
-    return y - 9;
+    const blink = Math.floor(now / 2600) % 7 === 0 && (now % 2600) < 180;
+    const fr = fairyFrames[blink ? 2 : Math.floor(now / 300) % 2];
+    g.drawImage(fr.can, x - 7, y - 17);
+    if (Math.random() < 0.5) { g.fillStyle = "#fff3b0"; g.fillRect(x + Math.round(rnd(-9, 9)), y + Math.round(rnd(-16, 2)), 1, 1); }
+    return y - 17 + fr.top;
   }
 
   /* ---------- 고해상도 글자 (이름·말풍선) ---------- */
@@ -315,17 +275,22 @@ export function createScene(canvas, opts = {}) {
   canvas.addEventListener("click", (e) => {
     const r = canvas.getBoundingClientRect();
     const lx = (e.clientX - r.left) / PX, ly = (e.clientY - r.top) / PX;
-    if (Math.abs(lx - bot.x) < 7 && ly > bot.y - 11 && ly < bot.y + 5) { opts.onTap?.({ bot: true }); return; }
+    if (Math.abs(lx - bot.x) < 9 && ly > bot.y - 18 && ly < bot.y + 3) { opts.onTap?.({ bot: true }); return; }
     const list = [...people.values()].filter((a) => a.alpha > 0.3).sort((a, b) => b.y - a.y);
     for (const a of list) {
-      const s = SKIN[a.race] || SKIN["인간"], h = charHeight(s) + 3;
-      if (Math.abs(lx - a.x) < 6 && ly <= a.y + 1 && ly >= a.y - h) { opts.onTap?.(a); return; }
+      if (Math.abs(lx - a.x) < 8 && ly <= a.y + 2 && ly >= a.y - (a.h || 22) - 2) { opts.onTap?.(a); return; }
     }
   });
 
   return {
     setPeople, say, setRunning,
     setMe(id) { meId = id; },
+    // 자리 고정 (그림 확인용): 화면 비율 0~1로
+    place(id, fx, fy, dir = 1) {
+      const a = people.get(id); if (!a) return; const r = area();
+      a.x = a.tx = r.x0 + (r.x1 - r.x0) * fx; a.y = a.ty = r.y0 + (r.y1 - r.y0) * fy;
+      a.dir = dir; a.alpha = 1; a.nextMove = Infinity;
+    },
     reset() { people.clear(); bot.bubble = null; firstFill = true; },
     resize,
     destroy() { setRunning(false); ro.disconnect(); },
