@@ -311,10 +311,20 @@ export function createScene(canvas, opts = {}) {
   function fairy(now) {
     const x = Math.round(bot.x), y = Math.round(bot.y);
     const flap = Math.floor(now / 130) % 2;
-    // 날개 (반투명)
-    g.globalAlpha = 0.65; g.fillStyle = "#bfe9ff";
-    if (flap) { g.fillRect(x - 9, y - 12, 4, 3); g.fillRect(x - 8, y - 9, 3, 2); g.fillRect(x + 6, y - 12, 4, 3); g.fillRect(x + 6, y - 9, 3, 2); }
-    else { g.fillRect(x - 7, y - 15, 3, 5); g.fillRect(x - 6, y - 10, 2, 2); g.fillRect(x + 5, y - 15, 3, 5); g.fillRect(x + 5, y - 10, 2, 2); }
+    // 나비 날개: 머리 옆으로 위 날개(크게)·허리·아래 날개(작게). 폈다 접었다
+    g.globalAlpha = 0.92;
+    const W8 = flap ? [3, 4, 4, 3, 1, 2, 3, 2] : [2, 3, 3, 2, 1, 1, 2, 1];
+    for (const sd of [-1, 1]) {
+      const ax = sd < 0 ? x - 5 : x + 5, y0 = y - 14;
+      W8.forEach((w, i) => {
+        for (let d = 0; d < w; d++) {
+          const edge = d === w - 1 || i === 0 || i === 7 || i === 4;
+          const spot = flap && (i === 1 || i === 2) && d === 1;
+          g.fillStyle = spot ? "#fff3b0" : edge ? "#b46ad0" : "#f6b8e6";
+          g.fillRect(ax + sd * d, y0 + i, 1, 1);
+        }
+      });
+    }
     g.globalAlpha = 1;
     const blink = Math.floor(now / 2600) % 7 === 0 && (now % 2600) < 180;
     const fr = fairyFrames[blink ? 2 : Math.floor(now / 300) % 2];
