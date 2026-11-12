@@ -477,6 +477,10 @@
   /* 키보드가 올라오면 화면을 보이는 영역에 맞춤 (아이폰은 화면 전체가 밀려 올라가서 스크롤이 꼬였음) */
   #chat,#thread,#notif,#dm,#dmChat{top:var(--vvTop,0px);bottom:auto;height:var(--vvH,100%)}
   html,body{overscroll-behavior:none}
+  /* 키보드가 떠 있으면 여관 장면·안내 줄은 접고 채팅만 (장면 높이 때문에 입력창이 키보드 뒤로 밀려났었음) */
+  #list,#tList{min-height:0}
+  #chat>header,#chat>form.send,#chat>#replyBar,#chat>#photoBar{flex:none}
+  body.kbd #scene,body.kbd #drunkBar,body.kbd #pushBar,body.kbd #online,body.kbd #tipBar,body.kbd #chat .chiprow{display:none!important}
   #botcard .card,#qcard .card,#prof .card,#sheet .card{overscroll-behavior:contain}
   /* 토스트는 화면 가운데쯤, 금색 바탕: 아래에 두면 방금 올라온 글을 가렸고 맨 위는 눈에 잘 안 띄었음 */
   .toast{top:calc(var(--vvTop,0px) + var(--vvH,100vh) * .42);bottom:auto;transform:translate(-50%,-6px);transition:opacity .2s,transform .2s;
@@ -923,7 +927,7 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
-import { createScene } from "./scene.js?v=8";
+import { createScene } from "./scene.js?v=9";
 
 const SUPABASE_URL = "https://ztxzqvnybiemgbhtrwiw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7";
@@ -2064,13 +2068,20 @@ $("copyCard").onclick = (e) => { if (e.target.id==="copyCard") $("copyCard").cla
 // 키보드가 올라오면 채팅 화면을 보이는 영역 크기에 맞추고, 맨 아래를 보고 있었으면 계속 맨 아래로
 (function fitViewport(){
   const vv=window.visualViewport; if (!vv) return;
-  const r=document.documentElement.style; let raf=0;
+  const r=document.documentElement.style; let raf=0, base=0, baseW=0;
+  const typing=()=>{ const a=document.activeElement; return !!a && (a.tagName==="TEXTAREA" || (a.tagName==="INPUT" && /^(text|search)?$/.test(a.type||""))); };
   const fit=()=>{ raf=0;
     const lists=["list","tList","dmMsgs"].map(id=>$(id)).filter(l=>l && l.offsetParent).map(l=>[l, nearBottom(l)]);
+    // 키보드 없을 때 높이를 기억해 두고, 글 쓰는 중에 100px 넘게 줄면 키보드가 뜬 것
+    if (vv.width!==baseW) { baseW=vv.width; base=0; }
+    if (!typing() || vv.height>base) base=Math.max(base, vv.height, typing()?0:window.innerHeight);
+    const kbd = typing() && vv.height < base - 100;
+    document.body.classList.toggle("kbd", kbd);
     r.setProperty("--vvH", vv.height+"px"); r.setProperty("--vvTop", Math.max(0, vv.offsetTop)+"px");
     lists.forEach(([l,b])=>{ if (b) l.scrollTop=l.scrollHeight; }); };
   const q=()=>{ if (!raf) raf=requestAnimationFrame(fit); };
-  vv.addEventListener("resize", q); vv.addEventListener("scroll", q); fit();
+  vv.addEventListener("resize", q); vv.addEventListener("scroll", q);
+  document.addEventListener("focusin", ()=>setTimeout(fit, 60)); document.addEventListener("focusout", ()=>setTimeout(fit, 60)); fit();
 })();
 // 전송·봇 단추를 눌러도 입력창 포커스(키보드)가 그대로 남게
 document.querySelectorAll("form.send button").forEach(b=>b.addEventListener("mousedown", (e)=>e.preventDefault()));
