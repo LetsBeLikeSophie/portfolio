@@ -464,6 +464,23 @@
   .gapp button{flex:none;border:1px solid var(--line);background:#ffffff08;color:var(--body);border-radius:8px;padding:6px 9px;font-size:12.5px;font-weight:700;cursor:pointer}
   #pGuild{margin:2px 0 10px;text-align:left}
   #pGuild .gcard{margin:0;background:#ffffff06}
+  .gseg{display:flex;gap:4px;padding:3px;background:#0d0b09;border:1px solid var(--line);border-radius:12px;margin:0 0 12px}
+  .gseg button{flex:1;border:0;border-radius:9px;background:none;color:var(--muted);font-weight:700;font-size:13.5px;padding:8px 4px;cursor:pointer}
+  .gseg button[aria-pressed="true"]{background:var(--gold);color:#1a1208}
+  .glab{font-size:12.5px;font-weight:700;color:var(--muted);margin:2px 2px 6px}
+  .gcrest{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 10px}
+  .gcrest button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#ffffff08;font-size:19px;cursor:pointer;padding:0}
+  .gcrest button[aria-pressed="true"]{border-color:var(--gold);background:#e6c36a2e;box-shadow:0 0 0 1px var(--gold)}
+  .gtags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+  .gtag{border:1px solid var(--line);background:#ffffff08;color:var(--muted);border-radius:999px;padding:6px 11px;font-size:13px;font-weight:700;cursor:pointer}
+  .gtag[aria-pressed="true"]{background:#e6c36a24;border-color:var(--gold);color:var(--gold)}
+  .gpills{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 0}
+  .gpills:empty{display:none}
+  .gpill{font-size:11.5px;color:var(--body);background:#ffffff0d;border-radius:999px;padding:2px 8px}
+  .gpill.hit{background:#ff7ab22b;color:#ffb3d1}
+  .gmatch{display:inline-block;margin:6px 0 0;font-size:12px;font-weight:700;color:#ffb3d1;background:#ff7ab21f;border-radius:7px;padding:2px 8px}
+  .gcard.seek{background:linear-gradient(#2a2015,#211910);border-style:dashed;border-color:#7a5a30}
+  .gapp .gi .gg{display:block;color:#f0d48a;font-weight:700;margin-top:2px}
   .chip .cnum{display:inline-block;min-width:16px;margin-left:4px;padding:0 4px;border-radius:8px;background:#ff5a5a;color:#fff;font-size:11px;line-height:16px;text-align:center}
   .gdchip{flex:none;margin-left:auto;margin-right:8px;font-size:12px;font-weight:700;color:var(--gold);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 9px;background:#0006;white-space:nowrap}
   #pushBar{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 12px;background:#1d1710;border-bottom:1px solid var(--line);font-size:13px;line-height:1.4}
@@ -968,7 +985,7 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
-import { createScene } from "./scene.js?v=12";
+import { createScene } from "./scene.js?v=13";
 
 const SUPABASE_URL = "https://ztxzqvnybiemgbhtrwiw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7";
@@ -1094,7 +1111,7 @@ async function loadPeek(){
 
 let me = null, channel = "general";
 let cache = [];
-let gads = [], gApps = [], gadsAt = 0, gApplying = null, gHl = null;   // 길드 모집
+let gads = [], gApps = [], gadsAt = 0, gApplying = null, gHl = null, gMode = null, gList = null, gDraft = {};   // 길드 모집
 let filterTag = "all", myFactionOnly = ls.get("wowchat_hide_enemy")==="1";
 let msgSub = null, presence = null;
 let threadParent = null, threadMsgs = [];
@@ -2470,7 +2487,7 @@ function enterChat(player){
   $("soberGo").textContent = spec ? "배틀넷 로그인" : "술 깨기";
   cache = []; filterTag = "all"; newFrom = 0; jumpNew = true;
   show("chat");
-  innRoster = []; gads = []; gApps = []; gadsAt = 0; gApplying = null; loadGuild(true); scene.reset(); scene.setMe(me.id); scene.resize(); syncScene(); sceneRun(); loadInn(true);
+  innRoster = []; gads = []; gApps = []; gadsAt = 0; gApplying = null; gMode = null; gList = null; gDraft = {}; loadGuild(true); scene.reset(); scene.setMe(me.id); scene.resize(); syncScene(); sceneRun(); loadInn(true);
   $("srvBadge").textContent = me.realm||"일반"; $("srvBadge").title = `${me.realm||"일반"} 서버`;
   $("srvBadge").className = "srv"+(me.realm==="PvP"?" pvp":"");
   const fi=document.createElement("span"); fi.className="icons"; fi.id="meIcons";
@@ -2967,9 +2984,19 @@ function sceneRun(){
 $("sceneX").onclick = () => { sceneOff = !sceneOff; ls.set("wowchat_scene_off", sceneOff ? "1" : "0"); sceneRun(); if (!sceneOff) { scene.resize(); syncScene(); } };
 document.addEventListener("visibilitychange", () => { sceneRun(); if (document.visibilityState === "visible") loadInn(); });
 // 홀: 나 + 지금 접속한 사람 / 침실: 최근에 말한 사람 + 예전에 왔던 사람 (자는 모습)
-/* ---------- 길드 모집: 메이플 개인상점처럼 여관 홀에 간판 걸고 서 있기 ---------- */
+/* ---------- 길드 모집·구함: 메이플 개인상점처럼 글 쓴 자리에 간판 들고 서 있기 ---------- */
+const GTAGS = [["newbie","🌱","초보환영"],["raid","⚔️","레이드"],["social","🍻","친목"],["night","🌙","밤에 접속"],["weekend","☀️","주말"],
+  ["discord","🗣️","디코"],["tank","🛡️","탱"],["heal","✚","힐"],["dps","🗡️","딜"]];
+const GTAG = Object.fromEntries(GTAGS.map(([k, e, l]) => [k, { e, l }]));
+const CRESTS = ["🐺","🦁","🐉","🌙","🍄","🔥","🌸","🐻","🦉","⚔️"];
+const KIND_TXT = { recruit: { mode: "🏰 모집해요", list: "🏰 모집 중인 길드", got: "📜 받은 가입 신청", act: "가입 신청", done: "신청함 · 취소" },
+                   seek:    { mode: "🎒 길드 구해요", list: "🎒 길드 찾는 사람", got: "💌 받은 스카우트 제안", act: "스카우트 제안", done: "제안함 · 취소" } };
 const gadAsMsg = (a) => ({ player_id: a.id, sender_name: a.name, sender_class: a.cls, sender_race: a.race, sender_faction: a.faction,
   sender_level: a.level, sender_realm: a.realm, sender_verified: a.verified !== false, tag: "chat" });
+const myGad = () => gads.find((a) => a.mine);
+const tagMatch = (a) => { const m = myGad(); if (!m || m.kind === a.kind || a.mine) return 0; return (a.tags || []).filter((t) => (m.tags || []).includes(t)).length; };
+const shopOf = (a) => ({ kind: a.kind, guild: a.guild, crest: a.crest || "", tags: a.tags || [], icons: (a.tags || []).map((t) => GTAG[t]?.e || "").join(""),
+  apps: !!a.mine && gApps.length > 0, old: new Date(a.expires_at) - Date.now() < 864e5, fx: a.px, fy: a.py });
 async function loadGuild(force){
   if (!me) return;
   if (!force && Date.now() - gadsAt < 60e3) return;
@@ -2985,146 +3012,208 @@ async function loadGuild(force){
   buildChips(); syncScene();
 }
 async function loadGuildApps(){
-  if (!me || me.spec || !gads.some(a=>a.mine)) { gApps = []; return; }
+  if (!me || me.spec || !myGad()) { gApps = []; return; }
   const { data } = await sb.rpc("wow_guild_apps", { p_token: me.token });
   gApps = Array.isArray(data) ? data : [];
 }
 function showGuildTab(id){
-  filterTag = "guild"; gHl = id || null; buildChips(); renderAll(); syncComposer(); loadGuild();
-  if (id) requestAnimationFrame(()=>document.querySelector(`#guildPane .gcard[data-id="${id}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" }));
+  const a = gads.find((x) => x.id === id);
+  filterTag = "guild"; gHl = id || null; if (a) gList = a.kind;
+  buildChips(); renderAll(); syncComposer(); loadGuild();
+  if (id) requestAnimationFrame(() => document.querySelector(`#guildPane .gcard[data-id="${id}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" }));
+}
+// 폼에 쓰던 내용은 다시 그려도 남게
+function gDraftFor(kind){
+  if (!gDraft[kind]) {
+    const m = myGad();
+    const src = m && m.kind === kind ? m : null;
+    gDraft[kind] = { guild: src?.guild || "", memo: src?.memo || "", tags: new Set(src?.tags || []), crest: src?.crest || (kind === "recruit" ? CRESTS[0] : "") };
+  }
+  return gDraft[kind];
+}
+function tagChips(sel, onChange){
+  const w = document.createElement("div"); w.className = "gtags";
+  GTAGS.forEach(([k, e, l]) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "gtag"; b.textContent = `${e} ${l}`;
+    b.setAttribute("aria-pressed", sel.has(k));
+    b.onclick = () => { if (sel.has(k)) sel.delete(k); else if (sel.size < 6) sel.add(k); else { toast("태그는 6개까지 고를 수 있어요"); return; }
+      b.setAttribute("aria-pressed", sel.has(k)); onChange?.(); };
+    w.appendChild(b);
+  });
+  return w;
+}
+function pills(tags, mineTags){
+  const w = document.createElement("div"); w.className = "gpills";
+  (tags || []).forEach((t) => { if (!GTAG[t]) return; const s = document.createElement("span"); s.className = "gpill" + (mineTags?.includes(t) ? " hit" : "");
+    s.textContent = `${GTAG[t].e} ${GTAG[t].l}`; w.appendChild(s); });
+  return w;
 }
 function guildCard(a, inProfile){
-  const card=document.createElement("div"); card.className="gcard"+(a.mine?" mine":"")+(gHl===a.id && !inProfile?" hl":""); card.dataset.id=a.id;
-  const top=document.createElement("div"); top.className="gtop";
-  const nm=document.createElement("div"); nm.className="gname"; nm.textContent="🏰 "+a.guild;
-  if (a.mine){ const t=document.createElement("small"); t.textContent="내 모집"; nm.appendChild(t); }
-  const tm=document.createElement("span"); tm.className="gtime"; tm.textContent=agoShort(a.created_at);
-  top.append(nm, tm);
-  const memo=document.createElement("div"); memo.className="gmemo"; memo.textContent=a.memo||"";
-  card.append(top, memo);
-  if (!inProfile){
-    const who=document.createElement("div"); who.className="gwho";
-    const b=document.createElement("b"); b.textContent=a.name; b.style.color=CLASS_COLOR[a.cls]||"";
-    who.append(iconEl("class", a.cls, a.faction), b, document.createTextNode(` · ${a.race} ${a.cls}${a.level?` Lv.${a.level}`:""}`));
-    who.onclick=()=>{ if (me?.spec){ toast("들어오면 프로필을 볼 수 있어요"); return; } openProfile(gadAsMsg(a)); };
+  const seek = a.kind === "seek", T = KIND_TXT[a.kind] || KIND_TXT.recruit, my = myGad();
+  const card = document.createElement("div"); card.className = "gcard" + (seek ? " seek" : "") + (a.mine ? " mine" : "") + (gHl === a.id && !inProfile ? " hl" : ""); card.dataset.id = a.id;
+  const top = document.createElement("div"); top.className = "gtop";
+  const nm = document.createElement("div"); nm.className = "gname";
+  if (seek) { const b = document.createElement("b"); b.textContent = a.name; b.style.color = CLASS_COLOR[a.cls] || ""; nm.append("🎒 ", b, document.createTextNode(" 길드 구해요")); }
+  else nm.textContent = `${a.crest || "🏰"} ${a.guild}`;
+  if (a.mine) { const t = document.createElement("small"); t.textContent = "내 글"; nm.appendChild(t); }
+  const tm = document.createElement("span"); tm.className = "gtime"; tm.textContent = agoShort(a.created_at);
+  top.append(nm, tm); card.appendChild(top);
+  const score = tagMatch(a);
+  if (score) { const mt = document.createElement("div"); mt.className = "gmatch"; mt.textContent = `💌 나랑 ${score}개 맞아요`; card.appendChild(mt); }
+  card.appendChild(pills(a.tags, my && my.kind !== a.kind ? my.tags : null));
+  const memo = document.createElement("div"); memo.className = "gmemo"; memo.textContent = a.memo || ""; card.appendChild(memo);
+  if (!inProfile) {
+    const who = document.createElement("div"); who.className = "gwho";
+    const b = document.createElement("b"); b.textContent = a.name; b.style.color = CLASS_COLOR[a.cls] || "";
+    who.append(iconEl("class", a.cls, a.faction), b, document.createTextNode(` · ${a.race} ${a.cls}${a.level ? ` Lv.${a.level}` : ""}`));
+    who.onclick = () => { if (me?.spec) { toast("들어오면 프로필을 볼 수 있어요"); return; } openProfile(gadAsMsg(a)); };
     card.appendChild(who);
   }
   if (a.mine || !me || me.spec || isGuest()) return card;
-  const act=document.createElement("div"); act.className="gact";
-  if (!inProfile){
-    const dm=document.createElement("button"); dm.type="button"; dm.textContent="✉ 귓속말"; dm.onclick=()=>openDm(gadAsMsg(a));
-    act.appendChild(dm);
-  }
-  const ap=document.createElement("button"); ap.type="button";
-  if (a.applied){ ap.textContent="신청함 · 취소"; ap.onclick=()=>unapplyGuild(a); }
-  else { ap.className="pri"; ap.textContent="가입 신청"; ap.onclick=()=>{ gApplying = gApplying===a.id ? null : a.id; rerenderCard(a, card, inProfile); }; }
+  const act = document.createElement("div"); act.className = "gact";
+  if (!inProfile) { const dm = document.createElement("button"); dm.type = "button"; dm.textContent = "✉ 귓속말"; dm.onclick = () => openDm(gadAsMsg(a)); act.appendChild(dm); }
+  const ap = document.createElement("button"); ap.type = "button";
+  if (a.applied) { ap.textContent = T.done; ap.onclick = () => unapplyGuild(a); }
+  else { ap.className = "pri"; ap.textContent = T.act; ap.onclick = () => { gApplying = gApplying === a.id ? null : a.id; card.replaceWith(guildCard(a, inProfile)); }; }
   act.appendChild(ap); card.appendChild(act);
-  if (gApplying===a.id && !a.applied){
-    const f=document.createElement("form"); f.className="gapply";
-    const inp=document.createElement("input"); inp.maxLength=80; inp.placeholder="한마디 (선택) · 예: 저녁에 주로 접속해요"; inp.enterKeyHint="send";
-    const go=document.createElement("button"); go.type="submit"; go.className="gbtn"; go.style.width="100%";
-    go.textContent=`${me.name} (${me.race} ${me.class}${me.level?` Lv.${me.level}`:""})(으)로 신청하기`;
+  if (gApplying === a.id && !a.applied) {
+    const f = document.createElement("form"); f.className = "gapply";
+    let gi = null;
+    if (seek) { gi = document.createElement("input"); gi.maxLength = 24; gi.placeholder = "제안할 길드 이름"; gi.value = my?.kind === "recruit" ? my.guild : (gDraft.recruit?.guild || ""); f.appendChild(gi); }
+    const inp = document.createElement("input"); inp.maxLength = 80; inp.enterKeyHint = "send";
+    inp.placeholder = seek ? "한마디 (선택) · 예: 같이 레이드 가요!" : "한마디 (선택) · 예: 저녁에 주로 접속해요";
+    const go = document.createElement("button"); go.type = "submit"; go.className = "gbtn"; go.style.width = "100%";
+    go.textContent = seek ? "🏰 내 길드로 데려가기" : `${me.name} (${me.race} ${me.class}${me.level ? ` Lv.${me.level}` : ""})(으)로 신청하기`;
     f.append(inp, go);
-    f.onsubmit=(e)=>{ e.preventDefault(); go.disabled=true; applyGuild(a, inp.value).finally(()=>{ go.disabled=false; }); };
+    f.onsubmit = (e) => { e.preventDefault(); go.disabled = true; applyGuild(a, inp.value, gi?.value).finally(() => { go.disabled = false; }); };
     card.appendChild(f);
-    setTimeout(()=>inp.focus(), 30);
+    setTimeout(() => (gi && !gi.value ? gi : inp).focus(), 30);
   }
   return card;
 }
-function rerenderCard(a, card, inProfile){ card.replaceWith(guildCard(a, inProfile)); }
-async function applyGuild(a, note){
-  const { error } = await sb.rpc("wow_guild_apply", { p_token: me.token, p_owner: a.id, p_note: note || "" });
-  if (error){ toast(errMsg(error)); return; }
-  a.applied = true; gApplying = null; track("guild_apply");
-  toast(`'${a.guild}'에 가입 신청했어요. 내 캐릭터 정보가 길드장에게 전해져요`);
+async function applyGuild(a, note, guild){
+  const { error } = await sb.rpc("wow_guild_apply", { p_token: me.token, p_owner: a.id, p_note: note || "", p_guild: guild || null });
+  if (error) { toast(errMsg(error)); return; }
+  a.applied = true; gApplying = null; track(a.kind === "seek" ? "guild_scout" : "guild_apply");
+  toast(a.kind === "seek" ? `💌 ${a.name}님에게 스카우트 제안을 보냈어요` : `📜 '${a.guild}'에 가입 신청했어요. 내 캐릭터 정보가 길드장에게 전해져요`);
   refreshGuildViews();
 }
 async function unapplyGuild(a){
   const { error } = await sb.rpc("wow_guild_unapply", { p_token: me.token, p_owner: a.id });
-  if (error){ toast(errMsg(error)); return; }
-  a.applied = false; toast("가입 신청을 취소했어요"); refreshGuildViews();
+  if (error) { toast(errMsg(error)); return; }
+  a.applied = false; toast(a.kind === "seek" ? "스카우트 제안을 거뒀어요" : "가입 신청을 취소했어요"); refreshGuildViews();
 }
 function refreshGuildViews(){
-  if (filterTag==="guild") renderGuild();
-  if (!$("prof").classList.contains("hidden") && profFor){ const a=gads.find(x=>x.id===profFor.player_id); const pg=$("pGuild"); pg.innerHTML=""; if (a) pg.appendChild(guildCard(a, true)); }
+  if (filterTag === "guild") renderGuild();
+  if (!$("prof").classList.contains("hidden") && profFor) { const a = gads.find((x) => x.id === profFor.player_id); const pg = $("pGuild"); pg.innerHTML = ""; if (a) pg.appendChild(guildCard(a, true)); }
+}
+function seg(opts, cur, onPick){
+  const w = document.createElement("div"); w.className = "gseg";
+  opts.forEach(([v, label]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = label;
+    b.setAttribute("aria-pressed", v === cur); b.onclick = () => onPick(v); w.appendChild(b); });
+  return w;
 }
 function renderGuild(){
-  const pane=$("guildPane"); if (!me) return;
-  const keep = pane.scrollTop; pane.innerHTML="";
-  const mine = gads.find(a=>a.mine);
-  const box=document.createElement("div"); box.className="gbox";
-  const h=document.createElement("h3"); box.appendChild(h);
-  if (me.spec || isGuest()){
-    h.textContent="🏰 길드 모집";
-    const p=document.createElement("p"); p.textContent="배틀넷으로 인증한 캐릭터는 여관 홀에 길드 모집 간판을 걸고, 다른 길드에 가입 신청도 할 수 있어요.";
-    const b=document.createElement("button"); b.type="button"; b.className="gbtn"; b.style.width="100%"; b.textContent="배틀넷 로그인";
-    b.onclick=()=>$("soberGo").click();
-    box.append(p, b);
+  const pane = $("guildPane"); if (!me) return;
+  const keep = pane.scrollTop; pane.innerHTML = "";
+  const mine = myGad();
+  if (!gMode) gMode = mine?.kind || "recruit";
+  if (!gList) gList = mine ? (mine.kind === "recruit" ? "seek" : "recruit") : "recruit";
+  const box = document.createElement("div"); box.className = "gbox";
+  if (me.spec || isGuest()) {
+    const h = document.createElement("h3"); h.textContent = "🏰 길드 모집 · 🎒 길드 구함";
+    const p = document.createElement("p"); p.textContent = "배틀넷으로 인증한 캐릭터는 여관 홀 그 자리에 간판을 들고 서 있을 수 있어요. 길드를 모집하거나, 길드를 구하거나!";
+    const b = document.createElement("button"); b.type = "button"; b.className = "gbtn"; b.style.width = "100%"; b.textContent = "배틀넷 로그인";
+    b.onclick = () => $("soberGo").click();
+    box.append(h, p, b);
   } else {
-    h.textContent = mine ? "🏰 내 길드 모집 고치기" : "🏰 길드 모집 걸기";
-    const f=document.createElement("form"); f.autocomplete="off";
-    const gi=document.createElement("input"); gi.maxLength=24; gi.placeholder="길드 이름"; gi.value=mine?.guild||""; gi.enterKeyHint="next";
-    const mi=document.createElement("textarea"); mi.maxLength=120; mi.rows=2; mi.placeholder="메모 (선택) · 예: 주말 저녁 레이드, 초보 환영, 디코 있어요"; mi.value=mine?.memo||"";
-    const au=document.createElement("div"); au.className="gauto";
-    au.textContent=`자동: ${me.realm||"일반"} 서버 · ${me.faction==="alliance"?"얼라이언스":"호드"} · ${me.name} (${me.race} ${me.class}${me.level?` Lv.${me.level}`:""})`;
-    const row=document.createElement("div"); row.className="grow";
-    const go=document.createElement("button"); go.type="submit"; go.className="gbtn"; go.textContent= mine ? "고치기" : "모집 걸기";
+    box.appendChild(seg([["recruit", KIND_TXT.recruit.mode], ["seek", KIND_TXT.seek.mode]], gMode, (v) => { gMode = v; renderGuild(); }));
+    const d = gDraftFor(gMode), rec = gMode === "recruit";
+    const f = document.createElement("form"); f.autocomplete = "off";
+    if (rec) {
+      const cl = document.createElement("div"); cl.className = "glab"; cl.textContent = "길드 문장"; f.appendChild(cl);
+      const cr = document.createElement("div"); cr.className = "gcrest";
+      CRESTS.forEach((e) => { const b = document.createElement("button"); b.type = "button"; b.textContent = e; b.setAttribute("aria-pressed", d.crest === e);
+        b.onclick = () => { d.crest = e; cr.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b)); }; cr.appendChild(b); });
+      f.appendChild(cr);
+      const gi = document.createElement("input"); gi.maxLength = 24; gi.placeholder = "길드 이름"; gi.value = d.guild; gi.enterKeyHint = "next";
+      gi.oninput = () => { d.guild = gi.value; }; f.appendChild(gi);
+    }
+    const tl = document.createElement("div"); tl.className = "glab"; tl.textContent = rec ? "이런 분 구해요" : "이런 길드 찾아요"; f.appendChild(tl);
+    f.appendChild(tagChips(d.tags));
+    const mi = document.createElement("input"); mi.maxLength = 80; mi.value = d.memo; mi.enterKeyHint = "done";
+    mi.placeholder = rec ? "한 줄 메모 (선택) · 예: 수요일 밤 화심 가요" : "한 줄 메모 (선택) · 예: 복귀 유저예요, 저녁에 접속해요";
+    mi.oninput = () => { d.memo = mi.value; }; f.appendChild(mi);
+    const au = document.createElement("div"); au.className = "gauto";
+    au.textContent = `자동: ${me.realm || "일반"} 서버 · ${me.faction === "alliance" ? "얼라이언스" : "호드"} · ${me.name} (${me.race} ${me.class}${me.level ? ` Lv.${me.level}` : ""})`;
+    f.appendChild(au);
+    const same = mine && mine.kind === gMode;
+    const row = document.createElement("div"); row.className = "grow";
+    const go = document.createElement("button"); go.type = "submit"; go.className = "gbtn"; go.textContent = same ? "고치기" : rec ? "🏰 간판 걸기" : "🎒 팻말 들기";
     row.appendChild(go);
-    if (mine){ const x=document.createElement("button"); x.type="button"; x.className="gbtn ghost"; x.textContent="내리기"; x.onclick=clearGuildAd; row.appendChild(x); }
-    const p=document.createElement("p"); p.style.margin="8px 0 0"; p.textContent="모집을 걸면 3일 동안 여관 홀에 간판을 들고 서 있어요. 누가 가입 신청하면 그 캐릭터 정보가 아래에 모여요.";
-    f.append(gi, mi, au, row, p);
-    gi.onkeydown=(e)=>{ if (e.key==="Enter"){ e.preventDefault(); mi.focus(); } };
-    f.onsubmit=async(e)=>{ e.preventDefault(); go.disabled=true;
-      const { data, error } = await sb.rpc("wow_guild_ad_set", { p_token: me.token, p_guild: gi.value, p_memo: mi.value });
-      go.disabled=false;
-      if (error){ toast(errMsg(error)); return; }
-      track("guild_ad"); gads = Array.isArray(data) ? data : gads; gadsAt = Date.now();
-      toast(mine ? "길드 모집을 고쳤어요" : "🏰 여관 홀에 길드 모집 간판을 걸었어요");
+    if (mine) { const x = document.createElement("button"); x.type = "button"; x.className = "gbtn ghost"; x.textContent = mine.kind === "recruit" ? "간판 내리기" : "팻말 내리기"; x.onclick = clearGuildAd; row.appendChild(x); }
+    const p = document.createElement("p"); p.style.margin = "8px 0 0";
+    p.textContent = mine && !same ? `지금 든 ${mine.kind === "recruit" ? "모집 간판" : "구함 팻말"}은 내려가고 이걸로 바뀌어요. 받은 ${KIND_TXT[mine.kind].got.slice(3)}도 비워져요.`
+      : `걸면 지금 내 캐릭터가 서 있는 자리에 3일 동안 ${rec ? "간판을 들고 서" : "상자에 앉아 팻말을 들고"} 있어요.`;
+    f.append(row, p);
+    f.onsubmit = async (e) => { e.preventDefault(); go.disabled = true;
+      const pos = scene.posOf(me.id) || {};
+      const { data, error } = await sb.rpc("wow_guild_ad_set", { p_token: me.token, p_kind: gMode, p_guild: d.guild, p_memo: d.memo,
+        p_tags: [...d.tags], p_crest: rec ? d.crest : null, p_x: pos.fx ?? null, p_y: pos.fy ?? null });
+      go.disabled = false;
+      if (error) { toast(errMsg(error)); return; }
+      track(rec ? "guild_ad" : "guild_seek"); gads = Array.isArray(data) ? data : gads; gadsAt = Date.now();
+      gList = rec ? "seek" : "recruit";
+      toast(same ? "고쳤어요" : rec ? "🏰 그 자리에 길드 모집 간판을 걸었어요" : "🎒 그 자리에서 길드 구함 팻말을 들었어요");
       document.activeElement?.blur?.(); await loadGuildApps(); buildChips(); syncScene();
     };
     box.appendChild(f);
   }
   pane.appendChild(box);
-  if (mine && gApps.length){
-    const ab=document.createElement("div"); ab.className="gbox";
-    const ah=document.createElement("h3"); ah.textContent=`📜 가입 신청 ${gApps.length}`; ab.appendChild(ah);
-    gApps.forEach(x=>{
-      const r=document.createElement("div"); r.className="gapp";
-      const ic=iconEl("class", x.cls, x.faction, true);
-      const gi=document.createElement("div"); gi.className="gi";
-      const b=document.createElement("b"); b.textContent=x.name; b.style.color=CLASS_COLOR[x.cls]||"";
-      gi.append(b, document.createTextNode(` · ${x.race} ${x.cls}${x.level?` Lv.${x.level}`:""} · ${agoShort(x.created_at)}`));
-      if (x.note){ const n=document.createElement("q"); n.textContent=x.note; gi.appendChild(n); }
-      const dm=document.createElement("button"); dm.type="button"; dm.textContent="✉ 귓속말";
-      dm.onclick=()=>openDm({ player_id: x.id, sender_name: x.name, sender_class: x.cls, sender_race: x.race, sender_faction: x.faction, sender_level: x.level, sender_realm: x.realm, sender_verified: true });
-      const del=document.createElement("button"); del.type="button"; del.textContent="지우기";
-      del.onclick=async()=>{ const { data, error } = await sb.rpc("wow_guild_app_drop", { p_token: me.token, p_applicant: x.id });
-        if (error){ toast(errMsg(error)); return; } gApps = Array.isArray(data) ? data : []; buildChips(); };
-      r.append(ic, gi, dm, del); ab.appendChild(r);
+  if (mine && gApps.length) {
+    const ab = document.createElement("div"); ab.className = "gbox";
+    const ah = document.createElement("h3"); ah.textContent = `${KIND_TXT[mine.kind].got} ${gApps.length}`; ab.appendChild(ah);
+    gApps.forEach((x) => {
+      const r = document.createElement("div"); r.className = "gapp";
+      const gi = document.createElement("div"); gi.className = "gi";
+      const b = document.createElement("b"); b.textContent = x.name; b.style.color = CLASS_COLOR[x.cls] || "";
+      gi.append(b, document.createTextNode(` · ${x.race} ${x.cls}${x.level ? ` Lv.${x.level}` : ""} · ${agoShort(x.created_at)}`));
+      if (x.kind === "scout" && x.guild) { const g2 = document.createElement("span"); g2.className = "gg"; g2.textContent = `🏰 ${x.guild}`; gi.appendChild(g2); }
+      if (x.note) { const n = document.createElement("q"); n.textContent = x.note; gi.appendChild(n); }
+      const dm = document.createElement("button"); dm.type = "button"; dm.textContent = "✉ 귓속말";
+      dm.onclick = () => openDm({ player_id: x.id, sender_name: x.name, sender_class: x.cls, sender_race: x.race, sender_faction: x.faction, sender_level: x.level, sender_realm: x.realm, sender_verified: true });
+      const del = document.createElement("button"); del.type = "button"; del.textContent = "지우기";
+      del.onclick = async () => { const { data, error } = await sb.rpc("wow_guild_app_drop", { p_token: me.token, p_applicant: x.id });
+        if (error) { toast(errMsg(error)); return; } gApps = Array.isArray(data) ? data : []; buildChips(); syncScene(); };
+      r.append(iconEl("class", x.cls, x.faction, true), gi, dm, del); ab.appendChild(r);
     });
     pane.appendChild(ab);
   }
-  const sec=document.createElement("div"); sec.className="gsec";
-  sec.textContent=`모집 중인 길드 ${gads.length} · ${me.realm||"일반"} 서버 ${me.faction==="alliance"?"얼라이언스":"호드"}`;
+  const cnt = (k) => gads.filter((a) => a.kind === k).length;
+  pane.appendChild(seg([["recruit", `${KIND_TXT.recruit.list} ${cnt("recruit")}`], ["seek", `${KIND_TXT.seek.list} ${cnt("seek")}`]], gList, (v) => { gList = v; renderGuild(); }));
+  const sec = document.createElement("div"); sec.className = "gsec";
+  sec.textContent = `${me.realm || "일반"} 서버 ${me.faction === "alliance" ? "얼라이언스" : "호드"}${myGad() && myGad().kind !== gList ? " · 💌 나랑 잘 맞는 순서" : ""}`;
   pane.appendChild(sec);
-  if (!gads.length){ const e=document.createElement("div"); e.className="empty"; e.style.marginTop="18px"; e.textContent="아직 모집 중인 길드가 없어요"; pane.appendChild(e); }
-  gads.forEach(a=>pane.appendChild(guildCard(a, false)));
+  const list = gads.filter((a) => a.kind === gList).sort((a, b) => tagMatch(b) - tagMatch(a) || new Date(b.created_at) - new Date(a.created_at));
+  if (!list.length) { const e = document.createElement("div"); e.className = "empty"; e.style.marginTop = "18px";
+    e.textContent = gList === "recruit" ? "아직 모집 중인 길드가 없어요" : "아직 길드 찾는 사람이 없어요"; pane.appendChild(e); }
+  list.forEach((a) => pane.appendChild(guildCard(a, false)));
   pane.scrollTop = keep;
 }
 async function clearGuildAd(){
   const { data, error } = await sb.rpc("wow_guild_ad_clear", { p_token: me.token });
-  if (error){ toast(errMsg(error)); return; }
-  gads = Array.isArray(data) ? data : []; gApps = []; gadsAt = Date.now();
-  toast("길드 모집을 내렸어요"); buildChips(); syncScene();
+  if (error) { toast(errMsg(error)); return; }
+  gads = Array.isArray(data) ? data : []; gApps = []; gadsAt = Date.now(); gDraft = {};
+  toast("내렸어요"); buildChips(); syncScene();
 }
 
 function syncScene(){
   if (!me) return;
-  const list = [], seen = new Set(), shopBy = new Map(gads.slice(0, 6).map((a) => [a.id, a.guild]));
+  const list = [], seen = new Set(), shopBy = new Map(gads.slice(0, 8).map((a) => [a.id, shopOf(a)]));
   const add = (p) => { if (!p.id || seen.has(p.id)) return; seen.add(p.id); if (shopBy.has(p.id)) { p.shop = shopBy.get(p.id); p.asleep = false; } list.push(p); };
   add({ id: me.id, name: me.name, race: me.race, cls: me.class, faction: me.faction, verified: me.verified !== false, level: me.level, realm: me.realm });
   for (const u of onlineUsers.values()) add({ id: u.id, name: u.name, race: u.race, cls: u.cls, faction: u.faction, verified: u.verified !== false, level: u.level, realm: u.realm });
-  for (const a of gads.slice(0, 6)) if (!muted.has(a.id)) add({ id: a.id, name: a.name, race: a.race, cls: a.cls, faction: a.faction, verified: a.verified !== false, level: a.level, realm: a.realm });
+  for (const a of gads.slice(0, 8)) if (!muted.has(a.id)) add({ id: a.id, name: a.name, race: a.race, cls: a.cls, faction: a.faction, verified: a.verified !== false, level: a.level, realm: a.realm });
   const since = Date.now() - 24 * 3600e3;
   for (let i = cache.length - 1; i >= 0 && list.length < 90; i--) {
     const m = cache[i];
