@@ -2,7 +2,7 @@
 // 그림은 모두 코드로 찍은 우리 도트예요 (게임 그림을 가져오지 않음). 종족은 키·귀·뿔·피부색, 직업은 옷 색, 진영은 망토 색.
 // 포에버봇은 로봇 머리를 한 작은 요정으로 바 위를 떠다녀요.
 
-import { buildSprite, buildFairy, buildDrunk, shade, GW, FEET, CX } from "./sprites.js?v=4";
+import { buildSprite, buildFairy, buildDrunk, shade, GW, FEET, CX } from "./sprites.js?v=5";
 
 // 도트 한글 글꼴 Galmuri11 (이민서, SIL Open Font License) - 여관 글자에만 씀
 const PF = "Galmuri11";

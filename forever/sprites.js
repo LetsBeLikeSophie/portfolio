@@ -127,11 +127,7 @@ export function buildSprite(raceName, cls, faction, pose, drunk, clothHex) {
   } else {
     rect(tr + 1, armTop, 2, armLen, c); rect(tr + 2, armTop, 1, armLen, C);
     rect(tr + 1, armTop + armLen, 2, 1, s); set(tr + 2, armTop + armLen, S);
-    if (drunk) { // 맥주잔
-      const my = armTop + armLen - 3;
-      rect(tr + 2, my + 1, 3, 3, "#d9a63a"); rect(tr + 2, my, 3, 1, "#fff3d6"); set(tr + 3, my - 1, "#fff3d6");
-      set(tr + 4, my + 2, "#b07e26"); set(tr + 5, my + 2, "#d9a63a"); set(tr + 5, my + 3, "#d9a63a");
-    }
+    if (drunk) mug(set, rect, tr + 2, armTop + armLen - 4); // 맥주잔 (손잡이를 손으로 쥠)
   }
 
   // 머리 (모서리 둥글게, 뒤통수·턱 그늘)
@@ -206,6 +202,15 @@ export function buildSprite(raceName, cls, faction, pose, drunk, clothHex) {
   return toCanvas(G);
 }
 
+// 맥주잔: 왼쪽에 손잡이, 거품 뚜껑, 호박색 몸통(왼쪽 하이라이트·오른쪽 그늘), 나무 바닥 띠
+function mug(set, rect, x, y) {
+  const F = "#fff8e6", A = "#e9a72a", H = "#ffd36a", D = "#b9761a", B = "#7a4e1c", K = "#caa25a";
+  set(x, y + 1, K); set(x, y + 2, K); set(x, y + 3, K); set(x + 1, y + 1, K); set(x + 1, y + 3, K); // 손잡이 (가운데 구멍)
+  for (let r = 1; r <= 3; r++) { set(x + 2, y + r, H); set(x + 3, y + r, A); set(x + 4, y + r, A); set(x + 5, y + r, D); }
+  rect(x + 2, y, 4, 1, F); set(x + 3, y - 1, "#ffffff"); set(x + 4, y - 1, F); set(x + 3, y + 1, F); // 거품, 흘러내린 거품
+  rect(x + 2, y + 4, 4, 1, B);
+}
+
 // 포에버봇: LED 얼굴 로봇 머리를 한 요정 (날개는 따로)
 export function buildFairy(blink, glow) {
   const G = grid(16, 18), { set, rect } = G;
@@ -258,9 +263,7 @@ export function buildDrunk(frame, sleep) {
   // 팔과 맥주잔
   if (!sleep) {
     set(cx + 6, top + 8, b); set(cx + 7, top + 8, bS);
-    const my = top + 6;
-    rect(cx + 7, my + 1, 3, 3, "#d9a63a"); rect(cx + 7, my, 3, 1, "#fff3d6"); set(cx + 8, my - 1, "#fff3d6");
-    set(cx + 9, my + 2, "#b07e26"); set(cx + 10, my + 2, "#d9a63a"); set(cx + 10, my + 3, "#d9a63a");
+    mug(set, rect, cx + 7, top + 5);
   }
   return toCanvas(G);
 }
