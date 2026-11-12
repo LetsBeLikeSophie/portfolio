@@ -2,7 +2,7 @@
 // 그림은 모두 코드로 찍은 우리 도트예요 (게임 그림을 가져오지 않음). 종족은 키·귀·뿔·피부색, 직업은 옷 색, 진영은 망토 색.
 // 포에버봇은 로봇 머리를 한 작은 요정으로 바 위를 떠다녀요.
 
-import { buildSprite, buildFairy, buildDrunk, GW, FEET, CX } from "./sprites.js?v=4";
+import { buildSprite, buildFairy, buildDrunk, shade, GW, FEET, CX } from "./sprites.js?v=4";
 
 // 도트 한글 글꼴 Galmuri11 (이민서, SIL Open Font License) - 여관 글자에만 씀
 const PF = "Galmuri11";
@@ -28,7 +28,9 @@ export function createScene(canvas, opts = {}) {
   let W = 120, H = 70, wallH = 30, barW = 26, dpr = 1, k = PX;
   const people = new Map();     // id → 캐릭터
   const bot = { x: 12, y: 20, bubble: null };
-  let meId = null, running = false, raf = 0, last = 0, firstFill = true, bg = null;
+  let meId = null, running = false, raf = 0, last = 0, firstFill = true;
+  // 방 두 개: 0 = 홀(지금 있는 사람), 1 = 침실(자리 비운·예전 사람이 자는 곳). 옆으로 넘겨서 봄
+  let view = 0, cam = 0, hallNew = false, bgs = [null, null], beds = [], floorY = 40, infoSig = "";
 
   /* ---------- 크기 ---------- */
   function resize() {
@@ -39,8 +41,9 @@ export function createScene(canvas, opts = {}) {
     W = Math.max(60, Math.floor(r.width / PX)); H = Math.max(40, Math.floor(r.height / PX));
     low.width = W; low.height = H; k = PX * dpr;
     wallH = Math.round(H * 0.4); barW = 20;
-    bg = makeBg();
-    for (const a of people.values()) clampPos(a);
+    bgs = [makeBg(0), makeBg(1)];
+    for (const a of people.values()) if (!a.asleep) clampPos(a);
+    layBeds();
     draw(performance.now());
   }
   const ro = new ResizeObserver(resize); ro.observe(canvas);
@@ -51,33 +54,82 @@ export function createScene(canvas, opts = {}) {
     a.x = Math.min(r.x1, Math.max(r.x0, a.x)); a.y = Math.min(r.y1, Math.max(r.y0, a.y));
     a.tx = Math.min(r.x1, Math.max(r.x0, a.tx ?? a.x)); a.ty = Math.min(r.y1, Math.max(r.y0, a.ty ?? a.y));
   }
-  function restSpot(a) {
-    const r = area(), h = hash(a.id);
-    return { x: r.x0 + 6 + (h % Math.max(1, r.x1 - r.x0 - 12)), y: r.y0 + 4 + ((h >> 8) % Math.max(1, r.y1 - r.y0 - 4)) };
+  /* ---------- 침실: 침대 자리 (앞뒤 두 줄) ---------- */
+  function layBeds() {
+    const r = area(), out = [];
+    const cols = Math.max(1, Math.floor((W - 10) / 38));
+    const rowsY = r.y1 - r.y0 >= 22 ? [r.y0 + 5, r.y1 - 1] : [r.y1 - 1];
+    rowsY.forEach((fy, ri) => {
+      const step = (W - 8) / cols;
+      for (let c = 0; c < cols; c++) out.push({ bx: Math.round(4 + step * c + (step - 32) / 2 + (ri ? step / 4 : -step / 8)), fy, n: out.length });
+    });
+    beds = out;
+    floorY = rowsY.length > 1 ? rowsY[0] + 8 : r.y0 + 6;
+    seatSleepers();
+  }
+  // 최근에 본 사람부터 침대에, 침대가 모자라면 바닥에 아무렇게나 퍼질러 잠
+  function seatSleepers() {
+    const r = area();
+    const list = [...people.values()].filter((a) => a.asleep && !a.gone).sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    const nFloor = Math.max(1, list.length - beds.length), span = r.x1 - r.x0 - 24;
+    list.forEach((a, i) => {
+      const bed = beds[i];
+      const sp = sleepSprite(a), head = FEET - 11 - sp.top;
+      a.bed = bed || null;
+      if (bed) { a.x = bed.bx + 3 + head; a.y = bed.fy - 7; a.lie = 1; }
+      else {
+        const h = hash(a.id);
+        a.lie = h & 1 ? 1 : -1;
+        const j = i - beds.length;   // 바닥: 가운데 통로에 고르게, 조금씩 삐뚤게
+        a.x = r.x0 + 12 + (j + 0.5) * span / nFloor + ((h >> 4) % 7) - 3; a.y = floorY + (j % 2 ? 3 : -1) + ((h >> 9) % 3);
+      }
+      a.tx = a.x; a.ty = a.y; a.walking = false;
+    });
   }
 
   /* ---------- 사람 목록 ---------- */
   function upsert(p, { walkIn = false } = {}) {
-    let a = people.get(p.id); const isNew = !a;
+    let a = people.get(p.id);
     if (!a) {
       const r = area(), h = hash(p.id);
       a = { id: p.id, seed: (h % 1000) / 160, nextMove: performance.now() + rnd(500, 4000), dir: h & 1 ? 1 : -1, alpha: 0, gone: false };
       if (walkIn) { a.x = W + 4; a.y = rnd(r.y0, r.y1); a.tx = rnd(r.x0 + 10, r.x1 - 6); a.ty = a.y; a.dir = -1; }
-      else { a.x = rnd(r.x0, r.x1); a.y = rnd(r.y0, r.y1); a.tx = a.x; a.ty = a.y; if (firstFill) a.alpha = 1; }
+      else { a.x = rnd(r.x0, r.x1); a.y = rnd(r.y0, r.y1); a.tx = a.x; a.ty = a.y; if (firstFill || p.asleep) a.alpha = 1; }
       people.set(p.id, a);
     }
     Object.assign(a, { name: p.name, race: p.race, cls: p.cls, faction: p.faction, verified: p.verified !== false,
       level: p.level, realm: p.realm, gone: false });
     const wasAsleep = a.asleep; a.asleep = !!p.asleep;
-    if (a.asleep && !wasAsleep) { const s = restSpot(a); a.tx = s.x; a.ty = s.y; if (isNew) { a.x = s.x; a.y = s.y; } }
-    if (!a.asleep && wasAsleep) a.nextMove = performance.now() + rnd(300, 1500);
+    if (!a.asleep && wasAsleep) wakeUp(a);
     return a;
+  }
+  // 침실에서 일어나면 홀 왼쪽 문으로 걸어 들어옴
+  function wakeUp(a) {
+    const r = area();
+    a.asleep = false; a.bed = null; a.x = -4; a.y = rnd(r.y0, r.y1); a.tx = rnd(r.x0 + 8, r.x1 - 10); a.ty = a.y; a.dir = 1;
+    a.nextMove = performance.now() + rnd(2500, 5000);
   }
   function setPeople(list) {
     const keep = new Set();
-    for (const p of list) { if (!p || !p.id) continue; keep.add(p.id); upsert(p, { walkIn: !firstFill && !p.asleep && !people.has(p.id) }); }
+    list.forEach((p, i) => {
+      if (!p || !p.id) return; keep.add(p.id);
+      const a = upsert(p, { walkIn: !firstFill && !p.asleep && !people.has(p.id) }); a.order = i;
+    });
     for (const a of people.values()) if (!keep.has(a.id) && !a.bubble) a.gone = true;
     firstFill = false;
+    seatSleepers(); info();
+  }
+  function info() {
+    let hall = 0, bed = 0;
+    for (const a of people.values()) if (!a.gone) a.asleep ? bed++ : hall++;
+    const s = [view, hall, bed, hallNew].join("|");
+    if (s !== infoSig) { infoSig = s; opts.onInfo?.({ room: view, hall, bed, hallNew }); }
+  }
+  function setRoom(i) {
+    view = Math.max(0, Math.min(1, i));
+    if (view === 0) hallNew = false;
+    if (!running) cam = view, draw(performance.now());
+    info();
   }
 
   /* ---------- 말풍선·감정 ---------- */
@@ -88,8 +140,10 @@ export function createScene(canvas, opts = {}) {
     if (o.bot) { bot.bubble = { text: t, until: now + dur, bot: true }; return; }
     if (!p || !p.id) return;
     const a = people.get(p.id) || upsert(p, { walkIn: !p.asleep });
-    if (a.asleep) { a.asleep = false; a.nextMove = now + 2500; }
+    if (a.asleep) { wakeUp(a); a.alpha = 1; seatSleepers(); }
     a.gone = false;
+    if (view === 1 && a.id !== meId) hallNew = true;
+    info();
     if (o.emote) {
       a.emote = { key: o.emote, until: now + 3200 };
       if (!t) return;
@@ -103,9 +157,10 @@ export function createScene(canvas, opts = {}) {
     const r = area();
     for (const a of [...people.values()]) {
       a.alpha = a.gone ? Math.max(0, a.alpha - dt * 1.5) : Math.min(1, a.alpha + dt * 2);
-      if (a.gone && a.alpha <= 0) { people.delete(a.id); continue; }
+      if (a.gone && a.alpha <= 0) { people.delete(a.id); if (a.asleep) seatSleepers(); info(); continue; }
       if (a.bubble && a.bubble.until < now) a.bubble = null;
       if (a.emote && a.emote.until < now) a.emote = null;
+      if (a.asleep) { a.walking = false; continue; }
       if (!a.asleep && !a.gone && now > a.nextMove && !a.bubble) {
         a.tx = rnd(r.x0, r.x1); a.ty = rnd(r.y0, r.y1);
         a.nextMove = now + rnd(3500, 9000);
@@ -119,13 +174,40 @@ export function createScene(canvas, opts = {}) {
       }
     }
     if (bot.bubble && bot.bubble.until < now) bot.bubble = null;
+    cam += (view - cam) * Math.min(1, dt * 9); if (Math.abs(view - cam) < 0.004) cam = view;
     bot.x = barW / 2 + Math.sin(now / 1700) * 3; bot.y = wallH - 1 + Math.sin(now / 420) * 1.5;
   }
 
   /* ---------- 배경: 움직이지 않는 부드러운 그림 한 장 (크기 바뀔 때만 다시) ---------- */
-  function makeBg() {
+  function makeBg(kind) {
     const b = document.createElement("canvas"); b.width = canvas.width; b.height = canvas.height;
     const c = b.getContext("2d"), wy = wallH * k, cw = b.width, ch = b.height;
+    if (kind === 1) {   // 침실: 밤, 창문 달빛
+      let gr = c.createLinearGradient(0, 0, 0, wy);
+      gr.addColorStop(0, "#121527"); gr.addColorStop(1, "#22253d");
+      c.fillStyle = gr; c.fillRect(0, 0, cw, wy);
+      c.fillStyle = "rgba(0,0,0,.18)";
+      for (let x = 22 * dpr; x < cw; x += 40 * dpr) c.fillRect(x, 0, 1.5 * dpr, wy);
+      gr = c.createLinearGradient(0, wy, 0, ch);
+      gr.addColorStop(0, "#2a2119"); gr.addColorStop(1, "#130d09");
+      c.fillStyle = gr; c.fillRect(0, wy, cw, ch - wy);
+      c.fillStyle = "rgba(0,0,0,.4)"; c.fillRect(0, wy, cw, 2 * dpr);
+      // 창문 (도트 칸에 맞춤)
+      const u = k, wx = Math.round(W * 0.74 - 8) * u, wyy = Math.max(2, Math.round(wallH * 0.18)) * u, ww = 16 * u, wh = Math.min(12, wallH - 6) * u;
+      c.fillStyle = "#4a3420"; c.fillRect(wx - u, wyy - u, ww + 2 * u, wh + 2 * u);
+      gr = c.createLinearGradient(0, wyy, 0, wyy + wh); gr.addColorStop(0, "#2f4277"); gr.addColorStop(1, "#1a2547");
+      c.fillStyle = gr; c.fillRect(wx, wyy, ww, wh);
+      c.fillStyle = "#f3eac0"; c.fillRect(wx + 10 * u, wyy + 2 * u, 3 * u, 3 * u); c.fillStyle = "#2f4277"; c.fillRect(wx + 11 * u, wyy + 2 * u, 2 * u, 2 * u);
+      c.fillStyle = "#cfd8ff"; c.fillRect(wx + 3 * u, wyy + 3 * u, u, u); c.fillRect(wx + 6 * u, wyy + 6 * u, u, u);
+      c.fillStyle = "#4a3420"; c.fillRect(wx + 8 * u - u / 2, wyy, u, wh); c.fillRect(wx, wyy + Math.round(wh / 2 / u) * u, ww, u);
+      gr = c.createRadialGradient(wx + ww / 2, wy, 0, wx + ww / 2, wy, Math.max(cw, ch) * 0.55);
+      gr.addColorStop(0, "rgba(150,170,255,.14)"); gr.addColorStop(1, "rgba(150,170,255,0)");
+      c.fillStyle = gr; c.fillRect(0, 0, cw, ch);
+      gr = c.createRadialGradient(cw / 2, ch / 2, Math.min(cw, ch) * 0.3, cw / 2, ch / 2, Math.max(cw, ch) * 0.75);
+      gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,.45)");
+      c.fillStyle = gr; c.fillRect(0, 0, cw, ch);
+      return b;
+    }
     let gr = c.createLinearGradient(0, 0, 0, wy);
     gr.addColorStop(0, "#22170d"); gr.addColorStop(1, "#3b2817");
     c.fillStyle = gr; c.fillRect(0, 0, cw, wy);
@@ -158,28 +240,35 @@ export function createScene(canvas, opts = {}) {
     if (dir >= 0) g.drawImage(sp.can, x - CX, y - FEET);
     else { g.save(); g.scale(-1, 1); g.drawImage(sp.can, -(x + CX + 1) + 0, y - FEET); g.restore(); }
   }
+  const drunkOf = (fr, sleep) => {
+    const key = "drunk|" + (sleep ? "s" : fr);
+    let sp = cache.get(key); if (!sp) { sp = buildDrunk(sleep ? 0 : fr, sleep); cache.set(key, sp); }
+    return sp;
+  };
+  const sleepSprite = (a) => (a.verified ? spriteOf(a, "sleep") : drunkOf(0, true));
+  // 누운 사람의 머리 x (이름표·Z 위치)
+  const headX = (a) => { const sp = sleepSprite(a), h = FEET - 11 - sp.top; return a.x + (a.lie < 0 ? h - 4 : -h + 4); };
   function person(a, now) {
-    // 취객(손님)은 종족과 상관없이 술 취한 유령
-    if (!a.verified) {
-      const sleep = a.asleep && !a.walking, fr = Math.floor(now / 260) % 2;
-      const key = "drunk|" + (sleep ? "s" : fr);
-      let sp = cache.get(key); if (!sp) { sp = buildDrunk(sleep ? 0 : fr, sleep); cache.set(key, sp); }
-      const x = Math.round(a.x + (sleep ? 0 : Math.sin(now / 380 + a.seed) * 1.6));
-      const y = Math.round(a.y - 2 + (sleep ? 0 : Math.sin(now / 520 + a.seed) * 1.5));
-      g.globalAlpha = a.alpha * 0.25; g.fillStyle = "#000"; g.fillRect(Math.round(a.x) - 5, Math.round(a.y) + 1, 11, 1);
-      g.globalAlpha = a.alpha; drawSprite(sp, x, y, a.dir || 1); g.globalAlpha = 1;
-      a.h = FEET - sp.top + 2;
-      return y - (FEET - sp.top);
-    }
-    if (a.asleep && !a.walking) {
-      const sp = spriteOf(a, "sleep"), x = Math.round(a.x), y = Math.round(a.y);
-      g.globalAlpha = a.alpha * 0.3; g.fillStyle = "#000"; g.fillRect(x - 13, y + 1, 26, 1);
+    // 자는 사람: 옆으로 누움 (침대 위거나 바닥에 아무렇게나)
+    if (a.asleep) {
+      const sp = sleepSprite(a), x = Math.round(a.x), y = Math.round(a.y);
+      if (!a.bed) { g.globalAlpha = a.alpha * 0.3; g.fillStyle = "#000"; g.fillRect(x - 15, y + 1, 28, 1); }
       g.globalAlpha = a.alpha;
-      g.save(); g.translate(x, y); g.rotate(-Math.PI / 2);
+      g.save(); g.translate(x, y); if (a.lie < 0) g.scale(-1, 1); g.rotate(-Math.PI / 2);
       g.drawImage(sp.can, -(CX - 7), 11 - FEET);
       g.restore(); g.globalAlpha = 1;
       a.h = 14;
       return y - 14;
+    }
+    // 취객(손님)은 종족과 상관없이 술 취한 유령
+    if (!a.verified) {
+      const fr = Math.floor(now / 260) % 2, sp = drunkOf(fr, false);
+      const x = Math.round(a.x + Math.sin(now / 380 + a.seed) * 1.6);
+      const y = Math.round(a.y - 2 + Math.sin(now / 520 + a.seed) * 1.5);
+      g.globalAlpha = a.alpha * 0.25; g.fillStyle = "#000"; g.fillRect(Math.round(a.x) - 5, Math.round(a.y) + 1, 11, 1);
+      g.globalAlpha = a.alpha; drawSprite(sp, x, y, a.dir || 1); g.globalAlpha = 1;
+      a.h = FEET - sp.top + 2;
+      return y - (FEET - sp.top);
     }
     let pose = "stand";
     if (a.emote && /(인사|안녕|손|경례|환영|작별|잘가)/.test(a.emote.key)) pose = Math.floor(now / 220) % 2 ? "wave" : "stand";
@@ -196,6 +285,28 @@ export function createScene(canvas, opts = {}) {
     a.h = FEET - sp.top;
     return y - (FEET - sp.top);
   }
+  // 침대 (옆에서 본 모습). 뒤판·매트리스 → 사람 → 이불 순서로 그림
+  const QUILT = ["#7a3b3b", "#3b5a7a", "#4f6b3a", "#6b4a7a", "#7a6236", "#3a6b66"];
+  function bedBack(b) {
+    const r = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(b.bx + x, b.fy + y, w, h); };
+    r(-1, -16, 5, 2, "#1a110a"); r(0, -15, 3, 13, "#1a110a"); r(1, -14, 1, 11, "#6b4423"); r(-1, -16, 5, 1, "#8a5a30");   // 머리판
+    r(29, -11, 3, 9, "#1a110a"); r(30, -10, 1, 7, "#6b4423"); r(28, -12, 5, 1, "#8a5a30");                                // 발판
+    r(3, -9, 26, 3, "#1a110a"); r(3, -9, 26, 2, "#e6dcc4"); r(3, -7, 26, 1, "#b9ab8c");                                 // 매트리스
+    r(3, -12, 8, 3, "#1a110a"); r(4, -12, 6, 2, "#f6f0e0"); r(4, -10, 6, 1, "#cfc2a2");                                // 베개
+  }
+  function bedFront(b, filled, now) {
+    const r = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(b.bx + x, b.fy + y, w, h); };
+    const q = QUILT[b.n % QUILT.length], qs = shade(q, 0.7), ql = shade(q, 1.25);
+    const breathe = filled ? (Math.floor(now / 1100 + b.n * 0.37) % 2) : 0;
+    const top = filled ? -14 + breathe : -10;
+    r(11, top - 1, 18, 1, "#1a110a"); r(10, top, 1, -top - 3, "#1a110a");
+    r(11, top, 18, -top - 3, q); r(11, top, 18, 1, ql);
+    for (let i = 13; i < 29; i += 4) r(i, top + 2, 1, -top - 6 > 0 ? -top - 6 : 1, qs);                                // 이불 무늬
+    r(11, -3, 18, 1, qs);
+    r(0, -3, 32, 1, "#1a110a"); r(0, -2, 32, 1, "#4a2e17");                                                           // 침대 옆판
+    r(1, -1, 2, 1, "#2a1a0d"); r(29, -1, 2, 1, "#2a1a0d");                                                           // 다리
+  }
+
   const fairyFrames = [buildFairy(false, false), buildFairy(false, true), buildFairy(true, false)];
   function fairy(now) {
     const x = Math.round(bot.x), y = Math.round(bot.y);
@@ -263,46 +374,68 @@ export function createScene(canvas, opts = {}) {
   function draw(now) {
     if (!low.width) return;
     g.clearRect(0, 0, W, H);
-    const list = [...people.values()].sort((a, b) => a.y - b.y);
-    const tops = new Map();
-    for (const a of list) tops.set(a.id, person(a, now));
-    const fairyTop = fairy(now);
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (bg) ctx.drawImage(bg, 0, 0);
+    // 보이는 방만 (넘기는 중이면 두 방 다)
+    const rooms = [];
+    for (const rm of [0, 1]) {
+      const off = Math.round((rm - cam) * W);
+      if (Math.abs(off) >= W) continue;
+      rooms.push({ rm, off, list: [...people.values()].filter((a) => (a.asleep ? 1 : 0) === rm).sort((a, b) => a.y - b.y), tops: new Map() });
+    }
+    for (const R of rooms) if (bgs[R.rm]) ctx.drawImage(bgs[R.rm], R.off * k, 0);
+    for (const R of rooms) {
+      g.save(); g.translate(R.off, 0);
+      if (R.rm === 1) {
+        // 침대와 바닥에 누운 사람을 앞뒤(y) 순서로
+        const items = beds.map((b) => ({ y: b.fy, b, who: R.list.find((a) => a.bed === b) }));
+        for (const a of R.list) if (!a.bed) items.push({ y: a.y, a });
+        items.sort((p, q) => p.y - q.y);
+        for (const it of items) {
+          if (it.b) { bedBack(it.b); if (it.who) R.tops.set(it.who.id, person(it.who, now)); bedFront(it.b, !!it.who, now); }
+          else R.tops.set(it.a.id, person(it.a, now));
+        }
+      } else {
+        for (const a of R.list) R.tops.set(a.id, person(a, now));
+        R.fairyTop = fairy(now);
+      }
+      g.restore();
+    }
     ctx.drawImage(low, 0, 0, W * k, H * k);
     // 이름표
-    for (const a of list) {
-      if (a.alpha <= 0.05) continue;
-      const top = tops.get(a.id) - 1;
-      label(a.x * k, top * k, a.name || "", a.verified ? (classColor[a.cls] || "#ddd") : "#d9d3ff", false, a.id === meId);
-      if (!a.verified && !a.asleep) {   // 가끔 딸꾹!
-        const ph = (now / 1000 + a.seed * 3) % 7;
-        if (ph < 1.2) {
-          ctx.textAlign = "center"; ctx.textBaseline = "bottom"; ctx.globalAlpha = Math.max(0, 1 - ph / 1.2);
-          outlined("딸꾹!", (a.x + 6) * k, top * k - (13 + ph * 8) * dpr, "#ffb3c1", 11);
+    for (const R of rooms) {
+      for (const a of R.list) {
+        if (a.alpha <= 0.05) continue;
+        const top = R.tops.get(a.id) - 1, ax = a.asleep ? headX(a) : a.x, x = ax + R.off;
+        label(x * k, top * k, a.name || "", a.verified ? (classColor[a.cls] || "#ddd") : "#d9d3ff", false, a.id === meId);
+        if (!a.verified && !a.asleep) {   // 가끔 딸꾹!
+          const ph = (now / 1000 + a.seed * 3) % 7;
+          if (ph < 1.2) {
+            ctx.textAlign = "center"; ctx.textBaseline = "bottom"; ctx.globalAlpha = Math.max(0, 1 - ph / 1.2);
+            outlined("딸꾹!", (x + 6) * k, top * k - (13 + ph * 8) * dpr, "#ffb3c1", 11);
+            ctx.globalAlpha = 1;
+          }
+        }
+        if (a.asleep && a.bed) {   // 침대에서 자는 사람만 Z z
+          ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+          const side = a.lie < 0 ? 1 : -1;
+          const t = (now / 2200 + a.seed) % 1;
+          ctx.globalAlpha = Math.max(0, Math.min(1, 1.3 - t * 1.3));
+          outlined(t < 0.5 ? "z" : "Z", Math.round((x + side * (5 + t * 3)) * k), Math.round((top - 4 - t * 4) * k), "#c9d4ff", t < 0.5 ? 10 : 13);
           ctx.globalAlpha = 1;
         }
-      }
-      if (a.asleep && !a.walking) {
-        ctx.textAlign = "center"; ctx.textBaseline = "bottom";
-        for (let i = 0; i < 3; i++) {
-          const t = ((now / 1400 + a.seed) + i / 3) % 1;
-          ctx.globalAlpha = Math.max(0, Math.min(1, 1.2 - t));
-          const zx = a.verified ? a.x - 12 : a.x + 7, zy = a.verified ? a.y - 8 : top + 3;
-          outlined("Z", Math.round((zx - t * 4) * k), Math.round((zy - t * 9) * k), "#c9d4ff", t < 0.5 ? 11 : 22);
-          ctx.globalAlpha = 1;
+        if (a.emote && emoteEmoji[a.emote.key]) {
+          ctx.font = `${16 * dpr}px system-ui`; ctx.textAlign = "center";
+          ctx.fillText(emoteEmoji[a.emote.key], x * k, (top - 4) * k - 10 * dpr);
         }
       }
-      if (a.emote && emoteEmoji[a.emote.key]) {
-        ctx.font = `${16 * dpr}px system-ui`; ctx.textAlign = "center";
-        ctx.fillText(emoteEmoji[a.emote.key], a.x * k, (top - 4) * k - 10 * dpr);
-      }
+      if (R.rm === 0) label((bot.x + R.off) * k, (R.fairyTop - 1) * k, "포에버봇", "#e6c36a", false, false);
     }
-    label(bot.x * k, (fairyTop - 1) * k, "포에버봇", "#e6c36a", false, false);
     // 말풍선은 맨 위에
-    for (const a of list) if (a.bubble && a.alpha > 0.3) bubble(a.x * k, (tops.get(a.id) - 1) * k - 13 * dpr, a.bubble);
-    if (bot.bubble) bubble(bot.x * k, (fairyTop - 1) * k - 13 * dpr, bot.bubble);
+    for (const R of rooms) {
+      for (const a of R.list) if (a.bubble && a.alpha > 0.3 && a.x + R.off > 0 && a.x + R.off < W) bubble((a.x + R.off) * k, (R.tops.get(a.id) - 1) * k - 13 * dpr, a.bubble);
+      if (R.rm === 0 && bot.bubble) bubble((bot.x + R.off) * k, (R.fairyTop - 1) * k - 13 * dpr, bot.bubble);
+    }
   }
 
   function loop(t) {
@@ -318,19 +451,29 @@ export function createScene(canvas, opts = {}) {
   }
 
   /* ---------- 누르기 ---------- */
+  // 옆으로 밀면 방 넘기기
+  let sw = null, swiped = 0;
+  canvas.addEventListener("pointerdown", (e) => { sw = { x: e.clientX, y: e.clientY }; });
+  canvas.addEventListener("pointerup", (e) => {
+    if (!sw) return; const dx = e.clientX - sw.x, dy = e.clientY - sw.y; sw = null;
+    if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy) * 1.4) { setRoom(view + (dx < 0 ? 1 : -1)); swiped = performance.now(); }
+  });
+  canvas.addEventListener("pointercancel", () => { sw = null; });
   canvas.addEventListener("click", (e) => {
+    if (performance.now() - swiped < 400 || cam !== view) return;
     const r = canvas.getBoundingClientRect();
     const lx = (e.clientX - r.left) / PX, ly = (e.clientY - r.top) / PX;
-    if (Math.abs(lx - bot.x) < 9 && ly > bot.y - 18 && ly < bot.y + 3) { opts.onTap?.({ bot: true }); return; }
-    const list = [...people.values()].filter((a) => a.alpha > 0.3).sort((a, b) => b.y - a.y);
+    if (view === 0 && Math.abs(lx - bot.x) < 9 && ly > bot.y - 18 && ly < bot.y + 3) { opts.onTap?.({ bot: true }); return; }
+    const list = [...people.values()].filter((a) => a.alpha > 0.3 && (a.asleep ? 1 : 0) === view).sort((a, b) => b.y - a.y);
     for (const a of list) {
-      const hw = a.asleep && !a.walking ? 14 : 8;
-      if (Math.abs(lx - a.x) < hw && ly <= a.y + 2 && ly >= a.y - (a.h || 22) - 2) { opts.onTap?.(a); return; }
+      if (a.asleep) { if (Math.abs(lx - (a.x + (a.lie < 0 ? 3 : -3))) < 15 && ly <= a.y + 2 && ly >= a.y - 16) { opts.onTap?.(a); return; } continue; }
+      if (Math.abs(lx - a.x) < 8 && ly <= a.y + 2 && ly >= a.y - (a.h || 22) - 2) { opts.onTap?.(a); return; }
     }
   });
 
   return {
-    setPeople, say, setRunning,
+    setPeople, say, setRunning, setRoom,
+    get room() { return view; },
     setMe(id) { meId = id; },
     // 자리 고정 (그림 확인용): 화면 비율 0~1로
     place(id, fx, fy, dir = 1) {
@@ -338,7 +481,7 @@ export function createScene(canvas, opts = {}) {
       a.x = a.tx = r.x0 + (r.x1 - r.x0) * fx; a.y = a.ty = r.y0 + (r.y1 - r.y0) * fy;
       a.dir = dir; a.alpha = 1; a.nextMove = Infinity;
     },
-    reset() { people.clear(); bot.bubble = null; firstFill = true; },
+    reset() { people.clear(); bot.bubble = null; firstFill = true; hallNew = false; infoSig = ""; },
     resize,
     destroy() { setRunning(false); ro.disconnect(); },
   };
