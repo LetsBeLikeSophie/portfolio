@@ -82,6 +82,12 @@
   .btn.ghost{background:none;color:var(--gold);border-color:var(--line);font-weight:500}
   .btn.bnet{margin-top:4px;background:linear-gradient(180deg,#1a8dff,#0060c7);border-color:#0a55a8;color:#fff}
   .btn.sm{margin-top:10px;padding:9px;font-size:14px}
+  .btn.inline{width:auto;margin:0;flex:none;padding:10px 14px}
+  .btn.tile{margin:0;padding:12px 6px;border-radius:12px;background:#ffffff08;border-color:var(--line);color:var(--text);font:inherit;font-size:14px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;white-space:nowrap;letter-spacing:0}
+  .btn.link{width:auto;margin:0;background:none;border:0;padding:6px 4px;color:var(--muted);font:inherit;font-size:13px;font-weight:500;text-decoration:underline}
+  .btn.link.danger{color:#ff8f7a}
+  .btn.link.center{display:block;margin:14px auto 2px}
   .note{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.5}
   .err{color:var(--danger);font-size:13px;margin-top:10px;min-height:1em}
   .or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:18px 0 6px}
@@ -180,24 +186,9 @@
   .me{display:flex;align-items:center;gap:6px;font-size:13px;background:#0006;border:1px solid var(--line);
     padding:4px 10px 4px 5px;border-radius:999px;cursor:pointer;max-width:58%}
   .me span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
-  .chiprow{display:flex;align-items:center;gap:8px}
-  #chat>.chiprow{flex:none;padding:7px 12px 6px;background:#15100b;border-bottom:1px solid var(--line)}
-  .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;flex:1;min-width:0;
-    -webkit-mask-image:linear-gradient(to right,#000 82%,transparent);mask-image:linear-gradient(to right,#000 82%,transparent);padding-right:24px}
   .sw{flex:none;display:flex;align-items:center;gap:6px;background:none;border:0;padding:0 2px;cursor:pointer;
     font-size:13px;font-weight:700;color:var(--muted)}
-  .sw .track{width:34px;height:20px;border-radius:999px;background:#3a2f22;position:relative;transition:background .15s}
-  .sw .knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#bbb;transition:left .15s}
-  .sw[aria-checked="true"] .knob{left:16px;background:#fff}
-  .sw.horde[aria-checked="true"] .track{background:var(--horde)}
-  .sw.alliance[aria-checked="true"] .track{background:var(--alliance)}
   .sw.horde[aria-checked="true"]{color:#ffb0a6} .sw.alliance[aria-checked="true"]{color:#a9c8ff}
-  .chips::-webkit-scrollbar{display:none}
-  .chip{flex:none;border:1px solid var(--line);background:#0006;border-radius:999px;padding:5px 11px;
-    font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap}
-  .chip.on{background:#3a2c14;border-color:var(--gold-dim);color:var(--gold)}
-  .chip.fac.on{background:#2a1416;border-color:#7a2f2a;color:#ffb0a6}
-  .chip.fac.alliance.on{background:#132036;border-color:#2f5a9a;color:#a9c8ff}
   .online{font-size:11.5px;color:var(--muted);text-align:center;padding:5px 0}
   .online b{color:#7bd17b;font-weight:500}
 
@@ -306,13 +297,9 @@
   #tList .msg:first-child{background:#ffffff08;border:1px solid var(--line);margin-bottom:8px;padding:8px}
 
   /* 프로필 카드 */
-  #qcard{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:11}
-  #qcard .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:80vh;overflow-y:auto}
   #qcard .qt{font-size:17px;font-weight:700;color:#ffd100;margin-bottom:4px}
   #qcard .qm{font-size:12.5px;color:var(--muted);margin-bottom:10px}
   #qcard .qd{font-size:14px;line-height:1.6;white-space:pre-wrap;color:#e8dcc4;margin-bottom:14px}
-  #botcard{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:11}
-  #botcard .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto}
   #botcard .bh{display:flex;align-items:center;gap:12px;margin-bottom:12px}
   #botcard .bh .cico{width:46px;height:46px;margin:0;box-shadow:0 0 0 2px var(--gold)}
   #botcard .bh .cico svg{width:30px;height:30px}
@@ -334,13 +321,9 @@
   .bat .pct{font-size:18px;font-weight:800;min-width:52px;text-align:right;font-variant-numeric:tabular-nums}
   .batinfo{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.6}
   .charge{display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
-  #prof{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:9}
-  #gpop{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:9}
-  #gpop .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto;overscroll-behavior:contain}
   #gpop .gcard{margin:0 0 12px;background:#ffffff06}
   #gpop .gnote{font-size:13px;color:var(--muted);margin:0 0 12px;text-align:center}
   .gmemo.none{color:var(--muted);font-style:italic}
-  #prof .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}
   .ph{display:flex;align-items:center;gap:12px}
   .ph .icons{margin:0}
   .ph .nm{font-size:19px;font-weight:700}
@@ -435,9 +418,8 @@
     display:grid;place-items:center;color:var(--gold);cursor:pointer;flex:none;padding:0}
   body.sceneon:not(.kbd) #guideBtn{display:none}
   /* 길드 탭: 채팅 대신 길드 광장(팻말 6자리) + 등불 */
-  .mback{position:fixed;inset:0;background:#000a;z-index:6;display:flex;align-items:flex-end;justify-content:center}
   .msheet{width:100%;max-width:720px;height:calc(var(--vvH,100vh) * .9);display:flex;flex-direction:column;background:var(--bg);
-    border-radius:16px 16px 0 0;border-top:1px solid var(--line);box-shadow:0 -12px 32px #000c;overflow:hidden;animation:sheetUp .2s ease-out}
+    border-radius:16px 16px 0 0;border-top:1px solid var(--line);box-shadow:0 -12px 32px #000c;overflow:hidden}
   .mhead{flex:none;padding:8px 12px 6px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#1b150e,#120e0a)}
   .mtop{display:flex;align-items:center}
   .mtop b{flex:1;text-align:center;color:var(--gold);font-size:15px;padding-left:34px}
@@ -458,8 +440,6 @@
   .post.mine{touch-action:none}
   .post.drag{z-index:300!important}
   .post.drag .bd{translate:0 -6px;box-shadow:inset 0 3px 0 #e0b878,inset 0 -3px 0 #8a5a30,6px 9px 0 #0007}
-  .gbtn.plant{display:block;width:100%;margin-top:12px;padding:12px;font-size:15px}
-  .gbtn:disabled{opacity:.45}
   .post .bd{position:relative;width:100%;box-sizing:border-box;min-height:66px;padding:4px 3px;color:#2a1608;
     background:#c99a5c repeating-linear-gradient(180deg,transparent 0 12px,#a87a40 12px 15px);
     border:3px solid #1a110a;border-top:6px solid var(--fc,#1a110a);box-shadow:inset 0 3px 0 #e0b878,inset 0 -3px 0 #8a5a30,3px 3px 0 #0008;
@@ -485,21 +465,16 @@
   .mhd .nm{font-size:17px;display:inline-flex;align-items:center;gap:4px}
   .mhd .mt{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.4}
   .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0 0}
-  .mbtn{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 6px;border-radius:12px;border:1px solid var(--line);background:#ffffff08;
-    color:var(--text);font:inherit;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;white-space:nowrap}
-  .mbtn.installBtn{grid-column:1/-1}
+  .btn.tile.installBtn{grid-column:1/-1}
   .mfoot{display:flex;justify-content:space-between;margin-top:12px}
-  .flink{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:6px 4px}
-  .flink.out{color:#ff8f7a}
   .lamp b.lhint{font-size:13px;font-weight:600;color:var(--body);line-height:1.4}
   .lsub{font-size:12.5px;color:var(--muted);margin:6px 0 10px;line-height:1.4}
   .lampbox{text-align:left;margin:4px 0 10px}
   .lampbox .gtags{margin-bottom:2px}
-  .sw2{all:unset;flex:none;width:48px;height:28px;border-radius:14px;background:#ffffff1f;position:relative;cursor:pointer}
-  .sw2::after{content:"";position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;background:#aaa;transition:left .15s}
-  .sw2[aria-checked="true"]{background:#e9a72a}
-  .sw2[aria-checked="true"]::after{left:24px;background:#fff8e6}
-  .gbtn{flex:1;border:0;border-radius:10px;padding:10px 14px;font-weight:700;background:var(--gold);color:#1a1208;cursor:pointer}
+  .toggle{all:unset;flex:none;width:48px;height:28px;border-radius:14px;background:#ffffff1f;position:relative;cursor:pointer}
+  .toggle::after{content:"";position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;background:#aaa;transition:left .15s}
+  .toggle[aria-checked="true"]{background:#e9a72a}
+  .toggle[aria-checked="true"]::after{left:24px;background:#fff8e6}
   .glab{font-size:12.5px;font-weight:700;color:var(--muted);margin:2px 2px 6px}
   .gedh{margin:0 0 10px;font-size:16px;color:var(--gold);text-align:center}
   .gcrest{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 10px}
@@ -508,7 +483,6 @@
   .gcrest button[aria-pressed="true"]{border-color:var(--gold);background:#e6c36a2e;box-shadow:0 0 0 1px var(--gold)}
   .gin,.gapply input{display:block;width:100%;box-sizing:border-box;background:#0d0b09;border:1px solid var(--line);border-radius:10px;padding:9px 10px;color:var(--text);font-size:16px;margin:0 0 10px}
   .gsave{font-size:12.5px;color:var(--muted);text-align:center;margin:4px 0 0}
-  .glink{all:unset;display:block;margin:14px auto 2px;font-size:13px;color:#ff8f7a;text-decoration:underline;cursor:pointer}
   .gtags{display:flex;flex-wrap:wrap;gap:6px}
   .gtag{border:1px solid var(--line);background:#ffffff08;color:var(--muted);border-radius:999px;padding:6px 11px;font-size:13px;font-weight:700;cursor:pointer}
   .gtag[aria-pressed="true"]{background:#e6c36a24;border-color:var(--gold);color:var(--gold)}
@@ -524,6 +498,8 @@
   .gmemo{margin:6px 0 0;font-size:13.5px;color:var(--body)}
   .gwho{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;min-width:0;margin-top:8px}
   .gwho b{font-weight:700}
+  .who{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+  .who b{font-weight:700}
   .gact{display:flex;gap:6px;margin-top:10px}
   .gact button{flex:1;border:1px solid var(--line);background:#ffffff08;color:var(--body);border-radius:9px;padding:9px 6px;font-size:13px;font-weight:700;cursor:pointer}
   .gact button:last-child:not(.pri){flex:none;padding:9px 12px}
@@ -541,7 +517,6 @@
   .seekrow .done{flex:none;font-size:12px;color:var(--muted)}
   #pGuild{margin:2px 0 10px;text-align:left}
   #pGuild .gcard{margin:0;background:#ffffff06}
-  .chip .cnum{display:inline-block;min-width:16px;margin-left:4px;padding:0 4px;border-radius:8px;background:#ff5a5a;color:#fff;font-size:11px;line-height:16px;text-align:center}
   .gdchip{flex:none;margin-left:auto;margin-right:8px;font-size:12px;font-weight:700;color:var(--gold);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 9px;background:#0006;white-space:nowrap}
   #pushBar{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 12px;background:#1d1710;border-bottom:1px solid var(--line);font-size:13px;line-height:1.4}
   #pushBar.hidden{display:none}
@@ -582,25 +557,23 @@
   .dmnote{font-size:12px;color:var(--muted);text-align:center;margin:4px 0 8px}
 
   /* 홈 화면 추가 안내 */
-  #iosGuide{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:12}
-  #iosGuide .card{border-radius:14px 14px 0 0;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
   .guide{margin:0;padding-left:20px;line-height:1.9;font-size:15px}
   .shareIc{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:#2a2218;color:#7fb6ff;vertical-align:-7px}
 
   /* 시트 */
-  #sheet{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:8}
-  #sheet .card{border-radius:14px 14px 0 0;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
   /* 키보드가 올라오면 화면을 보이는 영역에 맞춤 (아이폰은 화면 전체가 밀려 올라가서 스크롤이 꼬였음) */
   #chat,#thread,#notif,#dm,#dmChat{top:var(--vvTop,0px);bottom:auto;height:var(--vvH,100%)}
   html,body{overscroll-behavior:none}
   /* 키보드가 떠 있으면 여관 장면·안내 줄은 접고 채팅만 (장면 높이 때문에 입력창이 키보드 뒤로 밀려났었음) */
   #list,#tList{min-height:0}
   #chat>header,#chat>form.send,#chat>#replyBar,#chat>#photoBar{flex:none}
-  body.kbd #scene,body.kbd #drunkBar,body.kbd #pushBar,body.kbd #online,body.kbd #tipBar,body.kbd #chat .chiprow{display:none!important}
-  #botcard .card,#qcard .card,#prof .card,#sheet .card{overscroll-behavior:contain}
-  /* 아래에서 올라오는 창은 모두 같은 모양·움직임: 손잡이, 올라오기, 바깥·쓸어내리기로 닫기 */
-  #botcard:not(.hidden) .card,#qcard:not(.hidden) .card,#prof:not(.hidden) .card,#sheet:not(.hidden) .card,#copyCard:not(.hidden) .card,#gpop:not(.hidden) .card{animation:sheetUp .2s ease-out}
-  .card > .grab{margin:-6px auto 12px}
+  body.kbd #scene,body.kbd #drunkBar,body.kbd #pushBar,body.kbd #online,body.kbd #tipBar{display:none!important}
+  /* 아래에서 올라오는 창(공통): 뒤 배경 .ov + 작은 판 .card / 큰 판 .msheet. 손잡이·✕·바깥 누르기·쓸어내리기로 닫힘 (bindSheet) */
+  .ov{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:var(--z,9)}
+  .ov > .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:var(--mh,85vh);overflow-y:auto;overscroll-behavior:contain}
+  .ov:not(.hidden) > .card,.ov:not(.hidden) > .msheet{animation:sheetUp .2s ease-out}
+  .ov > .card > .grab{margin:-6px auto 12px}
+  .ov > .card > .sx{position:absolute;top:8px;right:8px;width:34px;height:30px;border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer}
   .mhead{touch-action:none;cursor:grab}
   /* 토스트는 화면 가운데쯤, 금색 바탕: 아래에 두면 방금 올라온 글을 가렸고 맨 위는 눈에 잘 안 띄었음 */
   .toast{top:calc(var(--vvTop,0px) + var(--vvH,100vh) * .42);bottom:auto;transform:translate(-50%,-6px);transition:opacity .2s,transform .2s;
@@ -661,8 +634,6 @@
   .newsep{display:flex;align-items:center;gap:8px;color:#ff9a8c;font-size:12px;font-weight:700;margin:10px 4px 6px}
   .newsep::before,.newsep::after{content:"";flex:1;height:1px;background:#ff9a8c66}
   /* 글 복사 창 */
-  #copyCard{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:11}
-  #copyCard .card{border-radius:14px 14px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
   #copyCard .cph{display:flex;align-items:center;justify-content:space-between;font-size:16px;color:var(--gold)}
   #copyCard .cpall{display:inline-flex;align-items:center;gap:6px;background:#e6c36a1f;border:1px solid var(--gold-dim);color:var(--gold);
     border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer}
@@ -925,21 +896,21 @@
   </form>
 </section>
 
-<div id="sheet" class="hidden">
+<div id="sheet" class="ov hidden" style="--z:8">
   <div class="card">
     <div id="sheetInfo"></div>
     <div id="sheetLamp"></div>
     <div class="mgrid">
-      <button class="mbtn" id="switchBtn" type="button">🔄 캐릭터 바꾸기</button>
-      <button class="mbtn" id="pushBtn" type="button">🔔 알림 켜기</button>
-      <a class="mbtn" id="sheetClasses" href="/forever/classes/">📘 직업 도감</a>
-      <button class="mbtn installBtn hidden" type="button">📲 홈 화면에 추가</button>
+      <button class="btn tile" id="switchBtn" type="button">🔄 캐릭터 바꾸기</button>
+      <button class="btn tile" id="pushBtn" type="button">🔔 알림 켜기</button>
+      <a class="btn tile" id="sheetClasses" href="/forever/classes/">📘 직업 도감</a>
+      <button class="btn tile installBtn hidden" type="button">📲 홈 화면에 추가</button>
     </div>
-    <div class="mfoot"><button class="flink out" id="logoutBtn" type="button">로그아웃</button><button class="flink" id="closeSheet" type="button">닫기</button></div>
+    <div class="mfoot"><button class="btn link" id="asGuestBtn" type="button">🍺 게스트로 입장</button><button class="btn link" id="sheetBnet" type="button">배틀넷 로그인</button></div>
   </div>
 </div>
 
-<div id="botcard" class="hidden">
+<div id="botcard" class="ov hidden" style="--z:11;--mh:88vh">
   <div class="card">
     <div class="bh"><span id="bcIcon"></span><div><div class="nm">포에버봇</div><div class="sub">와우 포에버 도우미 AI</div></div></div>
     <div class="bctabs" role="tablist">
@@ -981,23 +952,21 @@
       <div class="cmts" id="bcCmts"></div>
     </section>
 
-    <button class="btn ghost sm" id="bcClose" type="button">닫기</button>
   </div>
 </div>
 
 <div id="photoView" class="hidden" role="dialog" aria-label="사진 크게 보기"><img id="pvImg" alt="사진" draggable="false"><button type="button" id="pvX" aria-label="닫기">✕</button></div>
 
-<div id="copyCard" class="hidden">
+<div id="copyCard" class="ov hidden" style="--z:11">
   <div class="card">
     <div class="cph"><b>글 복사</b>
       <button type="button" class="cpall" id="cpAll"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>전체 복사</button></div>
     <p class="note" style="margin:4px 0 8px">원하는 부분만 길게 눌러 골라서 복사할 수도 있어요.</p>
     <textarea id="cpText" readonly rows="5"></textarea>
-    <button class="btn ghost sm" id="cpClose" type="button">닫기</button>
   </div>
 </div>
 
-<div id="qcard" class="hidden">
+<div id="qcard" class="ov hidden" style="--z:11;--mh:80vh">
   <div class="card">
     <div class="qt" id="qTitle"></div>
     <div class="qfacts" id="qMeta"></div>
@@ -1010,16 +979,16 @@
 </div>
 
 <!-- 모달: 길드 광장(홀 창문) · 직업 도감(책장). 바깥을 누르면 닫히고 채팅으로 -->
-<div id="gmodal" class="mback hidden" role="dialog" aria-modal="true" aria-label="길드 광장">
+<div id="gmodal" class="ov hidden" style="--z:6" role="dialog" aria-modal="true" aria-label="길드 광장">
   <div class="msheet"><div class="mhead"><div class="grab"></div><div class="mtop"><b>🪧 길드 광장</b><button type="button" class="mx" id="gmX" aria-label="닫기">✕</button></div></div>
     <div id="guildPane"></div></div>
 </div>
-<div id="cmodal" class="mback hidden" role="dialog" aria-modal="true" aria-label="직업 도감">
+<div id="cmodal" class="ov hidden" style="--z:6" role="dialog" aria-modal="true" aria-label="직업 도감">
   <div class="msheet"><div class="mhead"><div class="grab"></div><div class="mtop"><b>📖 직업 도감</b><button type="button" class="mx" id="cmX" aria-label="닫기">✕</button></div></div>
     <iframe id="cFrame" title="직업 도감"></iframe></div>
 </div>
-<div id="gpop" class="hidden"><div class="card"><div id="gpopBody"></div><button class="btn ghost sm" id="gpopClose" type="button">닫기</button></div></div>
-<div id="prof" class="hidden">
+<div id="gpop" class="ov hidden" style="--z:9"><div class="card"><div id="gpopBody"></div></div></div>
+<div id="prof" class="ov hidden" style="--z:9">
   <div class="card">
     <div class="ph" id="pHead"></div>
     <div id="pGuild" class="hidden"></div>
@@ -1030,14 +999,13 @@
       <button type="button" id="pBlock" class="warn" aria-label="귓속말 차단"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span id="pBlockLbl">차단</span></button>
     </div>
     <div class="emotes hidden" id="pEmotes"></div>
-    <button class="btn ghost sm" id="pClose" type="button">닫기</button>
   </div>
 </div>
 
 <button id="newBar" class="hidden" type="button">새 메시지 ↓</button>
 <button id="toBottom" class="hidden" type="button" aria-label="맨 아래로"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5.5 12.5 12 19l6.5-6.5"/></svg></button>
 
-<div id="iosGuide" class="hidden">
+<div id="iosGuide" class="ov hidden" style="--z:12">
   <div class="card">
     <div style="font-size:17px;font-weight:700;color:var(--gold);margin-bottom:10px">홈 화면에 추가하기</div>
     <ol class="guide">
@@ -1047,7 +1015,6 @@
     </ol>
     <p class="note" id="iosNote">카톡·디코 안에서 열었다면 목록에 「홈 화면에 추가」가 없어요. 먼저 Safari로 열어 주세요.</p>
     <button class="btn" id="iosShare" type="button" style="display:flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> 공유 열기</button>
-    <button class="btn ghost sm" id="iosClose" type="button">닫기</button>
   </div>
 </div>
 
@@ -1222,7 +1189,15 @@ const CLASS_RACES = {
   "흑마법사":["오크","언데드","트롤","인간","노움"],
   "드루이드":["타우렌","바람구체자 스카이본","나이트 엘프","고등 마법원 스카이본"],
 };
-$("guestBtn").onclick = () => { track("guest_open"); ls.del("wowchat_spec"); enterSpec(); joinFromSpec(); };   // 이름·진영·종족·직업·서버 모두 랜덤
+// 손님(취객)으로 들어가기: 첫 화면 단추와 내 정보의 '게스트로 입장'이 같은 동작. 이름·진영·종족·직업·서버 모두 랜덤
+function enterAsGuest(){
+  track("guest_open");
+  if (me) leaveChat();
+  ls.del("wowchat_token"); ls.del("wowchat_account"); ls.del("wowchat_spec");
+  $("sheet").classList.add("hidden");
+  enterSpec(); joinFromSpec();
+}
+$("guestBtn").onclick = enterAsGuest;
 $("gBack").onclick = () => showAlt();
 $("gName").onkeydown = (e) => { if (e.key==="Enter") $("gGo").click(); };
 $("gGo").onclick = async () => {
@@ -1977,7 +1952,6 @@ function openProfile(m){
   $("pBlockLbl").textContent = blocked.has(m.player_id) ? "차단 풀기" : "차단";
   $("prof").classList.remove("hidden");
 }
-$("pClose").onclick = () => $("prof").classList.add("hidden");
 $("pEmote").onclick = async () => {
   await loadEmotes();
   const box=$("pEmotes"); box.innerHTML="";
@@ -2023,7 +1997,6 @@ async function openQuest(id, name){
 }
 $("qMore").onclick = () => { const d=$("qDesc"); const open=d.classList.toggle("clamp"); const isQ=$("qcard").querySelector(".qdh").textContent==="퀘스트 이야기";
   $("qMore").textContent = open ? (isQ ? "이야기 더 보기" : "더 보기") : "접기"; };
-$("qcard").onclick = (e) => { if (e.target.id==="qcard") $("qcard").classList.add("hidden"); };
 const BOT_EXAMPLES = ["@포에버봇 힐러 구하는 파티 있어?", "@포에버봇 가시멧돼지 어디 있어요?", "@포에버봇 스랄은 누구예요?"];
 const agoShort = (iso) => { const m=Math.max(0, Math.round((Date.now()-new Date(iso))/60000));
   return m<60 ? `${m||1}분 전` : m<1440 ? `${Math.floor(m/60)}시간 전` : `${Math.floor(m/1440)}일 전`; };
@@ -2061,7 +2034,6 @@ async function openBotCard(tab){
   if (fans.childElementCount){ const h=document.createElement("div"); h.className="fh"; h.textContent="고마운 분들"; fans.prepend(h); }
   fans.classList.toggle("hidden", !fans.childElementCount);
 }
-$("bcClose").onclick = () => $("botcard").classList.add("hidden");
 $("botBtn").innerHTML = classIcon(null, true).innerHTML;
 $("botBtn").onclick = () => { if (isGuest()) { toast(BOT_NO_DRUNK); return; } setBotMode(!botMode); toast(botMode ? "포에버봇에게 묻기 켰어요" : "포에버봇에게 묻기 껐어요"); $("msgInput").focus(); };
 // 포에버봇 카드 댓글: 내 캐릭터 이름으로 공개되어 주렁주렁 달림
@@ -2171,23 +2143,6 @@ $("bcAskSend").onclick = async () => {
   t.value=""; autoGrow(t); toast("댓글을 달았어요. 고마워요!"); loadComments();
 };
 // 아래 시트(봇 카드, 퀘스트, 프로필, 내 정보)는 아래로 쓸어내리면 닫힘. 새로고침으로 넘어가지 않게 막음
-function swipeClose(id, close){
-  const ov=$(id), card=ov?.querySelector(".card"); if (!card) return;
-  close = close || (() => ov.classList.add("hidden"));
-  if (!card.querySelector(":scope > .grab")) { const g=document.createElement("div"); g.className="grab"; card.prepend(g); }
-  ov.addEventListener("click", (e)=>{ if (e.target===ov) close(); });
-  let y0=null, dy=0;
-  card.addEventListener("touchstart", (e)=>{ if (e.target.closest("textarea,input,select")) { y0=null; return; }
-    y0 = card.scrollTop<=0 ? e.touches[0].clientY : null; dy=0; card.style.transition="none"; }, { passive:true });
-  card.addEventListener("touchmove", (e)=>{ if (y0===null) return; dy=e.touches[0].clientY-y0;
-    if (dy<=0){ card.style.transform=""; if (dy<-6) y0=null; return; }
-    e.preventDefault(); card.style.transform=`translateY(${dy}px)`; }, { passive:false });
-  const end=()=>{ if (y0===null) return; y0=null; card.style.transition="transform .18s ease-out";
-    if (dy>80){ card.style.transform="translateY(100%)"; setTimeout(()=>{ close(); card.style.transition=""; card.style.transform=""; }, 180); }
-    else card.style.transform=""; };
-  card.addEventListener("touchend", end); card.addEventListener("touchcancel", end);
-  ov.addEventListener("touchmove", (e)=>{ if (!card.contains(e.target)) e.preventDefault(); }, { passive:false });
-}
 // 글 복사 창: 글자를 골라서 복사하거나, 전체 복사 단추로 한 번에
 const plainBody = (b) => String(b||"").replace(/\[\[(?:quest|item|npc|spell|achievement|talent):\d+:[A-Z_]*:([^\]\n]{1,60})\]\]/g, "$1").replace(/⟦[^⟧]*⟧?/g, "~");
 function openCopy(m){ $("cpText").value = plainBody(m.body); $("copyCard").classList.remove("hidden"); }
@@ -2197,10 +2152,8 @@ $("cpAll").onclick = async () => {
   if (!ok){ const ta=$("cpText"); ta.focus(); ta.select(); try { ok=document.execCommand("copy"); } catch {} }
   toast(ok ? "복사했어요" : "길게 눌러서 직접 복사해 주세요"); if (ok) $("copyCard").classList.add("hidden");
 };
-$("cpClose").onclick = () => $("copyCard").classList.add("hidden");
-$("copyCard").onclick = (e) => { if (e.target.id==="copyCard") $("copyCard").classList.add("hidden"); };
-["botcard","qcard","prof","sheet","copyCard"].forEach((id) => swipeClose(id));
-swipeClose("gpop", () => closeGpop());
+["botcard","qcard","prof","sheet","copyCard","iosGuide"].forEach((id) => bindSheet(id));
+bindSheet("gpop", () => closeGpop());
 // 키보드가 올라오면 채팅 화면을 보이는 영역 크기에 맞추고, 맨 아래를 보고 있었으면 계속 맨 아래로
 (function fitViewport(){
   const vv=window.visualViewport; if (!vv) return;
@@ -2227,7 +2180,6 @@ function enterSends(el, form){ let shift=false;
   el.addEventListener("beforeinput", (e)=>{ if ((e.inputType==="insertLineBreak"||e.inputType==="insertParagraph") && !shift){ e.preventDefault(); form.requestSubmit(); } });
 }
 enterSends($("msgInput"), $("send")); enterSends($("dmInput"), $("dmSend"));
-$("botcard").onclick = (e) => { if (e.target.id==="botcard") $("botcard").classList.add("hidden"); };
 const cardMemo = new Map();
 async function loadCard(id){
   if (!id || id==="bot") return null;
@@ -2235,7 +2187,6 @@ async function loadCard(id){
   const p = sb.rpc("wow_player_card", { p_token: me.token, p_player: id }).then(r=>r.data||null).catch(()=>null);
   cardMemo.set(id, p); return p;
 }
-$("prof").onclick = (e) => { if (e.target.id==="prof") $("prof").classList.add("hidden"); };
 /* ---------- 감정 표현 ---------- */
 let EMOTES = [];
 async function loadEmotes(){ if (EMOTES.length) return; const { data } = await sb.rpc("wow_emote_list"); EMOTES = data || []; }
@@ -2537,7 +2488,7 @@ function joinFromSpec(){
 $("chat").addEventListener("click", (e) => {
   if (!me?.spec) return;
   const t = e.target;
-  if (t.closest("#sceneTabs,#sceneX,#chips,#enemySw,#guideBtn,#soberGo,#onlBtn,#newBar,a[href]")) return;
+  if (t.closest("#sceneTabs,#sceneX,#enemySw,#guideBtn,#soberGo,#onlBtn,#newBar,a[href]")) return;
   if (t.closest("#list")) { e.preventDefault(); e.stopPropagation(); toast(`입력창을 누르면 '${me.name}'(으)로 들어가서 답글을 달 수 있어요`); return; }
   if (t.closest("#send,#meBtn,#dmBtn,#tipBar")) { e.preventDefault(); e.stopPropagation(); joinFromSpec(); }
 }, true);
@@ -2802,13 +2753,7 @@ $("dmcClose").onclick = closeSheets;
   const mo=new MutationObserver(sync);
   SHEET_IDS.forEach(id=>{
     const sec=$(id); mo.observe(sec, { attributes:true, attributeFilter:["class"] });
-    const head=sec.querySelector("header"); let y0=null, dy=0;
-    head.addEventListener("touchstart", (e)=>{ if (e.target.closest("button")) return; y0=e.touches[0].clientY; dy=0; sec.style.transition="none"; }, { passive:true });
-    head.addEventListener("touchmove", (e)=>{ if (y0===null) return; dy=Math.max(0, e.touches[0].clientY-y0); e.preventDefault(); sec.style.transform=`translateY(${dy}px)`; }, { passive:false });
-    const end=()=>{ if (y0===null) return; y0=null; sec.style.transition="transform .18s ease-out";
-      if (dy>80){ sec.style.transform="translateY(100%)"; setTimeout(()=>{ closeSheets(); sec.style.transition=""; sec.style.transform=""; }, 180); }
-      else sec.style.transform=""; };
-    head.addEventListener("touchend", end); head.addEventListener("touchcancel", end);
+    dragToClose(sec, sec.querySelector("header"), closeSheets, false);
   });
 })();
 $("dmTitle").onclick = () => { if (dmWith) openProfile(dmWith); };
@@ -2836,6 +2781,55 @@ $("pBlock").onclick = async () => {
   $("prof").classList.add("hidden"); loadDmConvs();
 };
 
+/* ---------- UI 조각 (같은 모양은 여기 것을 같이 씀) ---------- */
+// h("button", { className: "btn", onclick }, "글자", 자식…)
+function h(tag, props, ...kids){
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === "style" && typeof v === "object") Object.assign(e.style, v);
+    else if (k === "data") Object.assign(e.dataset, v);
+    else if (k in e && !k.includes("-")) e[k] = v; else e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) e.append(c);
+  return e;
+}
+// 켜고 끄는 스위치
+function toggleEl(on, label, onClick){
+  return h("button", { type: "button", className: "toggle", role: "switch", "aria-checked": String(!!on), "aria-label": label, onclick: onClick });
+}
+// 캐릭터 한 줄: 직업 아이콘 + 직업 색 이름 + 종족 직업 Lv
+function whoLine(p, { big = false, extra = "" } = {}){
+  return h("span", { className: "who" }, iconEl("class", p.cls, p.faction, big), h("b", { style: { color: CLASS_COLOR[p.cls] || "" } }, p.name),
+    ` · ${p.race} ${p.cls}${p.level ? ` Lv.${p.level}` : ""}${extra}`);
+}
+// 아래에서 올라오는 창: 손잡이·✕·바깥 누르기·쓸어내리기 (handleSel 없으면 판 전체를 맨 위에서 쓸어내림)
+function bindSheet(id, close, handleSel){
+  const ov = $(id), panel = ov?.querySelector(":scope > .card, :scope > .msheet"); if (!panel) return;
+  close = close || (() => ov.classList.add("hidden"));
+  if (panel.classList.contains("card")) {
+    if (!panel.querySelector(":scope > .grab")) panel.prepend(h("div", { className: "grab" }));
+    if (!panel.querySelector(":scope > .sx")) panel.append(h("button", { type: "button", className: "sx", "aria-label": "닫기", onclick: () => close() }, "✕"));
+  }
+  ov.addEventListener("click", (e) => { if (e.target === ov) close(); });
+  ov.addEventListener("touchmove", (e) => { if (!panel.contains(e.target)) e.preventDefault(); }, { passive: false });
+  dragToClose(panel, handleSel ? ov.querySelector(handleSel) : panel, close, !handleSel);
+}
+function dragToClose(panel, handle, close, fromTop){
+  let y0 = null, dy = 0;
+  handle.addEventListener("touchstart", (e) => {
+    if (e.target.closest(fromTop ? "textarea,input,select" : "button,textarea,input,select") || (fromTop && panel.scrollTop > 0)) { y0 = null; return; }
+    y0 = e.touches[0].clientY; dy = 0; panel.style.transition = "none"; }, { passive: true });
+  handle.addEventListener("touchmove", (e) => {
+    if (y0 === null) return; dy = e.touches[0].clientY - y0;
+    if (dy <= 0) { panel.style.transform = ""; if (fromTop && dy < -6) y0 = null; return; }
+    e.preventDefault(); panel.style.transform = `translateY(${dy}px)`; }, { passive: false });
+  const end = () => { if (y0 === null) return; y0 = null; panel.style.transition = "transform .18s ease-out";
+    if (dy > 80) { panel.style.transform = "translateY(100%)"; setTimeout(() => { close(); panel.style.transition = ""; panel.style.transform = ""; }, 180); }
+    else panel.style.transform = ""; };
+  handle.addEventListener("touchend", end); handle.addEventListener("touchcancel", end);
+}
+
 /* ---------- 내 정보 ---------- */
 $("meBtn").onclick = () => {
   const box=$("sheetInfo"); box.innerHTML="";
@@ -2850,6 +2844,7 @@ $("meBtn").onclick = () => {
   loadCard(me.id).then(c=>{ if (c?.gender==="FEMALE" || c?.avatar) { const np=portraitEl(me, "sm", c.gender); if (c.avatar){ const f=np.querySelector(".face"); const im=document.createElement("img"); im.className="ic lg face"; im.src=c.avatar; im.referrerPolicy="no-referrer"; im.style.borderColor=CLASS_COLOR[me.class]||""; f.replaceWith(im); } pic.replaceWith(np); } });
   box.appendChild(head);
   const lb = $("sheetLamp"); lb.innerHTML = ""; if (canAct()) lb.appendChild(lanternBox());
+  $("sheetBnet").classList.toggle("hidden", !isGuest()); $("asGuestBtn").textContent = isGuest() ? "🎲 새 손님으로" : "🍺 게스트로 입장";
   $("sheet").classList.remove("hidden");
   currentSub().then(sub => { $("pushBtn").textContent = sub && Notification.permission==="granted" ? "🔕 알림 끄기" : "🔔 알림 켜기"; });
 };
@@ -2857,8 +2852,6 @@ $("pushBtn").onclick = async () => {
   const sub = await currentSub(); $("sheet").classList.add("hidden");
   if (sub && Notification.permission==="granted") await disablePush(); else await enablePush();
 };
-$("closeSheet").onclick = () => $("sheet").classList.add("hidden");
-$("sheet").onclick = (e) => { if (e.target.id==="sheet") $("sheet").classList.add("hidden"); };
 function leaveChat(){
   if (replyCtx) cancelReply(); expanded.clear(); repliesMap.clear(); closeActions();
   if (msgSub) sb.removeChannel(msgSub); if (presence) sb.removeChannel(presence);
@@ -2875,10 +2868,8 @@ $("switchBtn").onclick = async () => {
   if (!(await openPickerFromAccount())) { show("join"); showAlt(); }
 };
 $("pickOut").onclick = () => { ls.del("wowchat_token"); ls.del("wowchat_account"); $("pickErr").textContent = ""; showAlt(); };
-$("logoutBtn").onclick = () => {
-  leaveChat(); ls.del("wowchat_token"); ls.del("wowchat_account");
-  show("join"); showAlt();
-};
+$("asGuestBtn").onclick = () => { if (isGuest() && !me?.spec && !confirm("지금 손님 이름을 버리고 새 손님으로 들어갈까요?")) return; enterAsGuest(); };
+$("sheetBnet").onclick = () => { $("sheet").classList.add("hidden"); $("soberGo").click(); };
 
 /* ---------- 홈 화면에 추가 ---------- */
 const isStandalone = () => window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true;
@@ -2906,7 +2897,6 @@ document.querySelectorAll(".installBtn").forEach(b => b.onclick = async () => {
   }
   toast("브라우저 메뉴(⋮)에서 '홈 화면에 추가'를 눌러 주세요");
 });
-$("iosClose").onclick = () => $("iosGuide").classList.add("hidden");
 $("safeQ").onclick = () => { const open = $("safeInfo").classList.toggle("hidden") === false; $("safeQ").setAttribute("aria-expanded", open ? "true" : "false"); };
 // 입장 화면 오른쪽 위 공유 아이콘: 홈 화면에 추가할 수 있으면 그 안내, 아니면 공유 창(또는 주소 복사)
 $("shareTop").onclick = async () => {
@@ -3117,9 +3107,7 @@ function guildCard(a, inProfile){
   if (a.enemy) { const n = document.createElement("div"); n.className = "gmemo none"; n.textContent = `${a.faction === "alliance" ? "얼라이언스" : "호드"} 팻말이에요. 무슨 말인지 모르겠어요`; card.appendChild(n); }
   else if (!(a.tags || []).length) { const n = document.createElement("div"); n.className = "gmemo none"; n.textContent = a.mine ? "태그를 골라 보세요" : "귓속말로 물어보세요"; card.appendChild(n); }
   if (!inProfile) {
-    const who = document.createElement("div"); who.className = "gwho";
-    const b = document.createElement("b"); b.textContent = a.name; b.style.color = CLASS_COLOR[a.cls] || "";
-    who.append(iconEl("class", a.cls, a.faction), b, document.createTextNode(` · ${a.race} ${a.cls}${a.level ? ` Lv.${a.level}` : ""}`));
+    const who = h("div", { className: "gwho" }, whoLine(a));
     who.onclick = () => { if (me?.spec) { toast("들어오면 프로필을 볼 수 있어요"); return; } closeGpop(); openProfile(gadAsMsg(a)); };
     card.appendChild(who);
   }
@@ -3143,7 +3131,7 @@ function guildCard(a, inProfile){
   if (seek && gApplying === a.id && !myGuild && !a.applied && canAct()) {   // 처음 한 번만: 내 길드 이름
     const f = document.createElement("form"); f.className = "gapply";
     const gi = document.createElement("input"); gi.maxLength = 24; gi.placeholder = "내 길드 이름 (한 번만)"; gi.enterKeyHint = "send";
-    const go = document.createElement("button"); go.type = "submit"; go.className = "gbtn"; go.style.width = "100%"; go.textContent = "추천";
+    const go = document.createElement("button"); go.type = "submit"; go.className = "btn sm"; go.textContent = "추천";
     f.append(gi, go);
     f.onsubmit = (e) => { e.preventDefault(); if (!gi.value.trim()) { gi.focus(); return; } go.disabled = true; applyGuild(a, gi.value).finally(() => { go.disabled = false; }); };
     card.appendChild(f);
@@ -3175,8 +3163,7 @@ function lanternBox(){
   const box = document.createElement("div"); box.className = "gbox lampbox";
   const row = document.createElement("div"); row.className = "lamp";
   const t = document.createElement("b"); t.textContent = "🏮 길드 찾는 중";
-  const sw = document.createElement("button"); sw.type = "button"; sw.className = "sw2"; sw.setAttribute("role", "switch"); sw.setAttribute("aria-checked", on);
-  sw.setAttribute("aria-label", "길드 찾는 중");
+  const sw = toggleEl(on, "길드 찾는 중", null);
   sw.onclick = () => {
     if (mine?.kind === "recruit") { toast("팻말을 꽂은 동안은 등불을 들 수 없어요"); return; }
     sw.disabled = true; setLantern(!on).finally(() => { sw.disabled = false; });
@@ -3309,12 +3296,12 @@ function renderGuild(){
   const t = document.createElement("b");
   if (!canAct()) {
     t.textContent = "로그인하면 팻말을 꽂을 수 있어요";
-    const go = document.createElement("button"); go.type = "button"; go.className = "gbtn"; go.style.flex = "none"; go.textContent = "로그인";
+    const go = document.createElement("button"); go.type = "button"; go.className = "btn inline"; go.textContent = "로그인";
     go.onclick = () => $("soberGo").click();
     row.append(t, go);
   } else {
     t.className = "lhint"; t.textContent = mine?.kind === "seek" ? "🏮 등불을 들고 있어요 · 내 캐릭터에서 끌 수 있어요" : "🏮 길드를 찾는다면 내 캐릭터를 눌러 등불을 켜요";
-    const go = document.createElement("button"); go.type = "button"; go.className = "gbtn"; go.style.flex = "none"; go.textContent = "내 캐릭터";
+    const go = document.createElement("button"); go.type = "button"; go.className = "btn inline"; go.textContent = "내 캐릭터";
     go.onclick = () => { closeGuildModal(); $("meBtn").click(); };
     row.append(t, go);
   }
@@ -3325,16 +3312,14 @@ function renderGuild(){
     const ah = document.createElement("h3"); ah.textContent = `${mine.kind === "recruit" ? "📜 받은 가입 신청" : "💌 받은 길드 추천"} ${gApps.length}`; ab.appendChild(ah);
     gApps.forEach((x) => {
       const r = document.createElement("div"); r.className = "gapp";
-      const gi = document.createElement("div"); gi.className = "gi";
-      const b = document.createElement("b"); b.textContent = x.name; b.style.color = CLASS_COLOR[x.cls] || "";
-      gi.append(b, document.createTextNode(` · ${x.race} ${x.cls}${x.level ? ` Lv.${x.level}` : ""} · ${agoShort(x.created_at)}`));
+      const gi = h("div", { className: "gi" }, whoLine(x, { extra: ` · ${agoShort(x.created_at)}` }));
       if (x.kind === "scout" && x.guild) { const g2 = document.createElement("span"); g2.className = "gg"; g2.textContent = `🏰 ${x.guild}`; gi.appendChild(g2); }
       const dm = document.createElement("button"); dm.type = "button"; dm.textContent = "✉";
       dm.onclick = () => openDm({ player_id: x.id, sender_name: x.name, sender_class: x.cls, sender_race: x.race, sender_faction: x.faction, sender_level: x.level, sender_realm: x.realm, sender_verified: true });
       const del = document.createElement("button"); del.type = "button"; del.textContent = "✕"; del.setAttribute("aria-label", "지우기");
       del.onclick = async () => { const { data, error } = await sb.rpc("wow_guild_app_drop", { p_token: me.token, p_applicant: x.id });
         if (error) { toast(errMsg(error)); return; } gApps = Array.isArray(data) ? data : []; buildChips(); };
-      r.append(iconEl("class", x.cls, x.faction, true), gi, dm, del); ab.appendChild(r);
+      r.append(gi, dm, del); ab.appendChild(r);
     });
     pane.appendChild(ab);
   }
@@ -3345,10 +3330,8 @@ function renderGuild(){
     const h = document.createElement("h3"); h.textContent = `🏮 길드 찾는 사람 ${seekers.length}`; sb2.appendChild(h);
     seekers.forEach((a) => {
       const r = document.createElement("button"); r.type = "button"; r.className = "gapp seekrow";
-      const gi = document.createElement("div"); gi.className = "gi";
-      const b = document.createElement("b"); b.textContent = a.name; b.style.color = CLASS_COLOR[a.cls] || "";
-      gi.append(b, document.createTextNode(` · ${a.race} ${a.cls}${a.level ? ` Lv.${a.level}` : ""}`), pills(a.tags, mine?.kind === "recruit" ? mine.tags : null));
-      r.append(iconEl("class", a.cls, a.faction, true), gi);
+      const gi = h("div", { className: "gi" }, whoLine(a), pills(a.tags, mine?.kind === "recruit" ? mine.tags : null));
+      r.append(gi);
       if (a.applied) { const d = document.createElement("span"); d.className = "done"; d.textContent = "추천함"; r.appendChild(d); }
       r.onclick = () => openGad(a.id);
       sb2.appendChild(r);
@@ -3384,13 +3367,13 @@ function openSignEditor(pos){
   const tl = document.createElement("div"); tl.className = "glab"; tl.textContent = "이런 분 구해요";
   const st = document.createElement("div"); st.className = "gsave";
   const say = () => { st.textContent = busy ? "저장 중…" : "✓ 바꾸면 바로 저장돼요 · 팻말은 끌어서 옮길 수 있어요"; };
-  const plant = document.createElement("button"); plant.type = "button"; plant.className = "gbtn plant"; plant.textContent = "🪧 여기에 꽂기";
+  const plant = document.createElement("button"); plant.type = "button"; plant.className = "btn"; plant.textContent = "🪧 여기에 꽂기";
   const syncPlant = () => { plant.disabled = !d.guild.trim() || busy; };
   plant.onclick = () => save();
   body.append(h, cr, gi, tl, tagChips(d.tags, () => later(0)));
   if (cur) {
     body.appendChild(st);
-    const x = document.createElement("button"); x.type = "button"; x.className = "glink"; x.textContent = "팻말 뽑기";
+    const x = document.createElement("button"); x.type = "button"; x.className = "btn link danger center"; x.textContent = "팻말 뽑기";
     x.onclick = async () => { gFlush = null; clearTimeout(tm); await clearGuildAd(); closeGpop(); };
     body.appendChild(x);
     say();
@@ -3442,18 +3425,7 @@ function openClasses(){
 }
 const closeClasses = () => $("cmodal").classList.add("hidden");
 $("gmX").onclick = closeGuildModal; $("cmX").onclick = closeClasses;
-function swipeHead(id, close){
-  const ov = $(id), sh = ov.querySelector(".msheet"), head = ov.querySelector(".mhead"); let y0 = null, dy = 0;
-  head.addEventListener("touchstart", (e) => { if (e.target.closest("button")) return; y0 = e.touches[0].clientY; dy = 0; sh.style.transition = "none"; }, { passive: true });
-  head.addEventListener("touchmove", (e) => { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); e.preventDefault(); sh.style.transform = `translateY(${dy}px)`; }, { passive: false });
-  const end = () => { if (y0 === null) return; y0 = null; sh.style.transition = "transform .18s ease-out";
-    if (dy > 80) { sh.style.transform = "translateY(100%)"; setTimeout(() => { close(); sh.style.transition = ""; sh.style.transform = ""; }, 180); }
-    else sh.style.transform = ""; };
-  head.addEventListener("touchend", end); head.addEventListener("touchcancel", end);
-}
-swipeHead("gmodal", () => closeGuildModal()); swipeHead("cmodal", () => closeClasses());
-$("gmodal").onclick = (e) => { if (e.target.id === "gmodal") closeGuildModal(); };
-$("cmodal").onclick = (e) => { if (e.target.id === "cmodal") closeClasses(); };
+bindSheet("gmodal", () => closeGuildModal(), ".mhead"); bindSheet("cmodal", () => closeClasses(), ".mhead");
 $("guideBtn").onclick = (e) => { e.preventDefault(); openClasses(); };
 $("sheetClasses").onclick = (e) => { e.preventDefault(); $("sheet").classList.add("hidden"); openClasses(); };
 // 직업 도감 안의 '포에버 채팅으로' 링크는 모달만 닫기
@@ -3467,8 +3439,6 @@ document.addEventListener("keydown", (e) => {
   else if (gOpen) closeGuildModal();
 });
 function closeGpop(){ if (gFlush) { const f = gFlush; gFlush = null; f(); } $("gpop").classList.add("hidden"); }
-$("gpopClose").onclick = closeGpop;
-$("gpop").onclick = (e) => { if (e.target.id === "gpop") closeGpop(); };
 
 async function clearGuildAd(){
   const { data, error } = await sb.rpc("wow_guild_ad_clear", { p_token: me.token });
