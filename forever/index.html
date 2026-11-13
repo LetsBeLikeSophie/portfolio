@@ -437,7 +437,8 @@
     display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
   .pnote::before{content:"";position:absolute;top:-5px;left:30%;width:40%;height:9px;background:#ffffffb8}
   .pnote canvas{width:84%;height:84%;image-rendering:pixelated}
-  .pnote.mine{outline:3px solid #ffd36a}
+  .pnote.mine{outline:3px solid #ffd36a;touch-action:none}
+  .pnote.drag{z-index:50;transform:translate(-50%,-50%) scale(1.12) rotate(-3deg);box-shadow:6px 8px 0 #0004}
   .ded h3,.dview h3{margin:0 0 10px;font-size:16px;color:var(--gold);text-align:center}
   .pps{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 10px}
   .pp{width:30px;height:30px;border:2px solid #1a110a;cursor:pointer;padding:0;border-radius:4px}
@@ -3506,13 +3507,36 @@ $("bmX").onclick = closeBoard;
 bindSheet("bmodal", () => closeBoard(), ".mhead");
 function renderBoard(){
   const pane = $("boardPane"); pane.innerHTML = "";
-  const hint = h("div", { className: "bhint" }, doodles.length ? `포스트잇 ${doodles.length}장 · 빈 곳을 누르면 붙여요 (그림만)` : "빈 곳을 누르면 포스트잇을 붙여요 (그림만)");
+  const hint = h("div", { className: "bhint" }, doodles.length ? doodles.some((d) => d.mine) ? `포스트잇 ${doodles.length}장 · 내 것은 끌어서 옮길 수 있어요` : `포스트잇 ${doodles.length}장 · 빈 곳을 누르면 붙여요 (그림만)` : "빈 곳을 누르면 포스트잇을 붙여요 (그림만)");
   const wb = h("div", { className: "wb" });
   doodles.forEach((d) => {
     const cv = h("canvas"); drawDoodle(cv, d.pix);
     const n = h("button", { type: "button", className: "pnote" + (d.mine ? " mine" : ""), "aria-label": `${d.name}의 포스트잇`,
       style: { left: `${d.px * 100}%`, top: `${d.py * 100}%`, background: PAPER[d.paper] || PAPER[0] } }, cv);
-    n.onclick = (e) => { e.stopPropagation(); viewDoodle(d); };
+    n.onclick = (e) => { e.stopPropagation(); if (n._dragged) { n._dragged = false; return; } viewDoodle(d); };
+    if (d.mine) n.onpointerdown = (e) => {   // 내 포스트잇은 끌어서 옮기기 (살짝 누르면 크게 보기)
+      const r = wb.getBoundingClientRect(), st = { x: e.clientX, y: e.clientY, moved: false };
+      try { n.setPointerCapture(e.pointerId); } catch (_) {}
+      const cl = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+      n.onpointermove = (ev) => {
+        const dx = ev.clientX - st.x, dy = ev.clientY - st.y;
+        if (!st.moved && Math.hypot(dx, dy) < 7) return;
+        st.moved = true; n.classList.add("drag");
+        st.fx = cl(d.px + dx / r.width, 0.11, 0.89); st.fy = cl(d.py + dy / r.height, 0.1, 0.9);
+        n.style.left = `${st.fx * 100}%`; n.style.top = `${st.fy * 100}%`;
+      };
+      const end = async (ok) => {
+        n.onpointermove = n.onpointerup = n.onpointercancel = null; n.classList.remove("drag");
+        if (!st.moved) return;
+        n._dragged = true; setTimeout(() => { n._dragged = false; }, 400);
+        if (!ok) { renderBoard(); return; }
+        d.px = st.fx; d.py = st.fy; wb.appendChild(n);   // 옮긴 건 맨 위로
+        const { data, error } = await sb.rpc("wow_doodle_move", { p_token: me.token, p_id: d.id, p_x: st.fx, p_y: st.fy });
+        if (error) { toast(errMsg(error)); loadDoodles(); return; }
+        if (Array.isArray(data)) doodles = data;
+      };
+      n.onpointerup = () => end(true); n.onpointercancel = () => end(false);
+    };
     wb.appendChild(n);
   });
   wb.onclick = async (e) => {
