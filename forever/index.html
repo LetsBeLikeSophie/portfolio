@@ -83,8 +83,6 @@
   .btn.bnet{margin-top:4px;background:linear-gradient(180deg,#1a8dff,#0060c7);border-color:#0a55a8;color:#fff}
   .btn.sm{margin-top:10px;padding:9px;font-size:14px}
   .btn.inline{width:auto;margin:0;flex:none;padding:10px 14px}
-  .btn.tile{margin:0;padding:12px 6px;border-radius:12px;background:#ffffff08;border-color:var(--line);color:var(--text);font:inherit;font-size:14px;font-weight:700;
-    display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;white-space:nowrap;letter-spacing:0}
   .btn.link{width:auto;margin:0;background:none;border:0;padding:6px 4px;color:var(--muted);font:inherit;font-size:13px;font-weight:500;text-decoration:underline}
   .btn.link.danger{color:#ff8f7a}
   .btn.link.center{display:block;margin:14px auto 2px}
@@ -468,9 +466,12 @@
   .mhd{display:flex;align-items:center;gap:10px;margin:0 0 12px}
   .mhd .nm{font-size:17px;display:inline-flex;align-items:center;gap:4px}
   .mhd .mt{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.4}
-  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0 0}
-  .btn.tile.installBtn{grid-column:1/-1}
-  .mfoot{display:flex;justify-content:space-between;margin-top:12px}
+  .mrow{display:flex;gap:8px}
+  .mrow .btn{margin:0}
+  .mrow #logoutBtn{flex:0 0 34%}
+  .mextra{margin-top:20px;padding-top:4px}
+  .mextra .btn:first-child{margin-top:0}
+  .mextra:not(:has(.btn:not(.hidden))){display:none}
   .lamp b.lhint{font-size:13px;font-weight:600;color:var(--body);line-height:1.4}
   .lsub{font-size:12.5px;color:var(--muted);margin:6px 0 10px;line-height:1.4}
   .lampbox{text-align:left;margin:4px 0 10px}
@@ -904,13 +905,14 @@
   <div class="card">
     <div id="sheetInfo"></div>
     <div id="sheetLamp"></div>
-    <div class="mgrid">
-      <button class="btn tile" id="switchBtn" type="button">🔄 캐릭터 바꾸기</button>
-      <button class="btn tile" id="pushBtn" type="button">🔔 알림 켜기</button>
-      <a class="btn tile" id="sheetClasses" href="/forever/classes/">📘 직업 도감</a>
-      <button class="btn tile installBtn hidden" type="button">📲 홈 화면에 추가</button>
+    <div class="mrow">
+      <button class="btn" id="switchBtn" type="button">배틀넷 로그인</button>
+      <button class="btn ghost" id="logoutBtn" type="button">로그아웃</button>
     </div>
-    <div class="mfoot"><button class="btn link" id="asGuestBtn" type="button">🍺 게스트로 입장</button><button class="btn link" id="sheetBnet" type="button">배틀넷 로그인</button></div>
+    <div class="mextra">
+      <button class="btn ghost sm" id="pushBtn" type="button">🔔 휴대폰 알림 켜기</button>
+      <button class="btn ghost sm installBtn hidden" type="button">📲 홈 화면에 추가</button>
+    </div>
   </div>
 </div>
 
@@ -1200,7 +1202,7 @@ function enterAsGuest(){
   if (me) leaveChat();
   ls.del("wowchat_token"); ls.del("wowchat_account"); ls.del("wowchat_spec");
   $("sheet").classList.add("hidden");
-  enterSpec(); joinFromSpec();
+  enterSpec();   // 랜덤 손님으로 구경부터. 말을 걸면 그때 손님 이름으로 등록 (빈 손님 계정이 쌓이지 않게)
 }
 $("guestBtn").onclick = enterAsGuest;
 $("gBack").onclick = () => showAlt();
@@ -2844,14 +2846,14 @@ $("meBtn").onclick = () => {
   const mt=document.createElement("div"); mt.className="mt";
   mt.textContent=[me.realm || "일반", `${me.race} ${me.class}`, me.level ? `Lv.${me.level}` : null, me.faction==="alliance" ? "얼라이언스" : "호드"].filter(Boolean).join(" · ");
   const who=document.createElement("div"); who.append(nm, mt);
-  if (isGuest()) { const g=document.createElement("div"); g.className="mt"; g.textContent="🍺 취객 · 배틀넷으로 인증하면 술이 깨요"; who.appendChild(g); }
+  if (isGuest()) { const g=document.createElement("div"); g.className="mt"; g.textContent="👻 손님 · 배틀넷 인증 전"; who.appendChild(g); }
   const pic=portraitEl(me, "sm"); head.append(pic, who);
   loadCard(me.id).then(c=>{ if (c?.gender==="FEMALE" || c?.avatar) { const np=portraitEl(me, "sm", c.gender); if (c.avatar){ const f=np.querySelector(".face"); const im=document.createElement("img"); im.className="ic lg face"; im.src=c.avatar; im.referrerPolicy="no-referrer"; im.style.borderColor=CLASS_COLOR[me.class]||""; f.replaceWith(im); } pic.replaceWith(np); } });
   box.appendChild(head);
   const lb = $("sheetLamp"); lb.innerHTML = ""; if (canAct()) lb.appendChild(lanternBox());
-  $("sheetBnet").classList.toggle("hidden", !isGuest()); $("asGuestBtn").textContent = isGuest() ? "🎲 새 손님으로" : "🍺 게스트로 입장";
+  $("switchBtn").textContent = isGuest() ? "배틀넷 로그인" : "캐릭터 바꾸기";
   $("sheet").classList.remove("hidden");
-  currentSub().then(sub => { $("pushBtn").textContent = sub && Notification.permission==="granted" ? "🔕 알림 끄기" : "🔔 알림 켜기"; });
+  currentSub().then(sub => { $("pushBtn").textContent = sub && Notification.permission==="granted" ? "🔕 휴대폰 알림 끄기" : "🔔 휴대폰 알림 켜기"; });
 };
 $("pushBtn").onclick = async () => {
   const sub = await currentSub(); $("sheet").classList.add("hidden");
@@ -2869,12 +2871,13 @@ function leaveChat(){
   $("prof").classList.add("hidden"); $("newBar").classList.add("hidden"); $("notif").classList.add("hidden");
 }
 $("switchBtn").onclick = async () => {
+  if (isGuest()) { $("sheet").classList.add("hidden"); $("soberGo").click(); return; }   // 손님은 배틀넷 로그인
   leaveChat(); ls.del("wowchat_token");
   if (!(await openPickerFromAccount())) { show("join"); showAlt(); }
 };
 $("pickOut").onclick = () => { ls.del("wowchat_token"); ls.del("wowchat_account"); $("pickErr").textContent = ""; showAlt(); };
-$("asGuestBtn").onclick = () => { if (isGuest() && !me?.spec && !confirm("지금 손님 이름을 버리고 새 손님으로 들어갈까요?")) return; enterAsGuest(); };
-$("sheetBnet").onclick = () => { $("sheet").classList.add("hidden"); $("soberGo").click(); };
+// 로그아웃 = 손님(구경)으로 돌아가기. 첫 화면 '게스트로 입장'과 같은 enterAsGuest
+$("logoutBtn").onclick = () => { if (isGuest() && !confirm("지금 손님 이름을 버리고 나갈까요?")) return; enterAsGuest(); };
 
 /* ---------- 홈 화면에 추가 ---------- */
 const isStandalone = () => window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true;
@@ -3432,7 +3435,6 @@ const closeClasses = () => $("cmodal").classList.add("hidden");
 $("gmX").onclick = closeGuildModal; $("cmX").onclick = closeClasses;
 bindSheet("gmodal", () => closeGuildModal(), ".mhead"); bindSheet("cmodal", () => closeClasses(), ".mhead");
 $("guideBtn").onclick = (e) => { e.preventDefault(); openClasses(); };
-$("sheetClasses").onclick = (e) => { e.preventDefault(); $("sheet").classList.add("hidden"); openClasses(); };
 // 직업 도감 안의 '포에버 채팅으로' 링크는 모달만 닫기
 $("cFrame").addEventListener("load", () => {
   try { $("cFrame").contentDocument.querySelectorAll('a[href="/forever/"]').forEach((a) => { a.onclick = (e) => { e.preventDefault(); closeClasses(); }; }); } catch (_) {}
