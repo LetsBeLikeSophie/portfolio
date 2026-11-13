@@ -33,6 +33,8 @@ export function createScene(canvas, opts = {}) {
   let view = 0, cam = 0, hallNew = false, bgs = [null, null], infoSig = "";
   // 홀 오른쪽 벽 책장: 누르면 직업 도감(직업·특성 정리)으로
   let shelf = { x: 96, y: 8, w: 16, h: 20 };
+  // 홀 벽 창문: 밖에 길드 광장(팻말·횃불)이 보이고, 누르면 길드 광장
+  let win = { x: 70, y: 11, w: 18, h: 12 }, winBadge = 0;
 
   /* ---------- 크기 ---------- */
   function resize() {
@@ -44,6 +46,8 @@ export function createScene(canvas, opts = {}) {
     low.width = W; low.height = H; k = PX * dpr;
     wallH = Math.round(H * 0.4); barW = 20;
     { const h = Math.min(wallH + 1, 22); shelf = { x: W - 24, w: 16, h, y: wallH + 3 - h }; }
+    { const y = Math.max(10, Math.round(wallH * 0.32)), h = Math.max(6, Math.min(12, wallH - y - 4)), w = 18;
+      win = { x: Math.min(shelf.x - w - 6, Math.round(W * 0.64 - w / 2)), y, w, h }; }
     bgs = [makeBg(0), makeBg(1)];
     for (const a of people.values()) if (!a.asleep) clampPos(a);
     seatSleepers();
@@ -207,6 +211,23 @@ export function createScene(canvas, opts = {}) {
     c.fillStyle = gr; c.fillRect(0, wy, cw, ch - wy);
     c.fillStyle = "rgba(0,0,0,.35)"; c.fillRect(0, wy, cw, 2 * dpr);
     c.fillStyle = "rgba(255,255,255,.04)"; c.fillRect(0, wy + 2 * dpr, cw, 1 * dpr);
+    // 창문: 밤하늘 아래 광장 팻말과 횃불이 보임
+    {
+      const u = k, { x: wx, y: wy0, w: ww, h: wh } = win;
+      const P = (x, y, w, h, col) => { c.fillStyle = col; c.fillRect((wx + x) * u, (wy0 + y) * u, w * u, h * u); };
+      P(-1, -1, ww + 2, wh + 2, "#1a110a"); P(0, 0, ww, wh, "#4a3420");
+      const ih = wh - 2, iw = ww - 2, gh = Math.max(2, Math.round(ih * 0.4));
+      P(1, 1, iw, ih - gh, "#1a2547"); P(1, 1, iw, Math.max(1, Math.round((ih - gh) / 2)), "#121a38");
+      P(1, 1 + ih - gh, iw, gh, "#2c4520");
+      P(3, 2, 1, 1, "#cfd8ff"); P(iw - 3, 3, 1, 1, "#fff3b0"); P(iw - 1, 2, 2, 2, "#f3eac0");
+      const gy = 1 + ih - gh;
+      for (const sx of [3, 9, iw - 3]) { if (sx + 2 > iw) continue; P(sx, gy - 2, 3, 2, "#c99a5c"); P(sx, gy - 2, 3, 1, "#a8302a"); P(sx + 1, gy, 1, 1, "#6b4423"); }
+      P(Math.round(iw / 2) + 1, gy - 2, 1, 2, "#4a2f17"); P(Math.round(iw / 2) + 1, gy - 3, 1, 1, "#ffd36a");
+      P(Math.round(ww / 2) - 1, 0, 1, wh, "#4a3420"); P(0, Math.round(wh / 2) - 1, ww, 1, "#4a3420");
+      P(-2, wh + 1, ww + 4, 1, "#6b4524"); P(-2, wh + 2, ww + 4, 1, "#1a110a");
+      const gr = c.createRadialGradient((wx + ww / 2) * u, (wy0 + wh) * u, 0, (wx + ww / 2) * u, (wy0 + wh) * u, ww * 2.2 * u);
+      gr.addColorStop(0, "rgba(150,170,255,.10)"); gr.addColorStop(1, "rgba(150,170,255,0)"); c.fillStyle = gr; c.fillRect(0, 0, cw, ch);
+    }
     // 책장 (도트 칸에 맞춤)
     {
       const u = k, { w: sw, h: sh } = shelf;
@@ -475,7 +496,16 @@ export function createScene(canvas, opts = {}) {
         }
       }
       if (R.rm === 0 && view === 0) label((bot.x + R.off) * k, (R.fairyTop - 1) * k, "포에버봇", "#e6c36a", false, false);
-      if (R.rm === 0) label((shelf.x + shelf.w / 2 + R.off) * k, (shelf.y + shelf.h + 1) * k + 12 * dpr, "📖 직업 도감", "#f0d48a", false, false);
+      if (R.rm === 0) {
+        label((shelf.x + shelf.w / 2 + R.off) * k, (shelf.y + shelf.h + 1) * k + 12 * dpr, "📖 직업 도감", "#f0d48a", false, false);
+        label((win.x + win.w / 2 + R.off) * k, (win.y + win.h + 3) * k + 12 * dpr, "🪧 길드 광장", "#f0d48a", false, false);
+        if (winBadge > 0) {   // 받은 신청·추천이 있으면 창문에 빨간 숫자
+          const bx = (win.x + win.w + R.off) * k, by = win.y * k, rr = 7 * dpr;
+          ctx.fillStyle = "#1a110a"; ctx.beginPath(); ctx.arc(bx, by, rr + dpr, 0, 7); ctx.fill();
+          ctx.fillStyle = "#ff5a5a"; ctx.beginPath(); ctx.arc(bx, by, rr, 0, 7); ctx.fill();
+          ctx.fillStyle = "#fff"; ctx.font = font(10 * dpr); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(String(Math.min(99, winBadge)), bx, by + dpr * 0.5);
+        }
+      }
     }
     // 말풍선은 맨 위에
     for (const R of rooms) {
@@ -515,13 +545,15 @@ export function createScene(canvas, opts = {}) {
       if (a.asleep) { if (Math.abs(lx - (a.x + (a.lie < 0 ? 3 : -3))) < 15 && ly <= a.y + 2 && ly >= a.y - 16) { opts.onTap?.(a); return; } continue; }
       if (Math.abs(lx - a.x) < 8 && ly <= a.y + 2 && ly >= a.y - (a.h || 22) - 2) { opts.onTap?.(a); return; }
     }
-    if (view === 0 && lx >= shelf.x - 2 && lx <= shelf.x + shelf.w + 2 && ly >= shelf.y - 3 && ly <= shelf.y + shelf.h + 6) opts.onTap?.({ shelf: true });
+    if (view === 0 && lx >= shelf.x - 2 && lx <= shelf.x + shelf.w + 2 && ly >= shelf.y - 3 && ly <= shelf.y + shelf.h + 6) { opts.onTap?.({ shelf: true }); return; }
+    if (view === 0 && lx >= win.x - 3 && lx <= win.x + win.w + 3 && ly >= win.y - 3 && ly <= win.y + win.h + 8) opts.onTap?.({ window: true });
   });
 
   return {
     setPeople, say, setRunning, setRoom,
     get room() { return view; },
     setMe(id) { meId = id; },
+    setBadge(n) { if (winBadge !== n) { winBadge = n; if (!running) draw(performance.now()); } },
     // 자리 고정 (그림 확인용): 화면 비율 0~1로
     place(id, fx, fy, dir = 1) {
       const a = people.get(id); if (!a) return; const r = area();
