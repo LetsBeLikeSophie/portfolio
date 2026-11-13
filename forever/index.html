@@ -481,6 +481,10 @@
   .gbox h3{margin:0 0 8px;font-size:15px;color:var(--gold)}
   .lamp{display:flex;align-items:center;gap:10px}
   .lamp b{flex:1;font-size:15px;color:var(--gold)}
+  .lamp b.lhint{font-size:13px;font-weight:600;color:var(--body);line-height:1.4}
+  .lsub{font-size:12.5px;color:var(--muted);margin:6px 0 10px;line-height:1.4}
+  .lampbox{text-align:left;margin:4px 0 10px}
+  .lampbox .gtags{margin-bottom:2px}
   .sw2{all:unset;flex:none;width:48px;height:28px;border-radius:14px;background:#ffffff1f;position:relative;cursor:pointer}
   .sw2::after{content:"";position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;background:#aaa;transition:left .15s}
   .sw2[aria-checked="true"]{background:#e9a72a}
@@ -910,9 +914,10 @@
 <div id="sheet" class="hidden">
   <div class="card">
     <div id="sheetInfo" style="font-size:15px;line-height:1.8"></div>
+    <div id="sheetLamp"></div>
     <button class="btn" id="switchBtn" type="button">캐릭터 바꾸기</button>
     <button class="btn ghost sm" id="pushBtn" type="button">🔔 휴대폰 알림 켜기</button>
-    <a class="btn ghost sm" href="/forever/classes/" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box">📘 직업·특성 정리 보기</a>
+    <a class="btn ghost sm" id="sheetClasses" href="/forever/classes/" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box">📘 직업·특성 정리 보기</a>
     <button class="btn ghost sm installBtn hidden" type="button">📲 홈 화면에 추가</button>
     <button class="btn ghost sm" id="logoutBtn" type="button">로그아웃</button>
     <button class="btn ghost sm" id="closeSheet" type="button">닫기</button>
@@ -1945,8 +1950,8 @@ function openProfile(m){
     img.src=src;
   });
   const gad = gads.find(a=>a.id===m.player_id), pg=$("pGuild"); pg.innerHTML="";
-  if (gad) pg.appendChild(guildCard(gad, true));
-  pg.classList.toggle("hidden", !gad);
+  if (self) { if (canAct()) pg.appendChild(lanternBox()); pg.classList.toggle("hidden", !canAct()); }
+  else { if (gad) pg.appendChild(guildCard(gad, true)); pg.classList.toggle("hidden", !gad); }
   $("pEmote").classList.toggle("hidden", self);
   $("pEmote").classList.remove("on");
   $("pEmotes").classList.add("hidden");
@@ -2826,6 +2831,7 @@ $("meBtn").onclick = () => {
     const d=document.createElement("div"); const b=document.createElement("span");
     b.style.color="var(--muted)"; b.textContent=k+"  "; d.append(b, document.createTextNode(v)); box.appendChild(d);
   });
+  const lb = $("sheetLamp"); lb.innerHTML = ""; if (canAct()) lb.appendChild(lanternBox());
   $("sheet").classList.remove("hidden");
   currentSub().then(sub => { $("pushBtn").textContent = sub && Notification.permission==="granted" ? "🔕 휴대폰 알림 끄기" : "🔔 휴대폰 알림 켜기"; });
 };
@@ -3146,19 +3152,48 @@ async function cheer(a){
   a.cheers = data?.cheers ?? (a.cheers || 0) + 1; a.cheered = true; if (data?.expires_at) a.expires_at = data.expires_at;
   track("guild_cheer"); toast("🍺 건배! 팻말이 1시간 더 남아요"); refreshGuildViews();
 }
+function lanternBox(){
+  const mine = myGad(), on = mine?.kind === "seek";
+  const box = document.createElement("div"); box.className = "gbox lampbox";
+  const row = document.createElement("div"); row.className = "lamp";
+  const t = document.createElement("b"); t.textContent = "🏮 길드 찾는 중";
+  const sw = document.createElement("button"); sw.type = "button"; sw.className = "sw2"; sw.setAttribute("role", "switch"); sw.setAttribute("aria-checked", on);
+  sw.setAttribute("aria-label", "길드 찾는 중");
+  sw.onclick = () => {
+    if (mine?.kind === "recruit") { toast("팻말을 꽂은 동안은 등불을 들 수 없어요"); return; }
+    sw.disabled = true; setLantern(!on).finally(() => { sw.disabled = false; });
+  };
+  row.append(t, sw); box.appendChild(row);
+  const sub = document.createElement("div"); sub.className = "lsub";
+  sub.textContent = on ? "홀에서 등불을 들고 다녀요 · 이런 길드 찾아요" : "켜면 홀에서 등불을 들고 다녀요. 누르면 길드 추천을 받을 수 있어요";
+  box.appendChild(sub);
+  if (on) {
+    const sel = new Set(mine.tags || []); let tm = 0;
+    const c = tagChips(sel, () => { clearTimeout(tm); tm = setTimeout(async () => {
+      const { data, error } = await sb.rpc("wow_guild_lantern", { p_token: me.token, p_on: true, p_tags: [...sel] });
+      if (error) { toast(errMsg(error)); return; } afterGuildChange(data); }, 600); });
+    box.appendChild(c);
+    if (gApps.length) { const n = document.createElement("div"); n.className = "lsub"; n.textContent = `💌 받은 길드 추천 ${gApps.length} · 길드 광장에서 볼 수 있어요`; box.appendChild(n); }
+  }
+  return box;
+}
+function refreshLampViews(){
+  if (!$("sheet").classList.contains("hidden")) { const b = $("sheetLamp"); b.innerHTML = ""; if (canAct()) b.appendChild(lanternBox()); }
+  if (!$("prof").classList.contains("hidden") && profFor?.player_id === me?.id) { const pg = $("pGuild"); pg.innerHTML = ""; if (canAct()) pg.appendChild(lanternBox()); pg.classList.toggle("hidden", !canAct()); }
+}
 async function setLantern(on, tags){
   const m = myGad();
   const { data, error } = await sb.rpc("wow_guild_lantern", { p_token: me.token, p_on: on, p_tags: tags ?? (m?.kind === "seek" ? m.tags : []) });
   if (error) { toast(errMsg(error)); renderGuild(); return false; }
   if (on && !(m?.kind === "seek")) { track("guild_lantern"); toast("🏮 등불을 들었어요. 홀에서 누르면 보여요"); }
   if (!on) { gApps = []; toast("등불을 껐어요"); }
-  closeGpop(); afterGuildChange(data); await loadGuildApps(); buildChips();
+  closeGpop(); afterGuildChange(data); await loadGuildApps(); buildChips(); refreshLampViews();
   return true;
 }
 function refreshGuildViews(){
   if (gOpen) renderGuild();
   const gp = $("gpop"); if (!gp.classList.contains("hidden")) { const id = gp.querySelector(".gcard")?.dataset.id; if (id) openGad(id); }
-  if (!$("prof").classList.contains("hidden") && profFor) { const a = gads.find((x) => x.id === profFor.player_id); const pg = $("pGuild"); pg.innerHTML = ""; if (a) pg.appendChild(guildCard(a, true)); }
+  if (!$("prof").classList.contains("hidden") && profFor && profFor.player_id !== me?.id) { const a = gads.find((x) => x.id === profFor.player_id); const pg = $("pGuild"); pg.innerHTML = ""; if (a) pg.appendChild(guildCard(a, true)); }
 }
 // 광장 배경 (도트 한 칸 = 3px, 여관 장면과 같은 색)
 let plazaBgCache = { key: "", url: "" };
@@ -3250,34 +3285,22 @@ function renderGuild(){
   };
   pz.append(tt, hint, field); pane.appendChild(pz);
   pz.style.backgroundImage = `url(${plazaBg(pz.clientWidth, pz.clientHeight)})`;
-  // 등불: 길드 찾는 중
+  // 로그인 안내 / 등불은 내 캐릭터에서
   const box = document.createElement("div"); box.className = "gbox";
+  const row = document.createElement("div"); row.className = "lamp";
+  const t = document.createElement("b");
   if (!canAct()) {
-    const row = document.createElement("div"); row.className = "lamp";
-    const t = document.createElement("b"); t.textContent = "로그인하면 팻말·등불을 쓸 수 있어요";
+    t.textContent = "로그인하면 팻말을 꽂을 수 있어요";
     const go = document.createElement("button"); go.type = "button"; go.className = "gbtn"; go.style.flex = "none"; go.textContent = "로그인";
     go.onclick = () => $("soberGo").click();
-    row.append(t, go); box.appendChild(row);
+    row.append(t, go);
   } else {
-    const on = mine?.kind === "seek";
-    const row = document.createElement("div"); row.className = "lamp";
-    const t = document.createElement("b"); t.textContent = "🏮 길드 찾는 중";
-    const sw = document.createElement("button"); sw.type = "button"; sw.className = "sw2"; sw.setAttribute("role", "switch"); sw.setAttribute("aria-checked", on);
-    sw.setAttribute("aria-label", "길드 찾는 중");
-    sw.onclick = () => {
-      if (mine?.kind === "recruit") { toast("팻말을 꽂은 동안은 등불을 들 수 없어요"); return; }
-      sw.disabled = true; setLantern(!on).finally(() => { sw.disabled = false; });
-    };
-    row.append(t, sw); box.appendChild(row);
-    if (on) {
-      const sel = new Set(mine.tags || []); let tm = 0;
-      const c = tagChips(sel, () => { clearTimeout(tm); tm = setTimeout(async () => {
-        const { data, error } = await sb.rpc("wow_guild_lantern", { p_token: me.token, p_on: true, p_tags: [...sel] });
-        if (error) { toast(errMsg(error)); return; } afterGuildChange(data); }, 600); });
-      c.style.marginTop = "10px"; box.appendChild(c);
-    }
+    t.className = "lhint"; t.textContent = mine?.kind === "seek" ? "🏮 등불을 들고 있어요 · 내 캐릭터에서 끌 수 있어요" : "🏮 길드를 찾는다면 내 캐릭터를 눌러 등불을 켜요";
+    const go = document.createElement("button"); go.type = "button"; go.className = "gbtn"; go.style.flex = "none"; go.textContent = "내 캐릭터";
+    go.onclick = () => { closeGuildModal(); $("meBtn").click(); };
+    row.append(t, go);
   }
-  pane.appendChild(box);
+  box.appendChild(row); pane.appendChild(box);
   // 받은 신청·추천
   if (mine && gApps.length) {
     const ab = document.createElement("div"); ab.className = "gbox";
@@ -3404,6 +3427,7 @@ $("gmX").onclick = closeGuildModal; $("cmX").onclick = closeClasses;
 $("gmodal").onclick = (e) => { if (e.target.id === "gmodal") closeGuildModal(); };
 $("cmodal").onclick = (e) => { if (e.target.id === "cmodal") closeClasses(); };
 $("guideBtn").onclick = (e) => { e.preventDefault(); openClasses(); };
+$("sheetClasses").onclick = (e) => { e.preventDefault(); $("sheet").classList.add("hidden"); openClasses(); };
 // 직업 도감 안의 '포에버 채팅으로' 링크는 모달만 닫기
 $("cFrame").addEventListener("load", () => {
   try { $("cFrame").contentDocument.querySelectorAll('a[href="/forever/"]').forEach((a) => { a.onclick = (e) => { e.preventDefault(); closeClasses(); }; }); } catch (_) {}
