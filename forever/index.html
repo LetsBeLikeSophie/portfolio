@@ -144,10 +144,10 @@
   #scene.off #sceneTabs{display:none}
   #sceneTabs i{font-style:normal;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
   #list{background:#100c08}
-  #sceneX{position:absolute;right:6px;bottom:6px;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:#000a;color:var(--muted);font-size:12px;line-height:1;cursor:pointer;padding:0}
+  #sceneX{position:absolute;right:6px;bottom:6px;display:flex;align-items:center;gap:4px;padding:5px 8px;border-radius:3px;border:2px solid #4a2f17;background:#0d0906e6;color:#e6c36a;font:11px Galmuri11,system-ui,sans-serif;line-height:1;cursor:pointer;box-shadow:0 2px 0 #0008}
   #scene.off{height:auto;background:none}
   #scene.off canvas{display:none}
-  #scene.off #sceneX{position:static;display:block;width:100%;height:auto;border-radius:0;border:0;background:#1d1710;padding:5px;font-size:12px;color:var(--gold)}
+  #scene.off #sceneX{position:static;justify-content:center;width:100%;border-radius:0;border:0;border-bottom:2px solid #4a2f17;background:#2a1f12;padding:9px;font-size:12px;box-shadow:none}
   /* 입장 카드 정리 */
   .card{position:relative}
   #join .logo{margin-top:16px}
@@ -3042,7 +3042,7 @@ let sceneOff = ls.get("wowchat_scene_off") === "1";
 function sceneRun(){
   $("scene").classList.toggle("off", sceneOff);
   document.body.classList.toggle("sceneon", !sceneOff);
-  $("sceneX").textContent = sceneOff ? "🍺 여관 보기 ▾" : "▴";
+  $("sceneX").textContent = sceneOff ? "🍺 여관 펼치기 ▼" : "▲ 여관 접기";
   $("sceneX").setAttribute("aria-label", sceneOff ? "여관 장면 펼치기" : "여관 장면 접기");
   scene.setRunning(!!me && !sceneOff && !$("chat").classList.contains("hidden") && document.visibilityState === "visible");
 }
