@@ -427,6 +427,27 @@
   .mx{width:34px;height:30px;border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer}
   #guildPane{flex:1;min-height:0;overflow-y:auto;padding:10px 12px calc(16px + env(safe-area-inset-bottom));background:#100c08;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
   #cFrame{flex:1;width:100%;border:0;background:#0d0b09}
+  /* 낙서판: 화이트보드에 도트 그림 포스트잇 */
+  #boardPane{flex:1;min-height:0;overflow-y:auto;padding:10px 12px calc(24px + env(safe-area-inset-bottom));background:#100c08;overscroll-behavior:contain}
+  .bhint{text-align:center;font:11px Galmuri11,system-ui,sans-serif;color:#e8dcc0;margin:2px 0 10px}
+  .wb{position:relative;height:min(62vh,520px);margin:0 4px 18px;border:6px solid #8f9196;outline:3px solid #1a110a;background:#ecebe4;
+    box-shadow:inset 0 3px 0 #fff,0 6px 14px #000c;cursor:crosshair;-webkit-tap-highlight-color:transparent}
+  .wb::after{content:"";position:absolute;left:-9px;right:-9px;bottom:-18px;height:6px;background:#6b6e74;border:3px solid #1a110a;border-top:0}
+  .pnote{all:unset;position:absolute;width:21%;max-width:84px;aspect-ratio:1;transform:translate(-50%,-50%);box-shadow:3px 3px 0 #0005;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+  .pnote::before{content:"";position:absolute;top:-5px;left:30%;width:40%;height:9px;background:#ffffffb8}
+  .pnote canvas{width:84%;height:84%;image-rendering:pixelated}
+  .pnote.mine{outline:3px solid #ffd36a}
+  .ded h3,.dview h3{margin:0 0 10px;font-size:16px;color:var(--gold);text-align:center}
+  .pps{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 10px}
+  .pp{width:30px;height:30px;border:2px solid #1a110a;cursor:pointer;padding:0;border-radius:4px}
+  .pp[aria-pressed="true"]{outline:3px solid var(--gold);outline-offset:1px}
+  .pps.ink .pp{width:28px;height:28px;border-radius:50%}
+  .pps.ink .pp.er{width:auto;height:28px;white-space:nowrap;border-radius:14px;padding:0 11px;background:#ffffff10;color:var(--text);font:inherit;font-size:12.5px;border:1px solid var(--line)}
+  .dcv{display:block;margin:0 auto 10px;width:min(256px,72vw);height:min(256px,72vw);image-rendering:pixelated;touch-action:none;border:3px solid #1a110a;
+    background-image:linear-gradient(#0000000f 1px,transparent 1px),linear-gradient(90deg,#0000000f 1px,transparent 1px);background-size:calc(100% / 32) calc(100% / 32)}
+  .dview canvas{display:block;margin:4px auto 10px;width:min(220px,64vw);height:min(220px,64vw);image-rendering:pixelated;border:3px solid #1a110a}
+  .dmeta{text-align:center;font-size:13px;color:var(--muted);margin-bottom:6px}
   header .gdchip{margin-left:0;margin-right:0}
   header .sw{padding:0 4px}
   header .sw #enemyLbl{display:none}
@@ -999,6 +1020,10 @@
   <div class="msheet"><div class="mhead"><div class="grab"></div><div class="mtop"><b>📖 직업 도감</b><button type="button" class="mx" id="cmX" aria-label="닫기">✕</button></div></div>
     <iframe id="cFrame" title="직업 도감"></iframe></div>
 </div>
+<div id="bmodal" class="ov hidden" style="--z:6" role="dialog" aria-modal="true" aria-label="낙서판">
+  <div class="msheet"><div class="mhead"><div class="grab"></div><div class="mtop"><b>📝 낙서판</b><button type="button" class="mx" id="bmX" aria-label="닫기">✕</button></div></div>
+    <div id="boardPane"></div></div>
+</div>
 <div id="gpop" class="ov hidden" style="--z:9"><div class="card"><div id="gpopBody"></div></div></div>
 <div id="prof" class="ov hidden" style="--z:9">
   <div class="card">
@@ -1034,7 +1059,7 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
-import { createScene } from "./scene.js?v=15";
+import { createScene } from "./scene.js?v=16";
 
 const SUPABASE_URL = "https://ztxzqvnybiemgbhtrwiw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7";
@@ -2520,7 +2545,7 @@ function enterChat(player){
   $("soberGo").textContent = spec ? "배틀넷 로그인" : "술 깨기";
   cache = []; filterTag = "all"; newFrom = 0; jumpNew = true;
   show("chat");
-  innRoster = []; gads = []; gApps = []; gadsAt = 0; gApplying = null; gMode = null; gList = null; gDraft = {}; myGuild = ""; loadGuild(true); scene.reset(); scene.setMe(me.id); scene.resize(); syncScene(); sceneRun(); loadInn(true);
+  innRoster = []; gads = []; gApps = []; gadsAt = 0; gApplying = null; gMode = null; gList = null; gDraft = {}; myGuild = ""; loadGuild(true); loadDoodles(); scene.reset(); scene.setMe(me.id); scene.resize(); syncScene(); sceneRun(); loadInn(true);
   $("srvBadge").textContent = me.realm||"일반"; $("srvBadge").title = `${me.realm||"일반"} 서버`;
   $("srvBadge").className = "srv"+(me.realm==="PvP"?" pvp":"");
   const fi=document.createElement("span"); fi.className="icons"; fi.id="meIcons";
@@ -2834,7 +2859,7 @@ function bindSheet(id, close, handleSel){
 function dragToClose(panel, handle, close, fromTop){
   let y0 = null, dy = 0;
   handle.addEventListener("touchstart", (e) => {
-    if (e.target.closest(fromTop ? "textarea,input,select" : "button,textarea,input,select") || (fromTop && panel.scrollTop > 0)) { y0 = null; return; }
+    if (e.target.closest(fromTop ? "textarea,input,select,canvas" : "button,textarea,input,select") || (fromTop && panel.scrollTop > 0)) { y0 = null; return; }
     y0 = e.touches[0].clientY; dy = 0; panel.style.transition = "none"; }, { passive: true });
   handle.addEventListener("touchmove", (e) => {
     if (y0 === null) return; dy = e.touches[0].clientY - y0;
@@ -3024,6 +3049,7 @@ function botShoo(){
 const scene = createScene($("sceneCv"), { classColor: CLASS_COLOR, emoteEmoji: EMOTE_EMOJI, onTap: (a) => {
   if (a.shelf) { openClasses(); return; }
   if (a.window) { openGuildModal(); return; }
+  if (a.board) { openBoard(); return; }
   if (a.bot && isGuest()) { botShoo(); return; }
   if (a.lantern) { openGad(a.id); return; }
   if (me?.spec) { toast(`${a.name} · 들어오면 프로필을 볼 수 있어요`); return; }
@@ -3044,7 +3070,7 @@ async function loadInn(force){
   const { data } = me.spec ? await sb.rpc("wow_spec_roster", { p_realm: me.realm || "일반" })
     : await sb.rpc("wow_inn_roster", { p_token: ls.get("wowchat_token") });
   if (Array.isArray(data)) { innRoster = data; syncScene(); }
-  loadGuild();
+  loadGuild(); loadDoodles();
 }
 let sceneOff = ls.get("wowchat_scene_off") === "1";
 function sceneRun(){
@@ -3460,6 +3486,88 @@ document.addEventListener("keydown", (e) => {
   else if (gOpen) closeGuildModal();
 });
 function closeGpop(){ if (gFlush) { const f = gFlush; gFlush = null; f(); } $("gpop").classList.add("hidden"); }
+
+/* ---------- 낙서판: 화이트보드에 도트 그림 포스트잇 (글자 없이 그림만) ---------- */
+const PAPER = ["#ffe27a", "#ffb3cf", "#a9dcff", "#c4f0a0"];
+const INK = [null, "#2a1a0d", "#d0342c", "#2f62b8", "#3f8a3a", "#e9862a", "#7a3fa8"];
+let doodles = [], bOpen = false;
+async function loadDoodles(){
+  const { data } = await sb.rpc("wow_doodles", { p_token: me?.token || null });
+  if (!Array.isArray(data)) return;
+  doodles = data; scene.setBoard(doodles.length); if (bOpen) renderBoard();
+}
+function drawDoodle(cv, pix){
+  cv.width = 32; cv.height = 32; const g = cv.getContext("2d"); g.clearRect(0, 0, 32, 32);
+  for (let i = 0; i < 1024; i++) { const c = INK[+pix[i]]; if (c) { g.fillStyle = c; g.fillRect(i % 32, (i / 32) | 0, 1, 1); } }
+}
+function openBoard(){ bOpen = true; $("bmodal").classList.remove("hidden"); renderBoard(); loadDoodles(); track("board_open"); }
+function closeBoard(){ bOpen = false; $("bmodal").classList.add("hidden"); }
+$("bmX").onclick = closeBoard;
+bindSheet("bmodal", () => closeBoard(), ".mhead");
+function renderBoard(){
+  const pane = $("boardPane"); pane.innerHTML = "";
+  const hint = h("div", { className: "bhint" }, doodles.length ? `포스트잇 ${doodles.length}장 · 빈 곳을 누르면 붙여요 (그림만)` : "빈 곳을 누르면 포스트잇을 붙여요 (그림만)");
+  const wb = h("div", { className: "wb" });
+  doodles.forEach((d) => {
+    const cv = h("canvas"); drawDoodle(cv, d.pix);
+    const n = h("button", { type: "button", className: "pnote" + (d.mine ? " mine" : ""), "aria-label": `${d.name}의 포스트잇`,
+      style: { left: `${d.px * 100}%`, top: `${d.py * 100}%`, background: PAPER[d.paper] || PAPER[0] } }, cv);
+    n.onclick = (e) => { e.stopPropagation(); viewDoodle(d); };
+    wb.appendChild(n);
+  });
+  wb.onclick = async (e) => {
+    const r = wb.getBoundingClientRect();
+    const x = Math.min(0.89, Math.max(0.11, (e.clientX - r.left) / r.width)), y = Math.min(0.9, Math.max(0.1, (e.clientY - r.top) / r.height));
+    if (me?.spec && !(await joinFromSpec())) return;
+    if (doodles.filter((d) => d.mine).length >= 3) { toast("포스트잇은 3장까지예요. 내 것을 눌러 떼면 붙일 수 있어요"); return; }
+    openDoodleEditor(x, y);
+  };
+  pane.append(hint, wb);
+}
+function viewDoodle(d){
+  const body = $("gpopBody"); body.innerHTML = "";
+  const cv = h("canvas", { style: { background: PAPER[d.paper] || PAPER[0] } }); drawDoodle(cv, d.pix);
+  const nm = h("b", { style: { color: d.verified ? (CLASS_COLOR[d.cls] || "") : "#c9c2ee" } }, d.name);
+  const box = h("div", { className: "dview" }, cv, h("div", { className: "dmeta" }, nm, ` · ${agoShort(d.created_at)}`));
+  if (d.mine) box.appendChild(h("button", { type: "button", className: "btn ghost sm", onclick: async () => {
+    const { data, error } = await sb.rpc("wow_doodle_del", { p_token: me.token, p_id: d.id });
+    if (error) { toast(errMsg(error)); return; }
+    doodles = Array.isArray(data) ? data : doodles; scene.setBoard(doodles.length); renderBoard(); closeGpop(); toast("떼었어요");
+  } }, "떼기"));
+  body.appendChild(box); $("gpop").classList.remove("hidden");
+}
+function openDoodleEditor(px, py){
+  const pix = new Uint8Array(1024); let paper = Math.floor(Math.random() * 4), ink = 1, last = null, busy = false;
+  const body = $("gpopBody"); body.innerHTML = "";
+  const cv = h("canvas", { className: "dcv", width: 32, height: 32 }); const g = cv.getContext("2d");
+  const paint = () => { g.clearRect(0, 0, 32, 32); for (let i = 0; i < 1024; i++) if (pix[i]) { g.fillStyle = INK[pix[i]]; g.fillRect(i % 32, (i / 32) | 0, 1, 1); } };
+  const setPaper = () => { cv.style.backgroundColor = PAPER[paper]; papers.querySelectorAll(".pp").forEach((b, i) => b.setAttribute("aria-pressed", i === paper)); };
+  const papers = h("div", { className: "pps" }, PAPER.map((c, i) => h("button", { type: "button", className: "pp", style: { background: c }, "aria-label": "종이 색", onclick: () => { paper = i; setPaper(); } })));
+  const inks = h("div", { className: "pps ink" },
+    INK.slice(1).map((c, i) => h("button", { type: "button", className: "pp", style: { background: c }, "aria-label": "펜 색", "aria-pressed": String(i === 0),
+      onclick: (e) => { ink = i + 1; inks.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b === e.currentTarget)); } })),
+    h("button", { type: "button", className: "pp er", "aria-pressed": "false", onclick: (e) => { ink = 0; inks.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b === e.currentTarget)); } }, "지우개"));
+  const cell = (e) => { const r = cv.getBoundingClientRect(); return [Math.max(0, Math.min(31, Math.floor((e.clientX - r.left) / r.width * 32))), Math.max(0, Math.min(31, Math.floor((e.clientY - r.top) / r.height * 32)))]; };
+  const dot = (x, y) => { pix[y * 32 + x] = ink; };
+  const line = (a, b) => {   // 손가락이 빨리 움직여도 끊기지 않게 칸 사이를 이어 그림
+    let [x0, y0] = a; const [x1, y1] = b, dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1; let err = dx + dy;
+    for (;;) { dot(x0, y0); if (x0 === x1 && y0 === y1) break; const e2 = 2 * err; if (e2 >= dy) { err += dy; x0 += sx; } if (e2 <= dx) { err += dx; y0 += sy; } }
+  };
+  cv.onpointerdown = (e) => { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (_) {} last = cell(e); dot(...last); paint(); };
+  cv.onpointermove = (e) => { if (!last) return; const c = cell(e); line(last, c); last = c; paint(); };
+  cv.onpointerup = cv.onpointercancel = () => { last = null; };
+  const clear = h("button", { type: "button", className: "btn ghost", onclick: () => { pix.fill(0); paint(); } }, "다 지우기");
+  const stick = h("button", { type: "button", className: "btn", onclick: async () => {
+    if (busy) return; if (!pix.some((v) => v)) { toast("뭐라도 그려 주세요"); return; }
+    busy = true; stick.disabled = true;
+    const { data, error } = await sb.rpc("wow_doodle_add", { p_token: me.token, p_x: px, p_y: py, p_paper: paper, p_pix: Array.from(pix).join("") });
+    busy = false; stick.disabled = false;
+    if (error) { toast(errMsg(error)); return; }
+    doodles = Array.isArray(data) ? data : doodles; scene.setBoard(doodles.length); renderBoard(); closeGpop(); track("doodle_add"); toast("📝 붙였어요");
+  } }, "붙이기");
+  body.appendChild(h("div", { className: "ded" }, h("h3", {}, "📝 포스트잇 그리기"), papers, cv, inks, h("div", { className: "mrow" }, clear, stick)));
+  setPaper(); paint(); $("gpop").classList.remove("hidden");
+}
 
 async function clearGuildAd(){
   const { data, error } = await sb.rpc("wow_guild_ad_clear", { p_token: me.token });

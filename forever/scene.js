@@ -35,6 +35,8 @@ export function createScene(canvas, opts = {}) {
   let shelf = { x: 96, y: 8, w: 16, h: 20 };
   // 홀 벽 창문: 밖에 길드 광장(팻말·횃불)이 보이고, 누르면 길드 광장
   let win = { x: 70, y: 11, w: 18, h: 12 }, winBadge = 0;
+  // 창문 왼쪽 화이트보드(낙서판): 누르면 포스트잇 낙서판. 붙은 장수만큼 작은 포스트잇이 보임
+  let board = { x: 46, y: 10, w: 20, h: 14 }, boardN = 0;
 
   /* ---------- 크기 ---------- */
   function resize() {
@@ -48,6 +50,7 @@ export function createScene(canvas, opts = {}) {
     { const h = Math.min(wallH + 1, 22); shelf = { x: W - 24, w: 16, h, y: wallH + 3 - h }; }
     { const y = Math.max(10, Math.round(wallH * 0.32)), h = Math.max(6, Math.min(12, wallH - y - 4)), w = 18;
       win = { x: Math.min(shelf.x - w - 6, Math.round(W * 0.64 - w / 2)), y, w, h }; }
+    board = { x: win.x - 26, y: win.y + 1, w: 21, h: win.h };
     bgs = [makeBg(0), makeBg(1)];
     for (const a of people.values()) if (!a.asleep) clampPos(a);
     seatSleepers();
@@ -211,6 +214,16 @@ export function createScene(canvas, opts = {}) {
     c.fillStyle = gr; c.fillRect(0, wy, cw, ch - wy);
     c.fillStyle = "rgba(0,0,0,.35)"; c.fillRect(0, wy, cw, 2 * dpr);
     c.fillStyle = "rgba(255,255,255,.04)"; c.fillRect(0, wy + 2 * dpr, cw, 1 * dpr);
+    // 화이트보드: 회색 테 + 흰 판 + 아래 펜 받침
+    {
+      const u = k, { x: bx, y: by, w: bw, h: bh } = board;
+      const P = (x, y, w, h, col) => { c.fillStyle = col; c.fillRect((bx + x) * u, (by + y) * u, w * u, h * u); };
+      P(-1, -1, bw + 2, bh + 2, "#1a110a"); P(0, 0, bw, bh, "#8f9196"); P(1, 1, bw - 2, bh - 2, "#ecebe4");
+      P(1, 1, bw - 2, 1, "#ffffff"); P(2, bh - 3, bw - 4, 1, "#d9d7cc");
+      P(3, 3, 5, 1, "#b8c6d8"); P(bw - 7, 5, 3, 1, "#e0b8b8");   // 지워진 자국
+      P(-2, bh + 1, bw + 4, 1, "#6b6e74"); P(-2, bh + 2, bw + 4, 1, "#1a110a");
+      P(3, bh, 3, 1, "#d0342c"); P(7, bh, 3, 1, "#2f62b8");   // 마커
+    }
     // 창문: 밤하늘 아래 광장 팻말과 횃불이 보임
     {
       const u = k, { x: wx, y: wy0, w: ww, h: wh } = win;
@@ -456,6 +469,15 @@ export function createScene(canvas, opts = {}) {
       if (R.rm === 1) {
         for (const a of R.list) R.tops.set(a.id, person(a, now));   // 앞뒤(y) 순서
       } else {
+        if (boardN > 0) {
+          const PAP = ["#ffe27a", "#ffb3cf", "#a9dcff", "#c4f0a0"];
+          for (let i = 0; i < Math.min(6, boardN); i++) {
+            const nx = board.x + 2 + (i % 3) * 6, ny = board.y + 2 + Math.floor(i / 3) * 6;
+            g.fillStyle = "#0004"; g.fillRect(nx + 1, ny + 1, 4, 4);
+            g.fillStyle = PAP[i % 4]; g.fillRect(nx, ny, 4, 4);
+            g.fillStyle = "#2a1a0d"; g.fillRect(nx + 1, ny + 2, 2, 1);
+          }
+        }
         for (const a of R.list) R.tops.set(a.id, person(a, now));
         if (view === 0) R.fairyTop = fairy(now);   // 포에버봇은 홀에만 (침실로 넘기면 안 보임)
       }
@@ -499,6 +521,7 @@ export function createScene(canvas, opts = {}) {
       if (R.rm === 0) {
         label((shelf.x + shelf.w / 2 + R.off) * k, (shelf.y + shelf.h + 1) * k + 12 * dpr, "📖 직업 도감", "#f0d48a", false, false);
         label((win.x + win.w / 2 + R.off) * k, (win.y + win.h + 3) * k + 12 * dpr, "🪧 길드 광장", "#f0d48a", false, false);
+        label((board.x + board.w / 2 + R.off) * k, (board.y + board.h + 3) * k + 12 * dpr, "📝 낙서판", "#f0d48a", false, false);
         if (winBadge > 0) {   // 받은 신청·추천이 있으면 창문에 빨간 숫자
           const bx = (win.x + win.w + R.off) * k, by = win.y * k, rr = 7 * dpr;
           ctx.fillStyle = "#1a110a"; ctx.beginPath(); ctx.arc(bx, by, rr + dpr, 0, 7); ctx.fill();
@@ -546,13 +569,15 @@ export function createScene(canvas, opts = {}) {
       if (Math.abs(lx - a.x) < 8 && ly <= a.y + 2 && ly >= a.y - (a.h || 22) - 2) { opts.onTap?.(a); return; }
     }
     if (view === 0 && lx >= shelf.x - 2 && lx <= shelf.x + shelf.w + 2 && ly >= shelf.y - 3 && ly <= shelf.y + shelf.h + 6) { opts.onTap?.({ shelf: true }); return; }
-    if (view === 0 && lx >= win.x - 3 && lx <= win.x + win.w + 3 && ly >= win.y - 3 && ly <= win.y + win.h + 8) opts.onTap?.({ window: true });
+    if (view === 0 && lx >= win.x - 3 && lx <= win.x + win.w + 3 && ly >= win.y - 3 && ly <= win.y + win.h + 8) { opts.onTap?.({ window: true }); return; }
+    if (view === 0 && lx >= board.x - 3 && lx <= board.x + board.w + 2 && ly >= board.y - 3 && ly <= board.y + board.h + 8) opts.onTap?.({ board: true });
   });
 
   return {
     setPeople, say, setRunning, setRoom,
     get room() { return view; },
     setMe(id) { meId = id; },
+    setBoard(n) { if (boardN !== n) { boardN = n; if (!running) draw(performance.now()); } },
     setBadge(n) { if (winBadge !== n) { winBadge = n; if (!running) draw(performance.now()); } },
     // 자리 고정 (그림 확인용): 화면 비율 0~1로
     place(id, fx, fy, dir = 1) {
