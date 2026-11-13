@@ -481,6 +481,16 @@
   .gbox h3{margin:0 0 8px;font-size:15px;color:var(--gold)}
   .lamp{display:flex;align-items:center;gap:10px}
   .lamp b{flex:1;font-size:15px;color:var(--gold)}
+  .mhd{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+  .mhd .nm{font-size:17px;display:inline-flex;align-items:center;gap:4px}
+  .mhd .mt{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0 0}
+  .mbtn{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 6px;border-radius:12px;border:1px solid var(--line);background:#ffffff08;
+    color:var(--text);font:inherit;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;white-space:nowrap}
+  .mbtn.installBtn{grid-column:1/-1}
+  .mfoot{display:flex;justify-content:space-between;margin-top:12px}
+  .flink{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:6px 4px}
+  .flink.out{color:#ff8f7a}
   .lamp b.lhint{font-size:13px;font-weight:600;color:var(--body);line-height:1.4}
   .lsub{font-size:12.5px;color:var(--muted);margin:6px 0 10px;line-height:1.4}
   .lampbox{text-align:left;margin:4px 0 10px}
@@ -588,6 +598,10 @@
   #chat>header,#chat>form.send,#chat>#replyBar,#chat>#photoBar{flex:none}
   body.kbd #scene,body.kbd #drunkBar,body.kbd #pushBar,body.kbd #online,body.kbd #tipBar,body.kbd #chat .chiprow{display:none!important}
   #botcard .card,#qcard .card,#prof .card,#sheet .card{overscroll-behavior:contain}
+  /* 아래에서 올라오는 창은 모두 같은 모양·움직임: 손잡이, 올라오기, 바깥·쓸어내리기로 닫기 */
+  #botcard:not(.hidden) .card,#qcard:not(.hidden) .card,#prof:not(.hidden) .card,#sheet:not(.hidden) .card,#copyCard:not(.hidden) .card,#gpop:not(.hidden) .card{animation:sheetUp .2s ease-out}
+  .card > .grab{margin:-6px auto 12px}
+  .mhead{touch-action:none;cursor:grab}
   /* 토스트는 화면 가운데쯤, 금색 바탕: 아래에 두면 방금 올라온 글을 가렸고 맨 위는 눈에 잘 안 띄었음 */
   .toast{top:calc(var(--vvTop,0px) + var(--vvH,100vh) * .42);bottom:auto;transform:translate(-50%,-6px);transition:opacity .2s,transform .2s;
     background:linear-gradient(180deg,#f0d27a,#d9b04f);border:1px solid #a88433;color:#1a1205;font-weight:700;
@@ -913,14 +927,15 @@
 
 <div id="sheet" class="hidden">
   <div class="card">
-    <div id="sheetInfo" style="font-size:15px;line-height:1.8"></div>
+    <div id="sheetInfo"></div>
     <div id="sheetLamp"></div>
-    <button class="btn" id="switchBtn" type="button">캐릭터 바꾸기</button>
-    <button class="btn ghost sm" id="pushBtn" type="button">🔔 휴대폰 알림 켜기</button>
-    <a class="btn ghost sm" id="sheetClasses" href="/forever/classes/" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box">📘 직업·특성 정리 보기</a>
-    <button class="btn ghost sm installBtn hidden" type="button">📲 홈 화면에 추가</button>
-    <button class="btn ghost sm" id="logoutBtn" type="button">로그아웃</button>
-    <button class="btn ghost sm" id="closeSheet" type="button">닫기</button>
+    <div class="mgrid">
+      <button class="mbtn" id="switchBtn" type="button">🔄 캐릭터 바꾸기</button>
+      <button class="mbtn" id="pushBtn" type="button">🔔 알림 켜기</button>
+      <a class="mbtn" id="sheetClasses" href="/forever/classes/">📘 직업 도감</a>
+      <button class="mbtn installBtn hidden" type="button">📲 홈 화면에 추가</button>
+    </div>
+    <div class="mfoot"><button class="flink out" id="logoutBtn" type="button">로그아웃</button><button class="flink" id="closeSheet" type="button">닫기</button></div>
   </div>
 </div>
 
@@ -1207,7 +1222,7 @@ const CLASS_RACES = {
   "흑마법사":["오크","언데드","트롤","인간","노움"],
   "드루이드":["타우렌","바람구체자 스카이본","나이트 엘프","고등 마법원 스카이본"],
 };
-$("guestBtn").onclick = () => { track("guest_open"); $("altBox").classList.add("hidden"); $("guestBox").classList.remove("hidden"); $("gErr").textContent=""; setTimeout(()=>$("gName").focus(), 50); };
+$("guestBtn").onclick = () => { track("guest_open"); ls.del("wowchat_spec"); enterSpec(); joinFromSpec(); };   // 이름·진영·종족·직업·서버 모두 랜덤
 $("gBack").onclick = () => showAlt();
 $("gName").onkeydown = (e) => { if (e.key==="Enter") $("gGo").click(); };
 $("gGo").onclick = async () => {
@@ -2156,8 +2171,11 @@ $("bcAskSend").onclick = async () => {
   t.value=""; autoGrow(t); toast("댓글을 달았어요. 고마워요!"); loadComments();
 };
 // 아래 시트(봇 카드, 퀘스트, 프로필, 내 정보)는 아래로 쓸어내리면 닫힘. 새로고침으로 넘어가지 않게 막음
-function swipeClose(id){
+function swipeClose(id, close){
   const ov=$(id), card=ov?.querySelector(".card"); if (!card) return;
+  close = close || (() => ov.classList.add("hidden"));
+  if (!card.querySelector(":scope > .grab")) { const g=document.createElement("div"); g.className="grab"; card.prepend(g); }
+  ov.addEventListener("click", (e)=>{ if (e.target===ov) close(); });
   let y0=null, dy=0;
   card.addEventListener("touchstart", (e)=>{ if (e.target.closest("textarea,input,select")) { y0=null; return; }
     y0 = card.scrollTop<=0 ? e.touches[0].clientY : null; dy=0; card.style.transition="none"; }, { passive:true });
@@ -2165,7 +2183,7 @@ function swipeClose(id){
     if (dy<=0){ card.style.transform=""; if (dy<-6) y0=null; return; }
     e.preventDefault(); card.style.transform=`translateY(${dy}px)`; }, { passive:false });
   const end=()=>{ if (y0===null) return; y0=null; card.style.transition="transform .18s ease-out";
-    if (dy>80){ card.style.transform="translateY(100%)"; setTimeout(()=>{ ov.classList.add("hidden"); card.style.transition=""; card.style.transform=""; }, 180); }
+    if (dy>80){ card.style.transform="translateY(100%)"; setTimeout(()=>{ close(); card.style.transition=""; card.style.transform=""; }, 180); }
     else card.style.transform=""; };
   card.addEventListener("touchend", end); card.addEventListener("touchcancel", end);
   ov.addEventListener("touchmove", (e)=>{ if (!card.contains(e.target)) e.preventDefault(); }, { passive:false });
@@ -2181,7 +2199,8 @@ $("cpAll").onclick = async () => {
 };
 $("cpClose").onclick = () => $("copyCard").classList.add("hidden");
 $("copyCard").onclick = (e) => { if (e.target.id==="copyCard") $("copyCard").classList.add("hidden"); };
-["botcard","qcard","prof","sheet","copyCard"].forEach(swipeClose);
+["botcard","qcard","prof","sheet","copyCard"].forEach((id) => swipeClose(id));
+swipeClose("gpop", () => closeGpop());
 // 키보드가 올라오면 채팅 화면을 보이는 영역 크기에 맞추고, 맨 아래를 보고 있었으면 계속 맨 아래로
 (function fitViewport(){
   const vv=window.visualViewport; if (!vv) return;
@@ -2820,20 +2839,19 @@ $("pBlock").onclick = async () => {
 /* ---------- 내 정보 ---------- */
 $("meBtn").onclick = () => {
   const box=$("sheetInfo"); box.innerHTML="";
-  const head=document.createElement("div"); head.style.cssText="display:flex;align-items:center;gap:10px;margin-bottom:8px";
-  const nm=document.createElement("b"); nm.textContent=me.name; nm.style.color=CLASS_COLOR[me.class]||""; nm.style.fontSize="17px";
+  const head=document.createElement("div"); head.className="mhd";
+  const nm=document.createElement("b"); nm.className="nm"; nm.textContent=me.name; nm.style.color=CLASS_COLOR[me.class]||"";
   if (me.verified){ const v=vbadge(); v.classList.add("lg"); nm.appendChild(v); }
-  const pic=portraitEl(me, "sm"); head.append(pic, nm);
+  const mt=document.createElement("div"); mt.className="mt";
+  mt.textContent=[me.realm || "일반", `${me.race} ${me.class}`, me.level ? `Lv.${me.level}` : null, me.faction==="alliance" ? "얼라이언스" : "호드"].filter(Boolean).join(" · ");
+  const who=document.createElement("div"); who.append(nm, mt);
+  if (isGuest()) { const g=document.createElement("div"); g.className="mt"; g.textContent="🍺 취객 · 배틀넷으로 인증하면 술이 깨요"; who.appendChild(g); }
+  const pic=portraitEl(me, "sm"); head.append(pic, who);
   loadCard(me.id).then(c=>{ if (c?.gender==="FEMALE" || c?.avatar) { const np=portraitEl(me, "sm", c.gender); if (c.avatar){ const f=np.querySelector(".face"); const im=document.createElement("img"); im.className="ic lg face"; im.src=c.avatar; im.referrerPolicy="no-referrer"; im.style.borderColor=CLASS_COLOR[me.class]||""; f.replaceWith(im); } pic.replaceWith(np); } });
   box.appendChild(head);
-  [["서버", me.realm || "-"], ["종족·직업", `${me.race} ${me.class}`], ["레벨", me.level || "-"],
-   ["진영", me.faction==="alliance" ? "얼라이언스 (공용어)" : "호드 (오크어)"], ...(isGuest() ? [["상태", "🍺 취객 (배틀넷 인증 전)"]] : [])].forEach(([k,v])=>{
-    const d=document.createElement("div"); const b=document.createElement("span");
-    b.style.color="var(--muted)"; b.textContent=k+"  "; d.append(b, document.createTextNode(v)); box.appendChild(d);
-  });
   const lb = $("sheetLamp"); lb.innerHTML = ""; if (canAct()) lb.appendChild(lanternBox());
   $("sheet").classList.remove("hidden");
-  currentSub().then(sub => { $("pushBtn").textContent = sub && Notification.permission==="granted" ? "🔕 휴대폰 알림 끄기" : "🔔 휴대폰 알림 켜기"; });
+  currentSub().then(sub => { $("pushBtn").textContent = sub && Notification.permission==="granted" ? "🔕 알림 끄기" : "🔔 알림 켜기"; });
 };
 $("pushBtn").onclick = async () => {
   const sub = await currentSub(); $("sheet").classList.add("hidden");
@@ -3424,6 +3442,16 @@ function openClasses(){
 }
 const closeClasses = () => $("cmodal").classList.add("hidden");
 $("gmX").onclick = closeGuildModal; $("cmX").onclick = closeClasses;
+function swipeHead(id, close){
+  const ov = $(id), sh = ov.querySelector(".msheet"), head = ov.querySelector(".mhead"); let y0 = null, dy = 0;
+  head.addEventListener("touchstart", (e) => { if (e.target.closest("button")) return; y0 = e.touches[0].clientY; dy = 0; sh.style.transition = "none"; }, { passive: true });
+  head.addEventListener("touchmove", (e) => { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); e.preventDefault(); sh.style.transform = `translateY(${dy}px)`; }, { passive: false });
+  const end = () => { if (y0 === null) return; y0 = null; sh.style.transition = "transform .18s ease-out";
+    if (dy > 80) { sh.style.transform = "translateY(100%)"; setTimeout(() => { close(); sh.style.transition = ""; sh.style.transform = ""; }, 180); }
+    else sh.style.transform = ""; };
+  head.addEventListener("touchend", end); head.addEventListener("touchcancel", end);
+}
+swipeHead("gmodal", () => closeGuildModal()); swipeHead("cmodal", () => closeClasses());
 $("gmodal").onclick = (e) => { if (e.target.id === "gmodal") closeGuildModal(); };
 $("cmodal").onclick = (e) => { if (e.target.id === "cmodal") closeClasses(); };
 $("guideBtn").onclick = (e) => { e.preventDefault(); openClasses(); };
