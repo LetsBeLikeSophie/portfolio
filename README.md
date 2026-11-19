@@ -110,7 +110,9 @@ ssh -i <SSH 키 파일> ubuntu@<서버 IP> "cd /var/www/portfolio && ls index.ht
 
 `qr/index.html`은 글이나 링크를 적으면 바로 QR 코드로 만들어주는 페이지입니다. `build.py`와 상관없는 독립 파일입니다.
 QR 생성은 같은 폴더의 `qr/qrcode.js`([qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) 1.4.4, MIT)로
-브라우저 안에서 하고, 서버로 아무것도 보내지 않습니다. 이미지 저장·공유(모바일 공유 시트, 안 되면 클립보드 복사)를 지원하고,
+브라우저 안에서 하고, 서버로 아무것도 보내지 않습니다. 색(프리셋 7개 + 직접 고르기), 모양(네모·둥글게·점),
+가운데 사진(넣으면 오류 정정을 H로 올림), 아래 글씨로 꾸밀 수 있고, 그림으로 저장·공유(모바일 공유 시트, 안 되면 클립보드 복사)를 지원합니다.
+마지막 내용과 꾸미기 설정은 `localStorage`에 남고,
 `/qr/?t=내용`으로 열면 그 내용이 미리 채워집니다.
 
 ```bash

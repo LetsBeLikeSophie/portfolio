@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>QR 만들기</title>
-<meta name="description" content="글이나 링크를 적으면 바로 QR 코드로 만들어줘요. 폰 카메라로 찍으면 적은 내용이 그대로 나와요. 이미지로 저장할 수 있어요.">
+<meta name="description" content="글이나 링크를 적으면 바로 QR 코드로 만들어줘요. 색·모양·가운데 사진·아래 글씨로 꾸미고 그림으로 저장할 수 있어요.">
 <link rel="canonical" href="https://itssophie.dev/qr/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://itssophie.dev/qr/">
 <meta property="og:title" content="QR 만들기">
-<meta property="og:description" content="적으면 바로 QR 코드로. 폰 카메라로 찍으면 적은 내용이 그대로 나와요.">
+<meta property="og:description" content="적으면 바로 QR. 색·모양·사진으로 꾸미고 그림으로 저장.">
 <script>
   (function () {
     try {
@@ -22,19 +22,19 @@
 <style>
   :root {
     --paper: #f3f5f2; --paper-2: #e9eee9; --ink: #17201c; --dim: #5b6862;
-    --line: #cfd8d2; --green: #1e6b4f; --mark: #cdeeb6; --mark-ink: #17201c;
+    --line: #cfd8d2; --green: #1e6b4f; --mark: #cdeeb6;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --paper: #121815; --paper-2: #18201c; --ink: #e4ece7; --dim: #8d9b94;
-      --line: #2c3833; --green: #6cc79a; --mark: #2b5a40; --mark-ink: #eaf7ef;
+      --line: #2c3833; --green: #6cc79a; --mark: #2b5a40;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --paper: #121815; --paper-2: #18201c; --ink: #e4ece7; --dim: #8d9b94;
-    --line: #2c3833; --green: #6cc79a; --mark: #2b5a40; --mark-ink: #eaf7ef;
+    --line: #2c3833; --green: #6cc79a; --mark: #2b5a40;
     color-scheme: dark;
   }
   * { box-sizing: border-box; }
@@ -42,189 +42,371 @@
   body {
     background: var(--paper); color: var(--ink);
     font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-    -webkit-text-size-adjust: 100%;
-    line-height: 1.5;
+    -webkit-text-size-adjust: 100%; line-height: 1.5;
   }
-  button, textarea { font: inherit; color: inherit; }
+  button, textarea, input { font: inherit; color: inherit; }
   .wrap {
-    max-width: 520px; margin: 0 auto;
-    padding: calc(28px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom));
+    max-width: 440px; margin: 0 auto;
+    padding: calc(22px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));
   }
-  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
-  h1 { margin: 0; font-size: 26px; letter-spacing: -0.02em; }
-  .lead { margin: 0 0 22px; color: var(--dim); font-size: 15px; }
-  .theme {
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  h1 { margin: 0; font-size: 22px; letter-spacing: -0.02em; }
+  .icon-btn {
     border: 1px solid var(--line); background: var(--paper-2); border-radius: 999px;
-    width: 38px; height: 38px; cursor: pointer; display: grid; place-items: center; color: var(--ink);
+    width: 36px; height: 36px; cursor: pointer; display: grid; place-items: center; color: var(--ink); padding: 0;
   }
 
-  label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 6px; }
   textarea {
-    width: 100%; min-height: 110px; resize: vertical;
+    width: 100%; height: 76px; resize: vertical; display: block;
     background: var(--paper-2); border: 1px solid var(--line); border-radius: 12px;
-    padding: 12px 14px; font-size: 16px; outline: none;
+    padding: 11px 13px; font-size: 16px; outline: none;
   }
-  textarea:focus { border-color: var(--green); }
-  .meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--dim); margin-top: 6px; }
-  .meta button { border: 0; background: none; padding: 0; color: var(--dim); cursor: pointer; text-decoration: underline; }
+  textarea:focus, .cap:focus { border-color: var(--green); }
 
-  .stage {
-    margin-top: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper-2);
-    padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 14px;
+  .preview {
+    margin: 14px auto 0; width: min(100%, 320px);
+    border-radius: 18px; overflow: hidden; box-shadow: 0 0 0 1px var(--line);
+    background: #fff;
   }
-  .qrbox {
-    width: min(100%, 300px); aspect-ratio: 1; border-radius: 12px; background: #fff;
-    display: grid; place-items: center; overflow: hidden;
-  }
-  .qrbox canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
-  .empty { color: #8d9b94; font-size: 14px; text-align: center; padding: 20px; }
+  .preview canvas { width: 100%; height: auto; display: block; }
+  .empty { aspect-ratio: 1; display: grid; place-items: center; color: #8d9b94; font-size: 14px; text-align: center; padding: 20px; }
   .err { color: #c0392b; }
 
-  .actions { display: flex; gap: 8px; width: 100%; }
-  .btn {
-    flex: 1; border: 1px solid var(--line); background: var(--paper); border-radius: 10px;
-    padding: 11px 10px; cursor: pointer; font-weight: 600; font-size: 15px;
+  /* 꾸미기: 한 줄씩 */
+  .deco { margin-top: 16px; display: grid; gap: 10px; }
+  .line { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px; }
+  .line::-webkit-scrollbar { display: none; }
+  .line.wrap { flex-wrap: wrap; overflow: visible; }
+  .sw {
+    flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; cursor: pointer; padding: 0;
+    box-shadow: 0 0 0 1px var(--line);
   }
-  .btn.primary { background: var(--green); border-color: var(--green); color: var(--paper); }
+  .sw.on { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink); }
+  .sw.pick { position: relative; overflow: hidden;
+    background: conic-gradient(#e74c3c, #f1c40f, #2ecc71, #3498db, #9b59b6, #e74c3c); }
+  .sw.pick input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; border: 0; padding: 0; }
+  .chip {
+    flex: none; height: 34px; padding: 0 13px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--paper-2); font-size: 14px;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  }
+  .chip.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .chip svg { flex: none; }
+  .sep { flex: none; width: 1px; height: 22px; background: var(--line); }
+  .cap {
+    flex: 1; min-width: 0; height: 34px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--paper-2); padding: 0 13px; font-size: 16px; outline: none;
+  }
+  .warn { font-size: 12px; color: #c0392b; margin: -4px 0 0 2px; }
+
+  .actions { display: flex; gap: 8px; margin-top: 16px; }
+  .btn {
+    flex: 1; border: 1px solid var(--line); background: var(--paper-2); border-radius: 12px;
+    padding: 12px 10px; cursor: pointer; font-weight: 600; font-size: 15px;
+  }
+  .btn.primary { background: var(--green); border-color: var(--green); color: var(--paper); flex: 2; }
   .btn:disabled { opacity: .45; cursor: default; }
 
-  .tip { margin: 18px 0 0; font-size: 13px; color: var(--dim); }
-  .tip b { color: var(--ink); font-weight: 600; }
+  .tip { margin: 16px 0 0; font-size: 12px; color: var(--dim); text-align: center; }
   .toast {
     position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px);
     background: var(--ink); color: var(--paper); padding: 9px 14px; border-radius: 999px; font-size: 14px;
     opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none;
   }
   .toast.on { opacity: 1; transform: translate(-50%, 0); }
-  footer { margin-top: 28px; font-size: 12px; color: var(--dim); }
-  footer a { color: var(--dim); }
+  .hidden { display: none !important; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>QR 만들기</h1>
-    <button class="theme" id="theme" type="button" aria-label="테마 바꾸기"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
+    <button class="icon-btn" id="theme" type="button" aria-label="테마 바꾸기"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
   </header>
-  <p class="lead">적으면 바로 QR이 돼요. 폰 카메라로 찍으면 적은 내용이 그대로 나와요.</p>
 
-  <label for="text">QR에 넣을 내용</label>
-  <textarea id="text" placeholder="예) https://itssophie.dev&#10;예) 와이파이 비밀번호는 1234abcd 입니다" autocomplete="off" spellcheck="false"></textarea>
-  <div class="meta">
-    <span id="count">0자</span>
-    <button type="button" id="clear">지우기</button>
-  </div>
+  <textarea id="text" aria-label="QR에 넣을 내용" placeholder="링크나 글을 적어주세요" autocomplete="off" spellcheck="false"></textarea>
 
-  <div class="stage">
-    <div class="qrbox" id="qrbox"><div class="empty">위에 내용을 적어주세요</div></div>
-    <div class="actions">
-      <button class="btn primary" id="save" type="button" disabled>이미지 저장</button>
-      <button class="btn" id="share" type="button" disabled>공유</button>
+  <div class="preview" id="preview"><div class="empty">적으면 여기에 QR이 생겨요</div></div>
+
+  <div class="deco">
+    <div class="line" id="colors" aria-label="색"></div>
+    <div class="line wrap" id="shapes" aria-label="모양">
+      <button class="chip" data-shape="square" type="button"><svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="1" width="5" height="5"/><rect x="8" y="1" width="5" height="5"/><rect x="1" y="8" width="5" height="5"/></svg>네모</button>
+      <button class="chip" data-shape="round" type="button"><svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="1" width="5" height="5" rx="2"/><rect x="8" y="1" width="5" height="5" rx="2"/><rect x="1" y="8" width="5" height="5" rx="2"/></svg>둥글게</button>
+      <button class="chip" data-shape="dot" type="button"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="3.5" cy="3.5" r="2.5"/><circle cx="10.5" cy="3.5" r="2.5"/><circle cx="3.5" cy="10.5" r="2.5"/></svg>점</button>
+      <button class="chip" id="photoBtn" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="12" cy="12" r="3.2"/></svg><span id="photoLabel">사진 넣기</span></button>
+      <input type="file" id="photo" accept="image/*" class="hidden">
     </div>
+    <div class="line">
+      <input class="cap" id="caption" maxlength="24" placeholder="아래 글씨 (없어도 돼요)" autocomplete="off">
+    </div>
+    <div class="warn hidden" id="warn"></div>
   </div>
 
-  <p class="tip">
-    <b>링크</b>(https://…)를 적으면 찍었을 때 바로 열 수 있어요. 그냥 <b>글</b>을 적으면 카메라에 글이 그대로 보여요.
-    적은 내용은 이 기기 안에서만 QR로 바뀌고 어디에도 보내지 않아요.
-  </p>
-  <footer><a href="/">itssophie.dev</a></footer>
+  <div class="actions">
+    <button class="btn primary" id="save" type="button" disabled>그림으로 저장</button>
+    <button class="btn" id="share" type="button" disabled>공유</button>
+  </div>
+
+  <p class="tip">폰 카메라로 찍으면 적은 내용이 그대로 나와요 · 이 기기 안에서만 만들어요</p>
 </div>
 <div class="toast" id="toast"></div>
 
 <script src="/qr/qrcode.js"></script>
 <script>
 (function () {
-  var MAX_BYTES = 2900; // 오류 정정 L 기준 최대(2953)보다 살짝 여유
-
   var $ = function (id) { return document.getElementById(id); };
-  var text = $('text'), box = $('qrbox'), count = $('count');
-  var saveBtn = $('save'), shareBtn = $('share');
-  var canvas = null;
-
   qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
 
-  function byteLen(s) { return new TextEncoder().encode(s).length; }
+  // [점 색, 바탕 색]
+  var PALETTE = [
+    ['#111111', '#ffffff'],
+    ['#1e6b4f', '#f1f8f3'],
+    ['#1f3a68', '#eef3fb'],
+    ['#5b3a8c', '#f5f0fb'],
+    ['#b8336a', '#fdf0f5'],
+    ['#7a4b2a', '#fbf5ee'],
+    ['#ffffff', '#111111']
+  ];
 
-  // 내용이 짧으면 오류 정정을 높게(찍기 쉬움), 길면 낮춰서 들어가게
-  function makeQR(s) {
-    var levels = ['M', 'L'];
-    if (byteLen(s) < 300) levels.unshift('Q');
+  var state = { color: 0, custom: '#d35400', shape: 'round', caption: '' };
+  try { Object.assign(state, JSON.parse(localStorage.getItem('qr-style') || '{}')); } catch (e) {}
+  var photo = null;      // Image
+  var canvas = null;
+
+  function colors() {
+    if (state.color === 'custom') return [state.custom, '#ffffff'];
+    return PALETTE[state.color] || PALETTE[0];
+  }
+
+  function lum(hex) {
+    var n = parseInt(hex.slice(1), 16), c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) {
+      v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function contrast(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+
+  // ---------- 색 고르기 ----------
+  var colorsEl = $('colors');
+  PALETTE.forEach(function (p, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'sw'; b.dataset.i = i;
+    b.style.background = 'linear-gradient(135deg,' + p[0] + ' 50%,' + p[1] + ' 50%)';
+    b.setAttribute('aria-label', '색 ' + (i + 1));
+    b.onclick = function () { state.color = i; refresh(); };
+    colorsEl.appendChild(b);
+  });
+  var pick = document.createElement('label');
+  pick.className = 'sw pick'; pick.title = '직접 고르기';
+  pick.innerHTML = '<input type="color" aria-label="색 직접 고르기">';
+  var pickInput = pick.firstChild;
+  pickInput.value = state.custom;
+  pickInput.oninput = function () { state.custom = pickInput.value; state.color = 'custom'; refresh(); };
+  colorsEl.appendChild(pick);
+
+  // ---------- 모양 ----------
+  document.querySelectorAll('[data-shape]').forEach(function (b) {
+    b.onclick = function () { state.shape = b.dataset.shape; refresh(); };
+  });
+
+  // ---------- 사진 ----------
+  $('photoBtn').onclick = function () {
+    if (photo) { photo = null; refresh(); return; }
+    $('photo').click();
+  };
+  $('photo').onchange = function () {
+    var f = this.files && this.files[0]; this.value = '';
+    if (!f) return;
+    var img = new Image();
+    img.onload = function () { photo = img; refresh(); };
+    img.onerror = function () { toast('이 사진은 못 열어요'); };
+    img.src = URL.createObjectURL(f);
+  };
+
+  // ---------- 글씨 ----------
+  var cap = $('caption');
+  cap.value = state.caption || '';
+  cap.oninput = function () { state.caption = cap.value; schedule(); };
+
+  // ---------- 그리기 ----------
+  // 사진을 넣으면 가운데가 가려지니 오류 정정을 최대(H)로. 아니면 Q부터 시도하고 길면 낮춤
+  function makeQR(s, withPhoto) {
+    var levels = withPhoto ? ['H'] : ['Q', 'M', 'L'];
     for (var i = 0; i < levels.length; i++) {
-      try {
-        var qr = qrcode(0, levels[i]);
-        qr.addData(s, 'Byte');
-        qr.make();
-        return qr;
-      } catch (e) { /* 다음 레벨로 */ }
+      try { var qr = qrcode(0, levels[i]); qr.addData(s, 'Byte'); qr.make(); return qr; } catch (e) {}
     }
     return null;
   }
 
-  function draw(qr) {
-    var n = qr.getModuleCount(), quiet = 4, scale = Math.max(4, Math.ceil(1024 / (n + quiet * 2)));
-    var size = (n + quiet * 2) * scale;
+  // 모서리마다 반지름이 다른 둥근 사각형
+  function rr(g, x, y, w, h, r) {
+    var tl = r[0], tr = r[1], br = r[2], bl = r[3];
+    g.moveTo(x + tl, y);
+    g.lineTo(x + w - tr, y); if (tr) g.arcTo(x + w, y, x + w, y + tr, tr);
+    g.lineTo(x + w, y + h - br); if (br) g.arcTo(x + w, y + h, x + w - br, y + h, br);
+    g.lineTo(x + bl, y + h); if (bl) g.arcTo(x, y + h, x, y + h - bl, bl);
+    g.lineTo(x, y + tl); if (tl) g.arcTo(x, y, x + tl, y, tl);
+    g.closePath();
+  }
+
+  function isEye(n, r, c) {
+    return (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
+  }
+
+  function render(s) {
+    var col = colors(), fg = col[0], bg = col[1];
+    var qr = makeQR(s, !!photo);
+    if (!qr) return null;
+    var n = qr.getModuleCount(), quiet = 4;
+    var m = Math.max(8, Math.floor(1200 / (n + quiet * 2)));  // 한 칸 크기(px)
+    var qrSize = (n + quiet * 2) * m;
+    var capH = state.caption.trim() ? Math.round(m * 6) : 0;
     var c = document.createElement('canvas');
-    c.width = c.height = size;
+    c.width = qrSize; c.height = qrSize + capH;
     var g = c.getContext('2d');
-    g.fillStyle = '#fff'; g.fillRect(0, 0, size, size);
-    g.fillStyle = '#000';
-    for (var r = 0; r < n; r++)
-      for (var col = 0; col < n; col++)
-        if (qr.isDark(r, col)) g.fillRect((col + quiet) * scale, (r + quiet) * scale, scale, scale);
-    c.setAttribute('role', 'img');
-    c.setAttribute('aria-label', 'QR 코드');
+    g.fillStyle = bg; g.fillRect(0, 0, c.width, c.height);
+
+    var o = quiet * m;
+    var dark = function (r, cc) { return r >= 0 && cc >= 0 && r < n && cc < n && qr.isDark(r, cc); };
+
+    // 가운데 사진 자리 (칸 수, 홀수)
+    var hole = 0, hs = 0;
+    if (photo) { hole = Math.floor(n * 0.24); if (hole % 2 === 0) hole++; hs = Math.floor((n - hole) / 2); }
+    var inHole = function (r, cc) { return hole && r >= hs - 1 && r <= hs + hole && cc >= hs - 1 && cc <= hs + hole; };
+
+    g.fillStyle = fg;
+    g.beginPath();
+    for (var r = 0; r < n; r++) {
+      for (var cc = 0; cc < n; cc++) {
+        if (!qr.isDark(r, cc) || isEye(n, r, cc) || inHole(r, cc)) continue;
+        var x = o + cc * m, y = o + r * m;
+        if (state.shape === 'dot') {
+          g.moveTo(x + m / 2 + m * 0.46, y + m / 2);
+          g.arc(x + m / 2, y + m / 2, m * 0.46, 0, Math.PI * 2);
+        } else if (state.shape === 'round') {
+          var R = m / 2, up = dark(r - 1, cc), dn = dark(r + 1, cc), lf = dark(r, cc - 1), rt = dark(r, cc + 1);
+          rr(g, x, y, m, m, [(!up && !lf) ? R : 0, (!up && !rt) ? R : 0, (!dn && !rt) ? R : 0, (!dn && !lf) ? R : 0]);
+        } else {
+          g.rect(x, y, m, m);
+        }
+      }
+    }
+    g.fill();
+
+    // 세 모서리 큰 네모(눈)
+    [[0, 0], [0, n - 7], [n - 7, 0]].forEach(function (p) {
+      var x = o + p[1] * m, y = o + p[0] * m;
+      var ro = state.shape === 'square' ? 0 : m * 2.2, ri = state.shape === 'square' ? 0 : m * 1.1;
+      g.beginPath();
+      rr(g, x, y, 7 * m, 7 * m, [ro, ro, ro, ro]);
+      g.fill();
+      g.fillStyle = bg; g.beginPath();
+      rr(g, x + m, y + m, 5 * m, 5 * m, [ro * 0.6, ro * 0.6, ro * 0.6, ro * 0.6]);
+      g.fill();
+      g.fillStyle = fg; g.beginPath();
+      if (state.shape === 'dot') g.arc(x + 3.5 * m, y + 3.5 * m, 1.6 * m, 0, Math.PI * 2);
+      else rr(g, x + 2 * m, y + 2 * m, 3 * m, 3 * m, [ri, ri, ri, ri]);
+      g.fill();
+    });
+
+    // 가운데 사진
+    if (photo) {
+      var px = o + hs * m, ps = hole * m, pad = m * 0.4;
+      g.save();
+      g.beginPath(); rr(g, px + pad, px + pad, ps - pad * 2, ps - pad * 2, Array(4).fill(m * 1.4)); g.clip();
+      var iw = photo.naturalWidth, ih = photo.naturalHeight, k = Math.min(iw, ih);
+      g.drawImage(photo, (iw - k) / 2, (ih - k) / 2, k, k, px + pad, px + pad, ps - pad * 2, ps - pad * 2);
+      g.restore();
+    }
+
+    // 아래 글씨
+    if (capH) {
+      g.fillStyle = fg;
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      var fs = Math.round(m * 2.6);
+      g.font = '700 ' + fs + 'px "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+      while (g.measureText(state.caption).width > qrSize - m * 8 && fs > 10) {
+        fs -= 2; g.font = g.font.replace(/\d+px/, fs + 'px');
+      }
+      g.fillText(state.caption.trim(), qrSize / 2, qrSize - m * 1.5 + capH / 2);
+    }
+    c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'QR 코드');
     return c;
   }
 
-  function setEmpty(msg, isErr) {
+  var text = $('text'), preview = $('preview'), saveBtn = $('save'), shareBtn = $('share');
+
+  function setEmpty(msg, err) {
     canvas = null;
-    box.innerHTML = '<div class="empty' + (isErr ? ' err' : '') + '"></div>';
-    box.firstChild.textContent = msg;
+    preview.innerHTML = '<div class="empty' + (err ? ' err' : '') + '"></div>';
+    preview.firstChild.textContent = msg;
+    preview.style.background = '';
     saveBtn.disabled = shareBtn.disabled = true;
   }
 
-  var timer = null;
   function update() {
     var s = text.value;
-    var b = byteLen(s);
-    count.textContent = s.length + '자' + (b > 0 ? ' · ' + b + '바이트' : '');
-    try { localStorage.setItem('qr-text', s); } catch (e) {}
-    if (!s.trim()) return setEmpty('위에 내용을 적어주세요');
-    if (b > MAX_BYTES) return setEmpty('너무 길어요. 한글 기준 약 900자까지 들어가요.', true);
-    var qr = makeQR(s);
-    if (!qr) return setEmpty('너무 길어서 QR에 다 안 들어가요.', true);
-    canvas = draw(qr);
-    box.innerHTML = '';
-    box.appendChild(canvas);
-    saveBtn.disabled = false;
-    shareBtn.disabled = false;
+    try { localStorage.setItem('qr-text', s); localStorage.setItem('qr-style', JSON.stringify(state)); } catch (e) {}
+    var col = colors();
+    var warn = contrast(col[0], col[1]) < 3 ? '색이 너무 연하면 카메라가 잘 못 읽어요'
+      : new TextEncoder().encode(s).length > 300 ? '글이 길면 QR이 촘촘해져서 찍기 어려워요. 짧을수록 잘 읽혀요' : '';
+    $('warn').textContent = warn;
+    $('warn').classList.toggle('hidden', !warn);
+    if (!s.trim()) return setEmpty('적으면 여기에 QR이 생겨요');
+    canvas = render(s);
+    if (!canvas) return setEmpty(photo ? '사진을 넣으면 조금 짧아야 해요. 사진을 빼거나 줄여주세요' : '너무 길어요. 조금만 줄여주세요', true);
+    preview.innerHTML = '';
+    preview.style.background = col[1];
+    preview.appendChild(canvas);
+    saveBtn.disabled = shareBtn.disabled = false;
   }
 
-  text.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(update, 120); });
-  $('clear').addEventListener('click', function () { text.value = ''; update(); text.focus(); });
+  var timer = null;
+  function schedule() { clearTimeout(timer); timer = setTimeout(update, 100); }
 
+  function refresh() {
+    colorsEl.querySelectorAll('.sw').forEach(function (b) {
+      b.classList.toggle('on', b.classList.contains('pick') ? state.color === 'custom' : +b.dataset.i === state.color);
+    });
+    document.querySelectorAll('[data-shape]').forEach(function (b) { b.classList.toggle('on', b.dataset.shape === state.shape); });
+    $('photoBtn').classList.toggle('on', !!photo);
+    $('photoLabel').textContent = photo ? '사진 빼기' : '사진 넣기';
+    update();
+  }
+
+  text.addEventListener('input', schedule);
+
+  // ---------- 저장 / 공유 ----------
   function toast(msg) {
     var t = $('toast'); t.textContent = msg; t.classList.add('on');
     clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('on'); }, 1600);
   }
-
   function fileName() {
     var d = new Date(), p = function (x) { return String(x).padStart(2, '0'); };
     return 'qr-' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + '.png';
   }
-
   function toBlob() { return new Promise(function (res) { canvas.toBlob(res, 'image/png'); }); }
 
-  saveBtn.addEventListener('click', function () {
+  saveBtn.onclick = function () {
     if (!canvas) return;
-    var a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
-    a.download = fileName();
-    document.body.appendChild(a); a.click(); a.remove();
-    toast('저장했어요');
-  });
+    toBlob().then(function (blob) {
+      var file = new File([blob], fileName(), { type: 'image/png' });
+      // 아이폰 사파리는 다운로드가 '파일'로 가서, 사진첩에 넣으려면 공유 시트가 더 편함
+      var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (ios && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file] }).catch(function () {});
+        return;
+      }
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = fileName();
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+      toast('저장했어요');
+    });
+  };
 
-  shareBtn.addEventListener('click', function () {
+  shareBtn.onclick = function () {
     if (!canvas) return;
     toBlob().then(function (blob) {
       var file = new File([blob], fileName(), { type: 'image/png' });
@@ -233,28 +415,28 @@
       }
       if (navigator.clipboard && window.ClipboardItem) {
         return navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-          .then(function () { toast('이미지를 복사했어요'); })
-          .catch(function () { toast('이 브라우저는 공유가 안 돼요. 저장을 써주세요'); });
+          .then(function () { toast('그림을 복사했어요'); })
+          .catch(function () { toast('여기선 공유가 안 돼요. 저장을 써주세요'); });
       }
-      toast('이 브라우저는 공유가 안 돼요. 저장을 써주세요');
+      toast('여기선 공유가 안 돼요. 저장을 써주세요');
     });
-  });
+  };
 
-  // 테마
-  $('theme').addEventListener('click', function () {
+  // ---------- 테마 ----------
+  $('theme').onclick = function () {
     var root = document.documentElement;
-    var cur = root.getAttribute('data-theme') ||
-      (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    var cur = root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     var next = cur === 'dark' ? 'light' : 'dark';
     root.setAttribute('data-theme', next);
     try { localStorage.setItem('theme', next); } catch (e) {}
-  });
+  };
 
   // 주소에 ?t=내용 이 있으면 그걸로, 아니면 지난번 내용
   var init = new URLSearchParams(location.search).get('t');
   if (init == null) { try { init = localStorage.getItem('qr-text') || ''; } catch (e) { init = ''; } }
   text.value = init;
-  update();
+  refresh();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(update);
 })();
 </script>
 </body>
