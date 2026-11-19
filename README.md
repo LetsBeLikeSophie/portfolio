@@ -105,3 +105,15 @@ ssh -i <SSH 키 파일> ubuntu@<서버 IP> "cd /var/www/portfolio && ls index.ht
 
 `forever/index.html`은 와우 포에버 실시간 채팅 페이지입니다. `build.py`와 상관없는 독립 파일이라 직접 고칩니다.
 데이터는 Supabase(camtrip 프로젝트의 `wow` 스키마)에 있고, 캐릭터 조회는 Edge Function `wow-character`가 블리자드 API로 처리합니다.
+
+## QR 만들기 (`/qr/`)
+
+`qr/index.html`은 글이나 링크를 적으면 바로 QR 코드로 만들어주는 페이지입니다. `build.py`와 상관없는 독립 파일입니다.
+QR 생성은 같은 폴더의 `qr/qrcode.js`([qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) 1.4.4, MIT)로
+브라우저 안에서 하고, 서버로 아무것도 보내지 않습니다. 이미지 저장·공유(모바일 공유 시트, 안 되면 클립보드 복사)를 지원하고,
+`/qr/?t=내용`으로 열면 그 내용이 미리 채워집니다.
+
+```bash
+scp -i <SSH 키 파일> qr/index.html qr/qrcode.js ubuntu@<서버 IP>:/tmp/
+ssh -i <SSH 키 파일> ubuntu@<서버 IP> "sudo install -d -o www-data -g www-data /var/www/portfolio/qr && sudo install -o www-data -g www-data -m 644 /tmp/index.html /tmp/qrcode.js /var/www/portfolio/qr/ && rm /tmp/index.html /tmp/qrcode.js"
+```
