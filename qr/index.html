@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>QR 만들기</title>
-<meta name="description" content="글이나 링크를 적으면 바로 QR 코드로 만들어줘요. 색·모양·가운데 사진·아래 글씨로 꾸미고 그림으로 저장할 수 있어요.">
+<title>QR 카드 만들기</title>
+<meta name="description" content="와이파이·링크·연락처·전화·문자를 QR 카드로. 폰 카메라로 찍으면 바로 연결돼요. 스타일·색·모양을 골라 그림으로 저장할 수 있어요.">
 <link rel="canonical" href="https://itssophie.dev/qr/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://itssophie.dev/qr/">
-<meta property="og:title" content="QR 만들기">
-<meta property="og:description" content="적으면 바로 QR. 색·모양·사진으로 꾸미고 그림으로 저장.">
+<meta property="og:title" content="QR 카드 만들기">
+<meta property="og:description" content="와이파이·링크·연락처를 예쁜 QR 카드로. 찍으면 바로 연결돼요.">
 <script>
   (function () {
     try {
@@ -18,229 +18,430 @@
     } catch (e) {}
   })();
 </script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Black+Han+Sans&family=Gaegu:wght@700&family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <style>
+  /* 레이아웃: 왼쪽은 입력·꾸미기, 오른쪽은 재단 매트 위에 놓인 카드 미리보기 (폰에선 위아래로) */
   :root {
-    --paper: #f3f5f2; --paper-2: #e9eee9; --ink: #17201c; --dim: #5b6862;
-    --line: #cfd8d2; --green: #1e6b4f; --mark: #cdeeb6;
+    --bg: #f1f4f0;
+    --surface: #ffffff;
+    --ink: #17201c;
+    --dim: #5b6862;
+    --line: #d3dbd5;
+    --accent: #1e6b4f;
+    --accent-ink: #ffffff;
+    --soft: #dcefe2;
+    --mat: #24624b;
+    --mat-line: rgba(255, 255, 255, .08);
+    --mat-line-2: rgba(255, 255, 255, .17);
+    --mat-ink: rgba(255, 255, 255, .72);
+    --warn: #b4442b;
+    --f-display: "Bagel Fat One", "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --paper: #121815; --paper-2: #18201c; --ink: #e4ece7; --dim: #8d9b94;
-      --line: #2c3833; --green: #6cc79a; --mark: #2b5a40;
+      --bg: #0f1512; --surface: #18201c; --ink: #e6ede8; --dim: #92a099; --line: #2c3933;
+      --accent: #6cc79a; --accent-ink: #0d1a13; --soft: #1f3a2c;
+      --mat: #163c2e; --mat-line: rgba(255, 255, 255, .05); --mat-line-2: rgba(255, 255, 255, .12); --mat-ink: rgba(255, 255, 255, .55);
+      --warn: #f08a6e;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --paper: #121815; --paper-2: #18201c; --ink: #e4ece7; --dim: #8d9b94;
-    --line: #2c3833; --green: #6cc79a; --mark: #2b5a40;
+    --bg: #0f1512; --surface: #18201c; --ink: #e6ede8; --dim: #92a099; --line: #2c3933;
+    --accent: #6cc79a; --accent-ink: #0d1a13; --soft: #1f3a2c;
+    --mat: #163c2e; --mat-line: rgba(255, 255, 255, .05); --mat-line-2: rgba(255, 255, 255, .12); --mat-ink: rgba(255, 255, 255, .55);
+    --warn: #f08a6e;
     color-scheme: dark;
   }
+
   * { box-sizing: border-box; }
   html, body { margin: 0; }
   body {
-    background: var(--paper); color: var(--ink);
-    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-    -webkit-text-size-adjust: 100%; line-height: 1.5;
+    background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
   }
-  button, textarea, input { font: inherit; color: inherit; }
-  .wrap {
-    max-width: 440px; margin: 0 auto;
-    padding: calc(22px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+
+  .page {
+    max-width: 1160px; margin: 0 auto;
+    padding-block: 24px 48px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
   }
-  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  h1 { margin: 0; font-size: 22px; letter-spacing: -0.02em; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  .brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
+  h1 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: clamp(28px, 5vw, 38px); letter-spacing: -0.01em; line-height: 1.1; }
+  h1 em { font-style: normal; color: var(--accent); }
+  .tag { color: var(--dim); font-size: 14px; }
   .icon-btn {
-    border: 1px solid var(--line); background: var(--paper-2); border-radius: 999px;
-    width: 36px; height: 36px; cursor: pointer; display: grid; place-items: center; color: var(--ink); padding: 0;
+    flex: none; width: 38px; height: 38px; border-radius: 999px; display: grid; place-items: center; padding: 0;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
   }
 
-  textarea {
-    width: 100%; height: 76px; resize: vertical; display: block;
-    background: var(--paper-2); border: 1px solid var(--line); border-radius: 12px;
-    padding: 11px 13px; font-size: 16px; outline: none;
+  .layout { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "form" "stage" "deco"; }
+  @media (min-width: 900px) {
+    .layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-areas: "form stage" "deco stage"; gap: 20px 32px; align-items: start; }
+    .stage { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); }
   }
-  textarea:focus, .cap:focus { border-color: var(--green); }
+  .form { grid-area: form; } .stage { grid-area: stage; } .deco { grid-area: deco; }
 
-  .preview {
-    margin: 14px auto 0; width: min(100%, 320px);
-    border-radius: 18px; overflow: hidden; box-shadow: 0 0 0 1px var(--line);
-    background: #fff;
-  }
-  .preview canvas { width: 100%; height: auto; display: block; }
-  .empty { aspect-ratio: 1; display: grid; place-items: center; color: #8d9b94; font-size: 14px; text-align: center; padding: 20px; }
-  .err { color: #c0392b; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; display: grid; gap: 16px; min-width: 0; }
+  .panel-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .panel-h h2 { margin: 0; font-size: 13px; letter-spacing: .08em; color: var(--dim); font-weight: 600; }
+  .sample { font-size: 12px; color: var(--accent); background: var(--soft); padding: 2px 9px; border-radius: 999px; }
 
-  /* 꾸미기: 한 줄씩 */
-  .deco { margin-top: 16px; display: grid; gap: 10px; }
-  .line { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px; }
-  .line::-webkit-scrollbar { display: none; }
-  .line.wrap { flex-wrap: wrap; overflow: visible; }
-  .sw {
-    flex: none; width: 32px; height: 32px; border-radius: 50%; border: 0; cursor: pointer; padding: 0;
-    box-shadow: 0 0 0 1px var(--line);
+  /* 용도 탭 */
+  .modes { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+  .mode {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 2px 8px;
+    border-radius: 12px; border: 1px solid var(--line); background: transparent; font-size: 13px; font-weight: 500; color: var(--dim);
   }
-  .sw.on { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink); }
-  .sw.pick { position: relative; overflow: hidden;
-    background: conic-gradient(#e74c3c, #f1c40f, #2ecc71, #3498db, #9b59b6, #e74c3c); }
-  .sw.pick input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; border: 0; padding: 0; }
+  .mode svg { width: 22px; height: 22px; }
+  .mode[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .mode span { white-space: nowrap; }
+  @media (max-width: 520px) { .modes { grid-template-columns: repeat(3, minmax(0, 1fr)); } .mode { flex-direction: row; justify-content: center; gap: 6px; padding: 10px 4px; } .mode svg { width: 18px; height: 18px; } }
+
+  .fields { display: grid; gap: 12px; }
+  .field { display: grid; gap: 5px; min-width: 0; }
+  .field > span { font-size: 13px; color: var(--dim); font-weight: 500; }
+  .row2 { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  @media (max-width: 420px) { .row2 { grid-template-columns: minmax(0, 1fr); } }
+  .inp {
+    width: 100%; min-width: 0; height: 46px; padding: 0 14px; border-radius: 12px; outline: none; font-size: 16px;
+    border: 1px solid var(--line); background: var(--bg);
+  }
+  textarea.inp { height: 96px; padding: 12px 14px; resize: vertical; }
+  .inp:focus { border-color: var(--accent); }
+  .inp:disabled { opacity: .5; }
+  .pw { position: relative; }
+  .pw .inp { padding-right: 64px; }
+  .pw button {
+    position: absolute; right: 6px; top: 6px; height: 34px; padding: 0 10px; border-radius: 9px; border: 0;
+    background: transparent; color: var(--dim); font-size: 13px;
+  }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip {
-    flex: none; height: 34px; padding: 0 13px; border-radius: 999px; cursor: pointer;
-    border: 1px solid var(--line); background: var(--paper-2); font-size: 14px;
-    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    height: 36px; padding: 0 13px; border-radius: 999px; border: 1px solid var(--line); background: transparent;
+    font-size: 14px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
   }
-  .chip.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .chip svg { flex: none; }
-  .sep { flex: none; width: 1px; height: 22px; background: var(--line); }
-  .cap {
-    flex: 1; min-width: 0; height: 34px; border-radius: 999px; border: 1px solid var(--line);
-    background: var(--paper-2); padding: 0 13px; font-size: 16px; outline: none;
-  }
-  .warn { font-size: 12px; color: #c0392b; margin: -4px 0 0 2px; }
+  .chip svg { width: 15px; height: 15px; flex: none; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); cursor: pointer; }
+  .check input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+  .note { font-size: 12px; color: var(--dim); margin: 0; }
 
-  .actions { display: flex; gap: 8px; margin-top: 16px; }
-  .btn {
-    flex: 1; border: 1px solid var(--line); background: var(--paper-2); border-radius: 12px;
-    padding: 12px 10px; cursor: pointer; font-weight: 600; font-size: 15px;
+  /* 꾸미기 */
+  .styles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+  .style {
+    display: grid; gap: 6px; justify-items: center; padding: 0; border: 0; background: none; font-size: 12px; color: var(--dim);
   }
-  .btn.primary { background: var(--green); border-color: var(--green); color: var(--paper); flex: 2; }
+  .style i {
+    display: grid; place-items: center; width: 100%; aspect-ratio: 3 / 4; max-width: 100%; border-radius: 10px;
+    font-style: normal; box-shadow: 0 0 0 1px var(--line); position: relative; overflow: hidden;
+  }
+  .style i b { width: 52%; aspect-ratio: 1; border-radius: 4px; display: block; max-width: 100%;
+    background-image: linear-gradient(currentColor 0 0), linear-gradient(currentColor 0 0), linear-gradient(currentColor 0 0);
+    background-size: 30% 30%; background-repeat: no-repeat; background-position: 12% 12%, 88% 12%, 12% 88%; }
+  .style[aria-pressed="true"] { color: var(--ink); font-weight: 600; }
+  .style[aria-pressed="true"] i { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink); }
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .sw { width: 34px; height: 34px; border-radius: 50%; border: 0; padding: 0; box-shadow: 0 0 0 1px var(--line); }
+  .sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink); }
+  .sw.pick { position: relative; overflow: hidden; display: block; cursor: pointer; background: conic-gradient(#e74c3c, #f1c40f, #2ecc71, #3498db, #9b59b6, #e74c3c); }
+  .sw.pick input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; padding: 0; cursor: pointer; }
+  .deco-grid { display: grid; gap: 16px; }
+  .deco-row { display: grid; gap: 8px; }
+  .deco-row > span { font-size: 13px; color: var(--dim); font-weight: 500; }
+
+  /* 재단 매트 + 카드 */
+  .mat {
+    border-radius: 20px; padding: 28px 20px 16px; position: relative;
+    background-color: var(--mat);
+    background-image:
+      linear-gradient(var(--mat-line-2) 1px, transparent 1px),
+      linear-gradient(90deg, var(--mat-line-2) 1px, transparent 1px),
+      linear-gradient(var(--mat-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--mat-line) 1px, transparent 1px);
+    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+    background-position: -1px -1px;
+    display: grid; justify-items: center; gap: 14px;
+  }
+  .card-out { width: min(100%, 360px); display: grid; place-items: center; min-height: 200px; }
+  .card-out img {
+    display: block; width: 100%; height: auto; max-width: 100%;
+    filter: drop-shadow(0 14px 24px rgba(0,0,0,.28)) drop-shadow(0 2px 4px rgba(0,0,0,.2));
+    -webkit-touch-callout: default;
+  }
+  .card-out.qr-only { width: min(100%, 300px); }
+  .empty { color: var(--mat-ink); text-align: center; font-size: 14px; padding: 40px 10px; }
+  .mat-foot { width: 100%; display: flex; justify-content: space-between; gap: 8px; color: var(--mat-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .warn { margin: 10px 0 0; font-size: 13px; color: var(--warn); }
+
+  .actions { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .btn { height: 50px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 15px; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .btn:disabled { opacity: .45; cursor: default; }
+  .hint { font-size: 12px; color: var(--dim); margin: 8px 2px 0; text-align: center; }
 
-  .tip { margin: 16px 0 0; font-size: 12px; color: var(--dim); text-align: center; }
   .toast {
-    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px);
-    background: var(--ink); color: var(--paper); padding: 9px 14px; border-radius: 999px; font-size: 14px;
-    opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none;
+    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 16px);
+    background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: 14px;
+    opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 20; max-width: calc(100% - 32px); text-align: center;
   }
   .toast.on { opacity: 1; transform: translate(-50%, 0); }
-  .hidden { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>QR 만들기</h1>
-    <button class="icon-btn" id="theme" type="button" aria-label="테마 바꾸기"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
+<div class="page">
+  <header class="top">
+    <div class="brand">
+      <h1>QR <em>카드</em></h1>
+      <span class="tag">찍으면 바로 연결되는 카드 만들기</span>
+    </div>
+    <button class="icon-btn" id="theme" type="button" aria-label="밝게/어둡게 바꾸기"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
   </header>
 
-  <textarea id="text" aria-label="QR에 넣을 내용" placeholder="링크나 글을 적어주세요" autocomplete="off" spellcheck="false"></textarea>
+  <div class="layout">
+    <section class="panel form" aria-label="내용">
+      <div class="modes" id="modes" role="group" aria-label="용도"></div>
+      <div class="panel-h"><h2 id="formTitle">와이파이 정보</h2><span class="sample" id="sample" hidden>예시로 채워뒀어요</span></div>
 
-  <div class="preview" id="preview"><div class="empty">적으면 여기에 QR이 생겨요</div></div>
+      <div class="fields" data-for="wifi">
+        <label class="field"><span>와이파이 이름</span><input class="inp" id="ssid" autocomplete="off" spellcheck="false" placeholder="예) SK_WiFiGIGA1234"></label>
+        <div class="field"><span>비밀번호</span>
+          <div class="pw"><input class="inp" id="pass" type="password" autocomplete="new-password" spellcheck="false" placeholder="비밀번호"><button type="button" id="peek">보기</button></div>
+        </div>
+        <div class="field"><span>보안 방식</span>
+          <div class="seg" id="sec">
+            <button class="chip" type="button" data-v="WPA">WPA/WPA2/WPA3</button>
+            <button class="chip" type="button" data-v="WEP">WEP</button>
+            <button class="chip" type="button" data-v="nopass">비밀번호 없음</button>
+          </div>
+        </div>
+        <label class="check"><input type="checkbox" id="hiddenNet"> 숨겨진 네트워크예요</label>
+        <p class="note">잘 모르겠으면 WPA 그대로 두세요. 공유기 대부분이 이거예요. 비밀번호는 이 기기에도 저장하지 않아요.</p>
+      </div>
 
-  <div class="deco">
-    <div class="line" id="colors" aria-label="색"></div>
-    <div class="line wrap" id="shapes" aria-label="모양">
-      <button class="chip" data-shape="square" type="button"><svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="1" width="5" height="5"/><rect x="8" y="1" width="5" height="5"/><rect x="1" y="8" width="5" height="5"/></svg>네모</button>
-      <button class="chip" data-shape="round" type="button"><svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="1" width="5" height="5" rx="2"/><rect x="8" y="1" width="5" height="5" rx="2"/><rect x="1" y="8" width="5" height="5" rx="2"/></svg>둥글게</button>
-      <button class="chip" data-shape="dot" type="button"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="3.5" cy="3.5" r="2.5"/><circle cx="10.5" cy="3.5" r="2.5"/><circle cx="3.5" cy="10.5" r="2.5"/></svg>점</button>
-      <button class="chip" id="photoBtn" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="12" cy="12" r="3.2"/></svg><span id="photoLabel">사진 넣기</span></button>
-      <input type="file" id="photo" accept="image/*" class="hidden">
-    </div>
-    <div class="line">
-      <input class="cap" id="caption" maxlength="24" placeholder="아래 글씨 (없어도 돼요)" autocomplete="off">
-    </div>
-    <div class="warn hidden" id="warn"></div>
+      <div class="fields" data-for="link" hidden>
+        <label class="field"><span>주소</span><input class="inp" id="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="예) instagram.com/내아이디"></label>
+        <p class="note">https:// 는 안 적어도 돼요. 인스타·블로그·예약 페이지·설문지 링크 다 돼요.</p>
+      </div>
+
+      <div class="fields" data-for="contact" hidden>
+        <div class="row2">
+          <label class="field"><span>이름</span><input class="inp" id="cName" autocomplete="off" placeholder="홍길동"></label>
+          <label class="field"><span>전화번호</span><input class="inp" id="cTel" inputmode="tel" autocomplete="off" placeholder="010-1234-5678"></label>
+        </div>
+        <div class="row2">
+          <label class="field"><span>이메일 (선택)</span><input class="inp" id="cMail" inputmode="email" autocomplete="off" spellcheck="false" placeholder="me@example.com"></label>
+          <label class="field"><span>회사·가게 (선택)</span><input class="inp" id="cOrg" autocomplete="off" placeholder="소피 커피"></label>
+        </div>
+        <p class="note">찍으면 연락처 앱에 바로 저장할 수 있는 명함 QR이 돼요.</p>
+      </div>
+
+      <div class="fields" data-for="tel" hidden>
+        <label class="field"><span>전화번호</span><input class="inp" id="tTel" inputmode="tel" autocomplete="off" placeholder="02-123-4567"></label>
+        <p class="note">찍으면 바로 전화를 걸 수 있어요. 가게 예약 전화에 좋아요.</p>
+      </div>
+
+      <div class="fields" data-for="sms" hidden>
+        <label class="field"><span>받는 번호</span><input class="inp" id="sTel" inputmode="tel" autocomplete="off" placeholder="010-1234-5678"></label>
+        <label class="field"><span>미리 적어둘 문자 (선택)</span><input class="inp" id="sMsg" autocomplete="off" placeholder="예) 3번 테이블 주문할게요"></label>
+      </div>
+
+      <div class="fields" data-for="text" hidden>
+        <label class="field"><span>보여줄 글</span><textarea class="inp" id="txt" spellcheck="false" placeholder="찍으면 이 글이 그대로 보여요"></textarea></label>
+      </div>
+    </section>
+
+    <section class="stage" aria-label="미리보기">
+      <div class="mat">
+        <div class="card-out" id="out"><div class="empty">내용을 적으면 카드가 생겨요</div></div>
+        <div class="mat-foot"><span id="dims">—</span><span id="scanInfo"></span></div>
+      </div>
+      <p class="warn" id="warn" hidden></p>
+      <div class="actions">
+        <button class="btn primary" id="save" type="button" disabled>그림으로 저장</button>
+        <button class="btn" id="copy" type="button" disabled>복사</button>
+        <button class="btn" id="share" type="button" disabled>공유</button>
+      </div>
+      <p class="hint">저장 버튼이 안 되면 카드를 길게 누르거나 오른쪽 클릭해서 저장하세요</p>
+    </section>
+
+    <section class="panel deco" aria-label="꾸미기">
+      <div class="panel-h"><h2>꾸미기</h2></div>
+      <div class="deco-grid">
+        <div class="deco-row"><span>카드 스타일</span><div class="styles" id="styles"></div></div>
+        <div class="deco-row"><span>QR 색</span><div class="swatches" id="colors"></div></div>
+        <div class="deco-row"><span>점 모양</span>
+          <div class="seg" id="shapes">
+            <button class="chip" type="button" data-v="square"><svg viewBox="0 0 14 14" fill="currentColor"><rect x="1" y="1" width="5" height="5"/><rect x="8" y="1" width="5" height="5"/><rect x="1" y="8" width="5" height="5"/></svg>네모</button>
+            <button class="chip" type="button" data-v="round"><svg viewBox="0 0 14 14" fill="currentColor"><rect x="1" y="1" width="5" height="5" rx="2"/><rect x="8" y="1" width="5" height="5" rx="2"/><rect x="1" y="8" width="5" height="5" rx="2"/></svg>둥글게</button>
+            <button class="chip" type="button" data-v="dot"><svg viewBox="0 0 14 14" fill="currentColor"><circle cx="3.5" cy="3.5" r="2.5"/><circle cx="10.5" cy="3.5" r="2.5"/><circle cx="3.5" cy="10.5" r="2.5"/></svg>점</button>
+          </div>
+        </div>
+        <div class="deco-row"><span>가운데</span>
+          <div class="seg" id="centers">
+            <button class="chip" type="button" data-v="none">비우기</button>
+            <button class="chip" type="button" data-v="icon">아이콘</button>
+            <button class="chip" type="button" data-v="photo" id="photoChip">사진 고르기</button>
+            <input type="file" id="photo" accept="image/*" hidden>
+          </div>
+        </div>
+        <label class="field"><span>카드 제목</span><input class="inp" id="title" maxlength="20" autocomplete="off" placeholder="비우면 기본 제목"></label>
+        <div class="deco-row"><span>저장할 모양</span>
+          <div class="seg" id="layouts">
+            <button class="chip" type="button" data-v="card">카드</button>
+            <button class="chip" type="button" data-v="qr">QR만</button>
+          </div>
+        </div>
+        <label class="check" id="secretWrap"><input type="checkbox" id="showSecret"> <span id="secretLabel">카드에 비밀번호도 적기</span></label>
+      </div>
+    </section>
   </div>
-
-  <div class="actions">
-    <button class="btn primary" id="save" type="button" disabled>그림으로 저장</button>
-    <button class="btn" id="share" type="button" disabled>공유</button>
-  </div>
-
-  <p class="tip">폰 카메라로 찍으면 적은 내용이 그대로 나와요 · 이 기기 안에서만 만들어요</p>
 </div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status"></div>
 
-<script src="/qr/qrcode.js"></script>
+<script src="qrcode.js"></script>
 <script>
 (function () {
+  'use strict';
   var $ = function (id) { return document.getElementById(id); };
   qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
 
-  // [점 색, 바탕 색]
-  var PALETTE = [
-    ['#111111', '#ffffff'],
-    ['#1e6b4f', '#f1f8f3'],
-    ['#1f3a68', '#eef3fb'],
-    ['#5b3a8c', '#f5f0fb'],
-    ['#b8336a', '#fdf0f5'],
-    ['#7a4b2a', '#fbf5ee'],
-    ['#ffffff', '#111111']
+  // ---------- 아이콘 (24x24 선) ----------
+  var ICONS = {
+    wifi: ['M2 8.8a15 15 0 0 1 20 0', 'M5.2 12.4a10.5 10.5 0 0 1 13.6 0', 'M8.6 15.9a5.6 5.6 0 0 1 6.8 0', 'M12 19.6h.01'],
+    link: ['M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71', 'M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'],
+    contact: ['M16 8a4 4 0 1 1-8 0a4 4 0 0 1 8 0z', 'M4 21a8 8 0 0 1 16 0'],
+    tel: ['M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z'],
+    sms: ['M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z', 'M8 10h.01', 'M12 10h.01', 'M16 10h.01'],
+    text: ['M4 7V5h16v2', 'M9 19h6', 'M12 5v14']
+  };
+  function svgIcon(name) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      ICONS[name].map(function (d) { return '<path d="' + d + '"/>'; }).join('') + '</svg>';
+  }
+
+  var MODES = [
+    { id: 'wifi', name: '와이파이', head: '와이파이 정보' },
+    { id: 'link', name: '링크', head: '연결할 주소' },
+    { id: 'contact', name: '연락처', head: '명함 정보' },
+    { id: 'tel', name: '전화', head: '전화번호' },
+    { id: 'sms', name: '문자', head: '문자 보내기' },
+    { id: 'text', name: '글', head: '글' }
   ];
 
-  var state = { color: 0, custom: '#d35400', shape: 'round', caption: '' };
-  try { Object.assign(state, JSON.parse(localStorage.getItem('qr-style') || '{}')); } catch (e) {}
-  var photo = null;      // Image
-  var canvas = null;
+  // 카드 스타일: 바탕·글자·QR 받침 색과 글꼴
+  var SANS = '"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+  var STYLES = {
+    clean:  { name: '깔끔', bg: '#ffffff', ink: '#17201c', dim: '#6b7770', tile: null, title: SANS, tw: 700, body: SANS },
+    ticket: { name: '티켓', bg: 'tint', ink: '#17201c', dim: '#5d6964', tile: '#ffffff', title: SANS, tw: 700, body: SANS },
+    postit: { name: '포스트잇', bg: '#fde68a', ink: '#3d3210', dim: '#7c6a2e', tile: '#fff7cf', title: '"Gaegu", ' + SANS, tw: 700, body: '"Gaegu", ' + SANS },
+    kraft:  { name: '크라프트', bg: '#d6bd96', ink: '#3a2716', dim: '#6b5034', tile: '#f8f1e3', title: '"Gowun Batang", serif', tw: 700, body: '"Gowun Batang", serif' },
+    night:  { name: '밤하늘', bg: '#172036', ink: '#f4f1e8', dim: '#a3adc6', tile: '#ffffff', title: '"Black Han Sans", ' + SANS, tw: 400, body: SANS }
+  };
+  var COLORS = ['#17201c', '#1e6b4f', '#1f3a68', '#5b3a8c', '#b8336a', '#a0461b'];
 
-  function colors() {
-    if (state.color === 'custom') return [state.custom, '#ffffff'];
-    return PALETTE[state.color] || PALETTE[0];
+  var DEFAULTS = {
+    mode: 'wifi',
+    f: { ssid: '', sec: 'WPA', hidden: false, url: '', cName: '', cTel: '', cMail: '', cOrg: '', tTel: '', sTel: '', sMsg: '', txt: '' },
+    style: 'ticket', color: '#1e6b4f', shape: 'round', center: 'icon', title: '', layout: 'card', showSecret: true, showUrl: true
+  };
+  var st = JSON.parse(JSON.stringify(DEFAULTS));
+  var pass = '';
+  var firstVisit = true;
+  try {
+    var saved = JSON.parse(localStorage.getItem('qr-card') || 'null');
+    if (saved) { firstVisit = false; Object.assign(st, saved); st.f = Object.assign({}, DEFAULTS.f, saved.f || {}); }
+  } catch (e) {}
+  if (firstVisit) { st.f.ssid = 'Sophie_Home_5G'; pass = 'sunny-day-2026'; }
+  var photo = null;
+
+  function persist() {
+    try { localStorage.setItem('qr-card', JSON.stringify(st)); } catch (e) {}
   }
 
-  function lum(hex) {
-    var n = parseInt(hex.slice(1), 16), c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) {
-      v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-    });
-    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  // ---------- 내용 → QR 문자열 ----------
+  function escWifi(s) { return s.replace(/([\\;,:"])/g, '\\$1'); }
+  function digits(s) { return s.replace(/[^\d+]/g, ''); }
+  function prettyTel(s) {
+    var d = s.replace(/\D/g, '');
+    if (/^02\d{7,8}$/.test(d)) return d.replace(/^(02)(\d{3,4})(\d{4})$/, '$1-$2-$3');
+    if (/^0\d{9,10}$/.test(d)) return d.replace(/^(0\d{2})(\d{3,4})(\d{4})$/, '$1-$2-$3');
+    return s.trim();
   }
-  function contrast(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  function normUrl(s) {
+    s = s.trim();
+    if (!s) return '';
+    if (/^[a-z][a-z0-9+.-]*:/i.test(s)) return s;
+    return 'https://' + s;
+  }
 
-  // ---------- 색 고르기 ----------
-  var colorsEl = $('colors');
-  PALETTE.forEach(function (p, i) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'sw'; b.dataset.i = i;
-    b.style.background = 'linear-gradient(135deg,' + p[0] + ' 50%,' + p[1] + ' 50%)';
-    b.setAttribute('aria-label', '색 ' + (i + 1));
-    b.onclick = function () { state.color = i; refresh(); };
-    colorsEl.appendChild(b);
-  });
-  var pick = document.createElement('label');
-  pick.className = 'sw pick'; pick.title = '직접 고르기';
-  pick.innerHTML = '<input type="color" aria-label="색 직접 고르기">';
-  var pickInput = pick.firstChild;
-  pickInput.value = state.custom;
-  pickInput.oninput = function () { state.custom = pickInput.value; state.color = 'custom'; refresh(); };
-  colorsEl.appendChild(pick);
-
-  // ---------- 모양 ----------
-  document.querySelectorAll('[data-shape]').forEach(function (b) {
-    b.onclick = function () { state.shape = b.dataset.shape; refresh(); };
-  });
-
-  // ---------- 사진 ----------
-  $('photoBtn').onclick = function () {
-    if (photo) { photo = null; refresh(); return; }
-    $('photo').click();
-  };
-  $('photo').onchange = function () {
-    var f = this.files && this.files[0]; this.value = '';
-    if (!f) return;
-    var img = new Image();
-    img.onload = function () { photo = img; refresh(); };
-    img.onerror = function () { toast('이 사진은 못 열어요'); };
-    img.src = URL.createObjectURL(f);
-  };
-
-  // ---------- 글씨 ----------
-  var cap = $('caption');
-  cap.value = state.caption || '';
-  cap.oninput = function () { state.caption = cap.value; schedule(); };
-
-  // ---------- 그리기 ----------
-  // 사진을 넣으면 가운데가 가려지니 오류 정정을 최대(H)로. 아니면 Q부터 시도하고 길면 낮춤
-  function makeQR(s, withPhoto) {
-    var levels = withPhoto ? ['H'] : ['Q', 'M', 'L'];
-    for (var i = 0; i < levels.length; i++) {
-      try { var qr = qrcode(0, levels[i]); qr.addData(s, 'Byte'); qr.make(); return qr; } catch (e) {}
+  function payload() {
+    var f = st.f;
+    switch (st.mode) {
+      case 'wifi': {
+        if (!f.ssid.trim()) return null;
+        var data = 'WIFI:T:' + f.sec + ';S:' + escWifi(f.ssid) + ';' + (f.sec !== 'nopass' ? 'P:' + escWifi(pass) + ';' : '') + (f.hidden ? 'H:true;' : '') + ';';
+        var info = [['네트워크', f.ssid]];
+        if (f.sec === 'nopass') info.push(['비밀번호', '없음']);
+        else if (st.showSecret && pass) info.push(['비밀번호', pass]);
+        return { data: data, info: info, title: 'Free Wi-Fi', sub: '카메라로 찍으면 바로 연결돼요' };
+      }
+      case 'link': {
+        var u = normUrl(f.url);
+        if (!u) return null;
+        return { data: u, info: st.showUrl ? [['주소', u.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '')]] : [], title: '여기를 찍어보세요', sub: '카메라로 찍으면 페이지가 열려요' };
+      }
+      case 'contact': {
+        if (!f.cName.trim() && !f.cTel.trim()) return null;
+        var v = ['BEGIN:VCARD', 'VERSION:3.0'];
+        if (f.cName.trim()) v.push('N:' + f.cName.trim() + ';;;;', 'FN:' + f.cName.trim());
+        if (f.cOrg.trim()) v.push('ORG:' + f.cOrg.trim());
+        if (f.cTel.trim()) v.push('TEL;TYPE=CELL:' + digits(f.cTel));
+        if (f.cMail.trim()) v.push('EMAIL:' + f.cMail.trim());
+        v.push('END:VCARD');
+        var ci = [];
+        if (f.cName.trim()) ci.push(['이름', f.cName.trim() + (f.cOrg.trim() ? ' · ' + f.cOrg.trim() : '')]);
+        if (f.cTel.trim()) ci.push(['전화', prettyTel(f.cTel)]);
+        if (f.cMail.trim()) ci.push(['이메일', f.cMail.trim()]);
+        return { data: v.join('\n'), info: ci, title: '연락처', sub: '찍으면 연락처에 바로 저장돼요' };
+      }
+      case 'tel': {
+        if (!digits(f.tTel)) return null;
+        return { data: 'tel:' + digits(f.tTel), info: [['전화', prettyTel(f.tTel)]], title: '전화 주세요', sub: '찍으면 바로 전화를 걸 수 있어요' };
+      }
+      case 'sms': {
+        if (!digits(f.sTel)) return null;
+        return { data: 'SMSTO:' + digits(f.sTel) + ':' + f.sMsg, info: [['받는 번호', prettyTel(f.sTel)]].concat(f.sMsg.trim() ? [['문자', f.sMsg.trim()]] : []), title: '문자 보내기', sub: '찍으면 문자가 미리 적혀 있어요' };
+      }
+      case 'text': {
+        if (!f.txt.trim()) return null;
+        return { data: f.txt, info: [], title: '', sub: '카메라로 찍어보세요' };
+      }
     }
     return null;
   }
 
-  // 모서리마다 반지름이 다른 둥근 사각형
+  // ---------- QR ----------
+  function makeQR(s, levels) {
+    for (var i = 0; i < levels.length; i++) {
+      try { var q = qrcode(0, levels[i]); q.addData(s, 'Byte'); q.make(); return q; } catch (e) {}
+    }
+    return null;
+  }
+
   function rr(g, x, y, w, h, r) {
+    if (typeof r === 'number') r = [r, r, r, r];
     var tl = r[0], tr = r[1], br = r[2], bl = r[3];
     g.moveTo(x + tl, y);
     g.lineTo(x + w - tr, y); if (tr) g.arcTo(x + w, y, x + w, y + tr, tr);
@@ -250,179 +451,430 @@
     g.closePath();
   }
 
-  function isEye(n, r, c) {
-    return (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
+  function drawIcon(g, name, cx, cy, size, color, lw) {
+    g.save();
+    g.translate(cx - size / 2, cy - size / 2);
+    g.scale(size / 24, size / 24);
+    g.strokeStyle = color; g.lineWidth = lw || 2; g.lineCap = 'round'; g.lineJoin = 'round';
+    ICONS[name].forEach(function (d) { g.stroke(new Path2D(d)); });
+    g.restore();
   }
 
-  function render(s) {
-    var col = colors(), fg = col[0], bg = col[1];
-    var qr = makeQR(s, !!photo);
-    if (!qr) return null;
-    var n = qr.getModuleCount(), quiet = 4;
-    var m = Math.max(8, Math.floor(1200 / (n + quiet * 2)));  // 한 칸 크기(px)
-    var qrSize = (n + quiet * 2) * m;
-    var capH = state.caption.trim() ? Math.round(m * 6) : 0;
-    var c = document.createElement('canvas');
-    c.width = qrSize; c.height = qrSize + capH;
-    var g = c.getContext('2d');
-    g.fillStyle = bg; g.fillRect(0, 0, c.width, c.height);
-
-    var o = quiet * m;
-    var dark = function (r, cc) { return r >= 0 && cc >= 0 && r < n && cc < n && qr.isDark(r, cc); };
-
-    // 가운데 사진 자리 (칸 수, 홀수)
+  // x,y: 첫 칸 위치 / m: 한 칸 크기
+  function drawModules(g, q, x, y, m, fg, bg, center) {
+    var n = q.getModuleCount();
+    var shape = st.shape;
+    var isEye = function (r, c) { return (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7); };
     var hole = 0, hs = 0;
-    if (photo) { hole = Math.floor(n * 0.24); if (hole % 2 === 0) hole++; hs = Math.floor((n - hole) / 2); }
-    var inHole = function (r, cc) { return hole && r >= hs - 1 && r <= hs + hole && cc >= hs - 1 && cc <= hs + hole; };
+    if (center) { hole = Math.floor(n * 0.23); if (hole % 2 === 0) hole++; hs = (n - hole) / 2; }
+    var inHole = function (r, c) { return hole && r >= hs - 0.5 && r < hs + hole + 0.5 && c >= hs - 0.5 && c < hs + hole + 0.5; };
+    var dark = function (r, c) { return r >= 0 && c >= 0 && r < n && c < n && q.isDark(r, c) && !isEye(r, c) && !inHole(r, c); };
 
     g.fillStyle = fg;
     g.beginPath();
-    for (var r = 0; r < n; r++) {
-      for (var cc = 0; cc < n; cc++) {
-        if (!qr.isDark(r, cc) || isEye(n, r, cc) || inHole(r, cc)) continue;
-        var x = o + cc * m, y = o + r * m;
-        if (state.shape === 'dot') {
-          g.moveTo(x + m / 2 + m * 0.46, y + m / 2);
-          g.arc(x + m / 2, y + m / 2, m * 0.46, 0, Math.PI * 2);
-        } else if (state.shape === 'round') {
-          var R = m / 2, up = dark(r - 1, cc), dn = dark(r + 1, cc), lf = dark(r, cc - 1), rt = dark(r, cc + 1);
-          rr(g, x, y, m, m, [(!up && !lf) ? R : 0, (!up && !rt) ? R : 0, (!dn && !rt) ? R : 0, (!dn && !lf) ? R : 0]);
-        } else {
-          g.rect(x, y, m, m);
-        }
-      }
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) {
+      if (!dark(r, c)) continue;
+      var px = x + c * m, py = y + r * m;
+      if (shape === 'dot') { g.moveTo(px + m * 0.96, py + m / 2); g.arc(px + m / 2, py + m / 2, m * 0.46, 0, Math.PI * 2); }
+      else if (shape === 'round') {
+        var R = m / 2, up = dark(r - 1, c), dn = dark(r + 1, c), lf = dark(r, c - 1), rt = dark(r, c + 1);
+        rr(g, px, py, m, m, [(!up && !lf) ? R : 0, (!up && !rt) ? R : 0, (!dn && !rt) ? R : 0, (!dn && !lf) ? R : 0]);
+      } else g.rect(px, py, m, m);
     }
     g.fill();
 
-    // 세 모서리 큰 네모(눈)
     [[0, 0], [0, n - 7], [n - 7, 0]].forEach(function (p) {
-      var x = o + p[1] * m, y = o + p[0] * m;
-      var ro = state.shape === 'square' ? 0 : m * 2.2, ri = state.shape === 'square' ? 0 : m * 1.1;
-      g.beginPath();
-      rr(g, x, y, 7 * m, 7 * m, [ro, ro, ro, ro]);
-      g.fill();
-      g.fillStyle = bg; g.beginPath();
-      rr(g, x + m, y + m, 5 * m, 5 * m, [ro * 0.6, ro * 0.6, ro * 0.6, ro * 0.6]);
-      g.fill();
+      var ex = x + p[1] * m, ey = y + p[0] * m;
+      var ro = shape === 'square' ? 0 : m * 2.2;
+      g.fillStyle = fg; g.beginPath(); rr(g, ex, ey, 7 * m, 7 * m, ro); g.fill();
+      g.fillStyle = bg; g.beginPath(); rr(g, ex + m, ey + m, 5 * m, 5 * m, ro * 0.6); g.fill();
       g.fillStyle = fg; g.beginPath();
-      if (state.shape === 'dot') g.arc(x + 3.5 * m, y + 3.5 * m, 1.6 * m, 0, Math.PI * 2);
-      else rr(g, x + 2 * m, y + 2 * m, 3 * m, 3 * m, [ri, ri, ri, ri]);
+      if (shape === 'dot') g.arc(ex + 3.5 * m, ey + 3.5 * m, 1.6 * m, 0, Math.PI * 2);
+      else rr(g, ex + 2 * m, ey + 2 * m, 3 * m, 3 * m, shape === 'square' ? 0 : m * 1.1);
       g.fill();
     });
 
-    // 가운데 사진
-    if (photo) {
-      var px = o + hs * m, ps = hole * m, pad = m * 0.4;
-      g.save();
-      g.beginPath(); rr(g, px + pad, px + pad, ps - pad * 2, ps - pad * 2, Array(4).fill(m * 1.4)); g.clip();
-      var iw = photo.naturalWidth, ih = photo.naturalHeight, k = Math.min(iw, ih);
-      g.drawImage(photo, (iw - k) / 2, (ih - k) / 2, k, k, px + pad, px + pad, ps - pad * 2, ps - pad * 2);
-      g.restore();
-    }
-
-    // 아래 글씨
-    if (capH) {
-      g.fillStyle = fg;
-      g.textAlign = 'center'; g.textBaseline = 'middle';
-      var fs = Math.round(m * 2.6);
-      g.font = '700 ' + fs + 'px "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
-      while (g.measureText(state.caption).width > qrSize - m * 8 && fs > 10) {
-        fs -= 2; g.font = g.font.replace(/\d+px/, fs + 'px');
+    if (center) {
+      var cx = x + (hs + hole / 2) * m, cy = y + (hs + hole / 2) * m, size = hole * m;
+      if (center === 'photo' && photo) {
+        var pad = m * 0.5, s = size - pad * 2;
+        g.save(); g.beginPath(); rr(g, cx - s / 2, cy - s / 2, s, s, m * 1.6); g.clip();
+        var iw = photo.naturalWidth, ih = photo.naturalHeight, k = Math.min(iw, ih);
+        g.drawImage(photo, (iw - k) / 2, (ih - k) / 2, k, k, cx - s / 2, cy - s / 2, s, s);
+        g.restore();
+      } else {
+        var rad = size / 2 - m * 0.4;
+        g.fillStyle = fg; g.beginPath(); g.arc(cx, cy, rad, 0, Math.PI * 2); g.fill();
+        drawIcon(g, st.mode, cx, cy, rad * 1.15, bg, 2.2);
       }
-      g.fillText(state.caption.trim(), qrSize / 2, qrSize - m * 1.5 + capH / 2);
     }
-    c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'QR 코드');
-    return c;
   }
 
-  var text = $('text'), preview = $('preview'), saveBtn = $('save'), shareBtn = $('share');
+  // ---------- 색 ----------
+  function hexRgb(h) { var n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function toHex(a) { return '#' + a.map(function (v) { return ('0' + v.toString(16)).slice(-2); }).join(''); }
+  function mix(a, b, t) { var x = hexRgb(a), y = hexRgb(b); return toHex(x.map(function (v, i) { return Math.round(v + (y[i] - v) * t); })); }
+  function lum(h) {
+    return hexRgb(h).map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); })
+      .reduce(function (s, v, i) { return s + v * [0.2126, 0.7152, 0.0722][i]; }, 0);
+  }
+  function contrast(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
 
-  function setEmpty(msg, err) {
-    canvas = null;
-    preview.innerHTML = '<div class="empty' + (err ? ' err' : '') + '"></div>';
-    preview.firstChild.textContent = msg;
-    preview.style.background = '';
-    saveBtn.disabled = shareBtn.disabled = true;
+  // ---------- 글자 ----------
+  function font(w, px, fam) { return w + ' ' + px + 'px ' + fam; }
+  function fit(g, text, w, px, min, fam, weight) {
+    g.font = font(weight, px, fam);
+    while (px > min && g.measureText(text).width > w) { px -= 2; g.font = font(weight, px, fam); }
+    return px;
+  }
+  function wrap(g, text, w, maxLines) {
+    var lines = [], cur = '';
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (g.measureText(cur + ch).width > w && cur) { lines.push(cur); cur = ch; } else cur += ch;
+    }
+    if (cur) lines.push(cur);
+    if (lines.length > maxLines) { lines = lines.slice(0, maxLines); lines[maxLines - 1] = lines[maxLines - 1].slice(0, -1) + '…'; }
+    return lines;
+  }
+  function seeded(seed) { return function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }; }
+
+  // ---------- 카드 그리기 ----------
+  function compose(p) {
+    var want = st.center === 'photo' ? (photo ? 'photo' : null) : st.center === 'icon' ? 'icon' : null;
+    var q = want ? makeQR(p.data, ['H']) : null;
+    var dropped = !!(want && !q);
+    var useCenter = q ? want : null;
+    if (!q) q = makeQR(p.data, ['Q', 'M', 'L']);
+    if (!q) return { error: '너무 길어서 QR에 다 안 들어가요. 조금만 줄여주세요.' };
+    var n = q.getModuleCount();
+    var fg = st.color;
+
+    if (st.layout === 'qr') {
+      var mq = Math.max(8, Math.floor(1000 / (n + 8)));
+      var cq = document.createElement('canvas'); cq.width = cq.height = (n + 8) * mq;
+      var gq = cq.getContext('2d');
+      gq.fillStyle = '#ffffff'; gq.fillRect(0, 0, cq.width, cq.height);
+      drawModules(gq, q, 4 * mq, 4 * mq, mq, fg, '#ffffff', useCenter);
+      return { canvas: cq, n: n, dropped: dropped, tileBg: '#ffffff' };
+    }
+
+    var S = STYLES[st.style] || STYLES.clean;
+    var W = 1000, P = 80;
+    var bg = S.bg === 'tint' ? mix(fg, '#ffffff', 0.86) : S.bg;
+    var tileBg = S.tile || bg;
+    var title = st.title.trim() || p.title;
+    var c = document.createElement('canvas');
+    var g = c.getContext('2d');
+
+    // 1) 높이 계산
+    var badge = 116, textX = P + badge + 32, textW = W - P - textX;
+    var titlePx = 0, titleLines = [];
+    if (title) { titlePx = fit(g, title, textW, 76, 44, S.title, S.tw); g.font = font(S.tw, titlePx, S.title); titleLines = wrap(g, title, textW, 2); }
+    var subPx = st.style === 'postit' ? 40 : 33;
+    var textH = (title ? titleLines.length * titlePx * 1.18 + 10 : 0) + subPx * 1.3;
+    var headH = Math.max(badge, textH);
+    var tileW = W - P * 2, tileH = tileW;
+    var m = Math.floor(tileW / (n + 8)), qrPx = m * n;
+    var labelPx = st.style === 'postit' ? 36 : 30, valuePx = st.style === 'postit' ? 58 : 52;
+    var infoBlocks = p.info.map(function (it) {
+      g.font = font(700, valuePx, S.body);
+      return { label: it[0], lines: wrap(g, it[1], W - P * 2, 3) };
+    });
+    var rowH = function (b) { return labelPx + 10 + b.lines.length * valuePx * 1.25; };
+    var infoH = infoBlocks.reduce(function (h, b, i) { return h + rowH(b) + (i ? 26 : 0); }, 0);
+    var isTicket = st.style === 'ticket' && infoBlocks.length;
+    var H = Math.round(P + headH + 48 + tileH + (infoBlocks.length ? (isTicket ? 96 : 52) + infoH : 0) + P);
+    c.width = W; c.height = H;
+
+    // 2) 바탕
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    if (st.style === 'postit') {
+      var grd = g.createLinearGradient(0, 0, 0, H);
+      grd.addColorStop(0, 'rgba(255,255,255,.2)'); grd.addColorStop(1, 'rgba(160,110,0,.10)');
+      g.fillStyle = grd; g.fillRect(0, 0, W, H);
+    }
+    if (st.style === 'kraft') {
+      var rk = seeded(3);
+      g.fillStyle = 'rgba(80,50,20,.09)';
+      for (var k = 0; k < 1100; k++) g.fillRect(rk() * W, rk() * H, 1 + rk() * 3, 1);
+      g.strokeStyle = 'rgba(58,39,22,.55)'; g.lineWidth = 3; g.strokeRect(26, 26, W - 52, H - 52);
+      g.lineWidth = 1.2; g.strokeRect(38, 38, W - 76, H - 76);
+    }
+
+    var y = P;
+    // 3) 머리: 배지 + 제목 + 설명
+    var badgeY = y + (headH - badge) / 2;
+    var badgeFill = fg, badgeInk = '#ffffff';
+    if (st.style === 'night' && contrast(fg, S.bg) < 2.2) { badgeFill = '#f4f1e8'; badgeInk = S.bg; }
+    g.fillStyle = badgeFill; g.beginPath(); rr(g, P, badgeY, badge, badge, st.style === 'postit' ? 58 : 32); g.fill();
+    drawIcon(g, st.mode, P + badge / 2, badgeY + badge / 2, 62, badgeInk, 2.2);
+    var ty = y + (headH - textH) / 2;
+    g.textBaseline = 'top'; g.textAlign = 'left';
+    if (title) {
+      g.fillStyle = S.ink; g.font = font(S.tw, titlePx, S.title);
+      titleLines.forEach(function (l, i) { g.fillText(l, textX, ty + i * titlePx * 1.18); });
+      ty += titleLines.length * titlePx * 1.18 + 10;
+    }
+    g.fillStyle = S.dim; g.font = font(st.style === 'postit' ? 700 : 500, subPx, S.body);
+    g.fillText(p.sub, textX, ty);
+    y += headH + 48;
+
+    // 4) QR 받침
+    var tileX = P, tileY = y;
+    if (st.style === 'night') {
+      var rs = seeded(7);
+      g.fillStyle = 'rgba(255,255,255,.55)';
+      for (var i = 0; i < 60; i++) {
+        var sx = rs() * W, sy = rs() * H, sr = 1 + rs() * 2.2;
+        if (sx > tileX - 12 && sx < tileX + tileW + 12 && sy > tileY - 12 && sy < tileY + tileH + 12) continue;
+        if (sx < W - P && sy > P - 10 && sy < P + headH + 10) continue;
+        g.beginPath(); g.arc(sx, sy, sr, 0, Math.PI * 2); g.fill();
+      }
+    }
+    if (S.tile) {
+      g.fillStyle = tileBg; g.beginPath(); rr(g, tileX, tileY, tileW, tileH, 36); g.fill();
+      if (st.style === 'postit') { g.strokeStyle = 'rgba(61,50,16,.2)'; g.lineWidth = 2; g.setLineDash([10, 9]); g.stroke(); g.setLineDash([]); }
+    }
+    var off = (tileW - qrPx) / 2;
+    drawModules(g, q, tileX + off, tileY + off, m, fg, tileBg, useCenter);
+    y += tileH;
+
+    // 5) 정보
+    if (infoBlocks.length) {
+      if (isTicket) {
+        var ly = y + 48;
+        g.strokeStyle = 'rgba(23,32,28,.32)'; g.lineWidth = 3; g.setLineDash([14, 12]);
+        g.beginPath(); g.moveTo(52, ly); g.lineTo(W - 52, ly); g.stroke(); g.setLineDash([]);
+        g.save(); g.globalCompositeOperation = 'destination-out';
+        g.beginPath(); g.arc(0, ly, 30, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.arc(W, ly, 30, 0, Math.PI * 2); g.fill();
+        g.restore();
+        y += 96;
+      } else y += 52;
+      infoBlocks.forEach(function (b, i) {
+        if (i) y += 26;
+        g.fillStyle = S.dim; g.font = font(st.style === 'postit' ? 700 : 600, labelPx, S.body);
+        g.fillText(b.label, P, y); y += labelPx + 10;
+        g.fillStyle = S.ink; g.font = font(700, valuePx, S.body);
+        b.lines.forEach(function (l) { g.fillText(l, P, y); y += valuePx * 1.25; });
+      });
+    }
+
+    // 6) 포스트잇 테이프
+    if (st.style === 'postit') {
+      g.save(); g.translate(W / 2, 18); g.rotate(-0.04);
+      g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(-120, -26, 240, 58);
+      g.restore();
+    }
+    return { canvas: c, n: n, dropped: dropped, tileBg: tileBg };
+  }
+
+  // ---------- 글꼴이 늦게 오면 다시 그림 ----------
+  var fontKeys = {};
+  function ensureFonts(p) {
+    if (!document.fonts || !document.fonts.load || st.layout === 'qr') return;
+    var S = STYLES[st.style];
+    var text = (st.title || p.title) + p.sub + p.info.map(function (i) { return i.join(''); }).join('');
+    var key = st.style + '|' + text;
+    if (fontKeys[key]) return;
+    fontKeys[key] = true;
+    Promise.all([
+      document.fonts.load(font(S.tw, 40, S.title), text || '가'),
+      document.fonts.load(font(700, 40, S.body), text || '가'),
+      document.fonts.load(font(500, 40, S.body), text || '가')
+    ]).then(function (r) { if ([].concat.apply([], r).length) schedule(); }).catch(function () {});
+  }
+
+  // ---------- 화면 ----------
+  var out = $('out'), lastBlob = null, url = null, timer = null, rendering = 0;
+
+  function showWarn(msg) { $('warn').textContent = msg || ''; $('warn').hidden = !msg; }
+  function setReady(on) { ['save', 'copy', 'share'].forEach(function (id) { $(id).disabled = !on; }); if (!on) lastBlob = null; }
+  function setEmpty(msg) {
+    rendering++;
+    out.innerHTML = '<div class="empty"></div>'; out.firstChild.textContent = msg;
+    $('dims').textContent = '—'; $('scanInfo').textContent = '';
+    setReady(false);
   }
 
   function update() {
-    var s = text.value;
-    try { localStorage.setItem('qr-text', s); localStorage.setItem('qr-style', JSON.stringify(state)); } catch (e) {}
-    var col = colors();
-    var warn = contrast(col[0], col[1]) < 3 ? '색이 너무 연하면 카메라가 잘 못 읽어요'
-      : new TextEncoder().encode(s).length > 300 ? '글이 길면 QR이 촘촘해져서 찍기 어려워요. 짧을수록 잘 읽혀요' : '';
-    $('warn').textContent = warn;
-    $('warn').classList.toggle('hidden', !warn);
-    if (!s.trim()) return setEmpty('적으면 여기에 QR이 생겨요');
-    canvas = render(s);
-    if (!canvas) return setEmpty(photo ? '사진을 넣으면 조금 짧아야 해요. 사진을 빼거나 줄여주세요' : '너무 길어요. 조금만 줄여주세요', true);
-    preview.innerHTML = '';
-    preview.style.background = col[1];
-    preview.appendChild(canvas);
-    saveBtn.disabled = shareBtn.disabled = false;
+    persist();
+    var p = payload();
+    if (!p) { showWarn(''); return setEmpty('내용을 적으면 카드가 생겨요'); }
+    var r = compose(p);
+    if (r.error) { showWarn(''); return setEmpty(r.error); }
+    var warns = [];
+    if (contrast(st.color, r.tileBg) < 3) warns.push('QR 색이 너무 연해서 카메라가 잘 못 읽을 수 있어요. 더 진한 색을 골라주세요.');
+    if (r.dropped) warns.push('내용이 길어서 가운데 그림은 뺐어요.');
+    else if (new TextEncoder().encode(p.data).length > 300) warns.push('내용이 길면 QR이 촘촘해져서 찍기 어려워요.');
+    showWarn(warns.join(' '));
+    $('dims').textContent = r.canvas.width + ' × ' + r.canvas.height + ' px';
+    $('scanInfo').textContent = r.n + ' × ' + r.n + ' 칸';
+    out.classList.toggle('qr-only', st.layout === 'qr');
+    var my = ++rendering;
+    r.canvas.toBlob(function (blob) {
+      if (my !== rendering || !blob) return;
+      lastBlob = blob;
+      if (url) URL.revokeObjectURL(url);
+      url = URL.createObjectURL(blob);
+      var img = out.querySelector('img');
+      if (!img) { out.innerHTML = ''; img = document.createElement('img'); out.appendChild(img); }
+      img.alt = (st.title || p.title || 'QR') + ' QR 카드';
+      img.src = url;
+      setReady(true);
+    }, 'image/png');
+    ensureFonts(p);
   }
+  function schedule() { clearTimeout(timer); timer = setTimeout(update, 90); }
 
-  var timer = null;
-  function schedule() { clearTimeout(timer); timer = setTimeout(update, 100); }
+  // 용도 탭
+  var modesEl = $('modes');
+  MODES.forEach(function (md) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'mode'; b.dataset.v = md.id;
+    b.innerHTML = svgIcon(md.id) + '<span>' + md.name + '</span>';
+    b.onclick = function () { st.mode = md.id; syncUI(); schedule(); };
+    modesEl.appendChild(b);
+  });
 
-  function refresh() {
-    colorsEl.querySelectorAll('.sw').forEach(function (b) {
-      b.classList.toggle('on', b.classList.contains('pick') ? state.color === 'custom' : +b.dataset.i === state.color);
+  // 입력칸
+  ['ssid', 'url', 'cName', 'cTel', 'cMail', 'cOrg', 'tTel', 'sTel', 'sMsg', 'txt'].forEach(function (id) {
+    var el = $(id); el.value = st.f[id] || '';
+    el.addEventListener('input', function () { st.f[id] = el.value; $('sample').hidden = true; schedule(); });
+  });
+  $('pass').value = pass;
+  $('pass').addEventListener('input', function () { pass = $('pass').value; $('sample').hidden = true; schedule(); });
+  $('peek').onclick = function () {
+    var on = $('pass').type === 'password';
+    $('pass').type = on ? 'text' : 'password'; $('peek').textContent = on ? '숨기기' : '보기';
+  };
+  $('hiddenNet').checked = !!st.f.hidden;
+  $('hiddenNet').onchange = function () { st.f.hidden = this.checked; schedule(); };
+  $('sample').hidden = !firstVisit;
+
+  function bindSeg(elId, set) {
+    $(elId).querySelectorAll('[data-v]').forEach(function (b) {
+      b.addEventListener('click', function () { if (set(b.dataset.v) !== false) { syncUI(); schedule(); } });
     });
-    document.querySelectorAll('[data-shape]').forEach(function (b) { b.classList.toggle('on', b.dataset.shape === state.shape); });
-    $('photoBtn').classList.toggle('on', !!photo);
-    $('photoLabel').textContent = photo ? '사진 빼기' : '사진 넣기';
-    update();
+  }
+  bindSeg('sec', function (v) { st.f.sec = v; });
+  bindSeg('shapes', function (v) { st.shape = v; });
+  bindSeg('layouts', function (v) { st.layout = v; });
+  bindSeg('centers', function (v) {
+    if (v === 'photo') { $('photo').click(); return false; }
+    st.center = v;
+  });
+  $('photo').onchange = function () {
+    var f = this.files && this.files[0]; this.value = '';
+    if (!f) return;
+    var img = new Image();
+    img.onload = function () { photo = img; st.center = 'photo'; syncUI(); schedule(); };
+    img.onerror = function () { toast('이 사진은 열 수 없어요. 다른 사진을 골라주세요'); };
+    img.src = URL.createObjectURL(f);
+  };
+
+  // 카드 스타일
+  var stylesEl = $('styles');
+  Object.keys(STYLES).forEach(function (k) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'style'; b.dataset.v = k;
+    b.innerHTML = '<i><b></b></i>' + STYLES[k].name;
+    b.onclick = function () { st.style = k; st.layout = 'card'; syncUI(); schedule(); };
+    stylesEl.appendChild(b);
+  });
+
+  // 색
+  var colorsEl = $('colors');
+  COLORS.forEach(function (c) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'sw'; b.dataset.v = c; b.style.background = c;
+    b.setAttribute('aria-label', 'QR 색 ' + c);
+    b.onclick = function () { st.color = c; syncUI(); schedule(); };
+    colorsEl.appendChild(b);
+  });
+  var pick = document.createElement('label');
+  pick.className = 'sw pick'; pick.title = '직접 고르기';
+  pick.innerHTML = '<input type="color" id="customColor" aria-label="QR 색 직접 고르기">';
+  colorsEl.appendChild(pick);
+  var pickIn = pick.querySelector('input');
+  pickIn.value = COLORS.indexOf(st.color) < 0 ? st.color : '#d35400';
+  pickIn.addEventListener('input', function () { st.color = pickIn.value; syncUI(); schedule(); });
+
+  $('title').value = st.title || '';
+  $('title').addEventListener('input', function () { st.title = $('title').value; schedule(); });
+  $('showSecret').onchange = function () {
+    if (st.mode === 'link') st.showUrl = this.checked; else st.showSecret = this.checked;
+    schedule();
+  };
+
+  function press(el, on) { el.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+  function syncUI() {
+    modesEl.querySelectorAll('.mode').forEach(function (b) { press(b, b.dataset.v === st.mode); });
+    document.querySelectorAll('[data-for]').forEach(function (s) { s.hidden = s.dataset.for !== st.mode; });
+    $('formTitle').textContent = MODES.filter(function (m) { return m.id === st.mode; })[0].head;
+    $('sec').querySelectorAll('[data-v]').forEach(function (b) { press(b, b.dataset.v === st.f.sec); });
+    $('pass').disabled = st.f.sec === 'nopass';
+    $('shapes').querySelectorAll('[data-v]').forEach(function (b) { press(b, b.dataset.v === st.shape); });
+    $('layouts').querySelectorAll('[data-v]').forEach(function (b) { press(b, b.dataset.v === st.layout); });
+    if (st.center === 'photo' && !photo) st.center = 'icon';
+    $('centers').querySelectorAll('[data-v]').forEach(function (b) { press(b, b.dataset.v === st.center); });
+    $('photoChip').textContent = photo ? '사진 바꾸기' : '사진 고르기';
+    stylesEl.querySelectorAll('.style').forEach(function (b) {
+      var S = STYLES[b.dataset.v], i = b.querySelector('i');
+      var bg = S.bg === 'tint' ? mix(st.color, '#ffffff', 0.86) : S.bg;
+      press(b, b.dataset.v === st.style && st.layout === 'card');
+      i.style.background = bg;
+      i.style.color = st.color;
+      i.querySelector('b').style.backgroundColor = S.tile || bg;
+    });
+    colorsEl.querySelectorAll('.sw[data-v]').forEach(function (b) { press(b, b.dataset.v === st.color); });
+    press(pick, COLORS.indexOf(st.color) < 0);
+    $('secretWrap').hidden = !(st.layout === 'card' && (st.mode === 'wifi' || st.mode === 'link'));
+    $('secretLabel').textContent = st.mode === 'link' ? '카드에 주소도 적기' : '카드에 비밀번호도 적기';
+    $('showSecret').checked = st.mode === 'link' ? st.showUrl : st.showSecret;
+    $('title').disabled = st.layout === 'qr';
   }
 
-  text.addEventListener('input', schedule);
-
-  // ---------- 저장 / 공유 ----------
+  // ---------- 저장 / 복사 / 공유 ----------
   function toast(msg) {
     var t = $('toast'); t.textContent = msg; t.classList.add('on');
-    clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('on'); }, 1600);
+    clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('on'); }, 2000);
   }
   function fileName() {
-    var d = new Date(), p = function (x) { return String(x).padStart(2, '0'); };
-    return 'qr-' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + '.png';
+    var base = { wifi: 'wifi', link: 'link', contact: 'contact', tel: 'call', sms: 'sms', text: 'text' }[st.mode];
+    return 'qr-' + base + (st.layout === 'card' ? '-card' : '') + '.png';
   }
-  function toBlob() { return new Promise(function (res) { canvas.toBlob(res, 'image/png'); }); }
+  function asFile() { return new File([lastBlob], fileName(), { type: 'image/png' }); }
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-  saveBtn.onclick = function () {
-    if (!canvas) return;
-    toBlob().then(function (blob) {
-      var file = new File([blob], fileName(), { type: 'image/png' });
-      // 아이폰 사파리는 다운로드가 '파일'로 가서, 사진첩에 넣으려면 공유 시트가 더 편함
-      var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      if (ios && navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file] }).catch(function () {});
-        return;
-      }
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = fileName();
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
-      toast('저장했어요');
-    });
+  $('save').onclick = function () {
+    if (!lastBlob) return;
+    // 아이폰은 다운로드가 '파일' 앱으로 가서, 사진첩에 넣기 쉬운 공유 시트를 먼저 띄움
+    if (isIOS && navigator.canShare && navigator.canShare({ files: [asFile()] })) {
+      navigator.share({ files: [asFile()] }).catch(function () {});
+      return;
+    }
+    var a = document.createElement('a');
+    a.href = url; a.download = fileName();
+    document.body.appendChild(a); a.click(); a.remove();
+    toast('저장했어요');
+  };
+  $('copy').onclick = function () {
+    if (!lastBlob) return;
+    if (!navigator.clipboard || !window.ClipboardItem) { toast('여기선 복사가 안 돼요. 카드를 길게 눌러 저장하세요'); return; }
+    navigator.clipboard.write([new ClipboardItem({ 'image/png': lastBlob })])
+      .then(function () { toast('그림을 복사했어요. 카톡 창에 붙여넣으면 돼요'); })
+      .catch(function () { toast('여기선 복사가 안 돼요. 카드를 길게 눌러 저장하세요'); });
+  };
+  $('share').onclick = function () {
+    if (!lastBlob) return;
+    var f = asFile();
+    if (navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: 'QR 카드' }).catch(function () {});
+    else toast('여기선 공유가 안 돼요. 저장한 그림을 보내주세요');
   };
 
-  shareBtn.onclick = function () {
-    if (!canvas) return;
-    toBlob().then(function (blob) {
-      var file = new File([blob], fileName(), { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        return navigator.share({ files: [file], title: 'QR 코드' }).catch(function () {});
-      }
-      if (navigator.clipboard && window.ClipboardItem) {
-        return navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-          .then(function () { toast('그림을 복사했어요'); })
-          .catch(function () { toast('여기선 공유가 안 돼요. 저장을 써주세요'); });
-      }
-      toast('여기선 공유가 안 돼요. 저장을 써주세요');
-    });
-  };
-
-  // ---------- 테마 ----------
+  // ---------- 밝게/어둡게 ----------
   $('theme').onclick = function () {
     var root = document.documentElement;
     var cur = root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -431,12 +883,8 @@
     try { localStorage.setItem('theme', next); } catch (e) {}
   };
 
-  // 주소에 ?t=내용 이 있으면 그걸로, 아니면 지난번 내용
-  var init = new URLSearchParams(location.search).get('t');
-  if (init == null) { try { init = localStorage.getItem('qr-text') || ''; } catch (e) { init = ''; } }
-  text.value = init;
-  refresh();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(update);
+  syncUI();
+  update();
 })();
 </script>
 </body>

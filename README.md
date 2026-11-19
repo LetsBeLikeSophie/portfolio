@@ -106,14 +106,16 @@ ssh -i <SSH 키 파일> ubuntu@<서버 IP> "cd /var/www/portfolio && ls index.ht
 `forever/index.html`은 와우 포에버 실시간 채팅 페이지입니다. `build.py`와 상관없는 독립 파일이라 직접 고칩니다.
 데이터는 Supabase(camtrip 프로젝트의 `wow` 스키마)에 있고, 캐릭터 조회는 Edge Function `wow-character`가 블리자드 API로 처리합니다.
 
-## QR 만들기 (`/qr/`)
+## QR 카드 (`/qr/`)
 
-`qr/index.html`은 글이나 링크를 적으면 바로 QR 코드로 만들어주는 페이지입니다. `build.py`와 상관없는 독립 파일입니다.
+`qr/index.html`은 와이파이·링크·연락처(vCard)·전화·문자·글을 QR 카드로 만들어주는 페이지입니다. `build.py`와 상관없는 독립 파일입니다.
 QR 생성은 같은 폴더의 `qr/qrcode.js`([qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) 1.4.4, MIT)로
-브라우저 안에서 하고, 서버로 아무것도 보내지 않습니다. 색(프리셋 7개 + 직접 고르기), 모양(네모·둥글게·점),
-가운데 사진(넣으면 오류 정정을 H로 올림), 아래 글씨로 꾸밀 수 있고, 그림으로 저장·공유(모바일 공유 시트, 안 되면 클립보드 복사)를 지원합니다.
-마지막 내용과 꾸미기 설정은 `localStorage`에 남고,
-`/qr/?t=내용`으로 열면 그 내용이 미리 채워집니다.
+브라우저 안에서 하고, 서버로 아무것도 보내지 않습니다.
+
+- 카드 스타일 5가지(깔끔·티켓·포스트잇·크라프트·밤하늘), QR 색, 점 모양(네모·둥글게·점), 가운데(비우기·용도 아이콘·사진), 카드 제목
+- 가운데를 채우면 오류 정정을 H로 올리고, 내용이 길어 안 들어가면 가운데를 빼고 만듭니다
+- "카드" 또는 "QR만"으로 저장·복사·공유. 아이폰은 저장 버튼이 공유 시트를 띄워서 사진첩에 바로 넣을 수 있습니다
+- 입력 내용과 꾸미기 설정은 `localStorage`에 남지만 와이파이 비밀번호는 저장하지 않습니다
 
 ```bash
 scp -i <SSH 키 파일> qr/index.html qr/qrcode.js ubuntu@<서버 IP>:/tmp/
