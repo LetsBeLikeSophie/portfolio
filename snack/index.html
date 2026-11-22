@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7efdf">
+<meta name="robots" content="index, follow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%222460%201265%20665%20665%22%20aria-hidden%3D%22true%22%3E%3Cpath%20fill-rule%3D%22nonzero%22%20fill%3D%22%23c47a3e%22%20stroke-width%3D%2243.3%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke%3D%22%235a3220%22%20d%3D%22M%203100.8%201598.1%20C%203100.8%201768.5%202962.7%201906.5%202792.4%201906.5%20C%202622.0%201906.5%202484.0%201768.5%202484.0%201598.1%20C%202484.0%201427.8%202622.0%201289.7%202792.4%201289.7%20C%202962.7%201289.7%203100.8%201427.8%203100.8%201598.1%20Z%20M%203100.8%201598.1%20%22%20transform%3D%22matrix%280.999875%2C%200%2C%200%2C%200.999875%2C%200.499938%2C%200%29%22/%3E%3Cpath%20fill-rule%3D%22nonzero%22%20fill%3D%22%236b3a1e%22%20stroke-width%3D%2228.9%22%20stroke-linecap%3D%22butt%22%20stroke-linejoin%3D%22round%22%20stroke%3D%22%235a3220%22%20d%3D%22M%202503.2%201511.4%20C%202696.0%201331.5%202888.7%201331.5%203081.5%201511.4%20C%203055.8%201569.2%203010.8%201585.3%202946.6%201559.6%20C%202895.2%201604.5%202843.8%201604.5%202792.4%201559.6%20C%202741.0%201604.5%202689.6%201604.5%202638.2%201559.6%20C%202573.9%201585.3%202528.9%201569.2%202503.2%201511.4%20Z%20M%202503.2%201511.4%20%22%20transform%3D%22matrix%280.999875%2C%200%2C%200%2C%200.999875%2C%200.499938%2C%200%29%22/%3E%3Cpath%20fill%3D%22none%22%20stroke-width%3D%2226.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke%3D%22%23fff8ec%22%20d%3D%22M%202580.3%201443.9%20L%202633.3%201395.7%20L%202686.3%201443.9%20L%202739.4%201395.7%20L%202792.4%201443.9%20L%202845.4%201395.7%20L%202898.4%201443.9%20L%202951.4%201395.7%20%22%20transform%3D%22matrix%280.999875%2C%200%2C%200%2C%200.999875%2C%200.499938%2C%200%29%22/%3E%3Cpath%20fill-rule%3D%22nonzero%22%20fill%3D%22%235e8c3a%22%20d%3D%22M%202701.9%201366.6%20C%202701.9%201375.2%202695.0%201382.1%202686.5%201382.1%20C%202678.0%201382.1%202671.1%201375.2%202671.1%201366.6%20C%202671.1%201358.1%202678.0%201351.2%202686.5%201351.2%20C%202695.0%201351.2%202701.9%201358.1%202701.9%201366.6%20Z%20M%202701.9%201366.6%20%22/%3E%3Cpath%20fill-rule%3D%22nonzero%22%20fill%3D%22%235e8c3a%22%20d%3D%22M%202923.6%201385.9%20C%202923.6%201394.4%202916.7%201401.3%202908.1%201401.3%20C%202899.6%201401.3%202892.7%201394.4%202892.7%201385.9%20C%202892.7%201377.4%202899.6%201370.5%202908.1%201370.5%20C%202916.7%201370.5%202923.6%201377.4%202923.6%201385.9%20Z%20M%202923.6%201385.9%20%22/%3E%3Cpath%20fill-rule%3D%22nonzero%22%20fill%3D%22%235e8c3a%22%20d%3D%22M%202817.6%201337.7%20C%202817.6%201346.3%202810.7%201353.2%202802.1%201353.2%20C%202793.6%201353.2%202786.7%201346.3%202786.7%201337.7%20C%202786.7%201329.2%202793.6%201322.3%202802.1%201322.3%20C%202810.7%201322.3%202817.6%201329.2%202817.6%201337.7%20Z%20M%202817.6%201337.7%20%22/%3E%3Cpath%20fill-rule%3D%22nonzero%22%20fill%3D%22%235e8c3a%22%20d%3D%22M%203000.7%201463.0%20C%203000.7%201471.5%202993.8%201478.4%202985.2%201478.4%20C%202976.7%201478.4%202969.8%201471.5%202969.8%201463.0%20C%202969.8%201454.5%202976.7%201447.6%202985.2%201447.6%20C%202993.8%201447.6%203000.7%201454.5%203000.7%201463.0%20Z%20M%203000.7%201463.0%20%22/%3E%3Cpath%20fill-rule%3D%22nonzero%22%20fill%3D%22%23f49a86%22%20d%3D%22M%202734.7%201742.5%20C%202734.7%201752.6%202721.7%201760.8%202705.8%201760.8%20C%202689.8%201760.8%202676.9%201752.6%202676.9%201742.5%20C%202676.9%201732.4%202689.8%201724.2%202705.8%201724.2%20C%202721.7%201724.2%202734.7%201732.4%202734.7%201742.5%20Z%20M%202734.7%201742.5%20%22/%3E%3Cpath%20fill-rule%3D%22nonzero%22%20fill%3D%22%23f49a86%22%20d%3D%22M%202908.1%201742.5%20C%202908.1%201752.6%202895.2%201760.8%202879.2%201760.8%20C%202863.3%201760.8%202850.3%201752.6%202850.3%201742.5%20C%202850.3%201732.4%202863.3%201724.2%202879.2%201724.2%20C%202895.2%201724.2%202908.1%201732.4%202908.1%201742.5%20Z%20M%202908.1%201742.5%20%22/%3E%3Cpath%20fill-rule%3D%22nonzero%22%20fill%3D%22%235a3220%22%20d%3D%22M%202761.7%201703.9%20C%202761.7%201716.2%202751.8%201726.1%202739.5%201726.1%20C%202727.3%201726.1%202717.3%201716.2%202717.3%201703.9%20C%202717.3%201691.7%202727.3%201681.8%202739.5%201681.8%20C%202751.8%201681.8%202761.7%201691.7%202761.7%201703.9%20Z%20M%202761.7%201703.9%20%22/%3E%3Cpath%20fill-rule%3D%22nonzero%22%20fill%3D%22%235a3220%22%20d%3D%22M%202867.7%201703.9%20C%202867.7%201716.2%202857.8%201726.1%202845.5%201726.1%20C%202833.3%201726.1%202823.3%201716.2%202823.3%201703.9%20C%202823.3%201691.7%202833.3%201681.8%202845.5%201681.8%20C%202857.8%201681.8%202867.7%201691.7%202867.7%201703.9%20Z%20M%202867.7%201703.9%20%22/%3E%3Cpath%20fill-rule%3D%22nonzero%22%20fill%3D%22%23ffffff%22%20d%3D%22M%202754.4%201696.2%20C%202754.4%201700.2%202751.2%201703.4%202747.2%201703.4%20C%202743.2%201703.4%202740.0%201700.2%202740.0%201696.2%20C%202740.0%201692.2%202743.2%201689.0%202747.2%201689.0%20C%202751.2%201689.0%202754.4%201692.2%202754.4%201696.2%20Z%20M%202754.4%201696.2%20%22/%3E%3Cpath%20fill-rule%3D%22nonzero%22%20fill%3D%22%23ffffff%22%20d%3D%22M%202860.4%201696.2%20C%202860.4%201700.2%202857.2%201703.4%202853.2%201703.4%20C%202849.2%201703.4%202846.0%201700.2%202846.0%201696.2%20C%202846.0%201692.2%202849.2%201689.0%202853.2%201689.0%20C%202857.2%201689.0%202860.4%201692.2%202860.4%201696.2%20Z%20M%202860.4%201696.2%20%22/%3E%3Cpath%20fill%3D%22none%22%20stroke-width%3D%2220.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22miter%22%20stroke%3D%22%235a3220%22%20d%3D%22M%202758.6%201747.5%20C%202781.1%201773.2%202803.6%201773.2%202826.1%201747.5%20%22%20transform%3D%22matrix%280.999875%2C%200%2C%200%2C%200.999875%2C%200.499938%2C%200%29%22/%3E%3C/svg%3E">
+<title>오늘간식 뽑기</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="오늘간식">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:url" content="https://snack.itssophie.dev/">
+<meta property="og:title" content="오늘간식 뽑기">
+<meta property="og:description" content="매장 QR 찍고 하루 한 장 뜯기! 오늘의 간식 쿠폰을 뽑아보세요">
+<meta name="description" content="매장 QR 찍고 하루 한 장 뜯기! 오늘의 간식 쿠폰을 뽑아보세요">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  /* 로고 오면 이 색들만 바꾸면 전체가 바뀌어요 */
+  :root{
+    /* 오늘간식 브랜드 색 (디자인 문서 기준): 색은 오데트 접시에서, 캐릭터는 간판에서 */
+    --paper:#f7efdf;     /* 바탕 (크림보다 한 톤 진하게) */
+    --card:#fffaf0;      /* 크림 */
+    --ink:#5a3220;       /* 갈색 글자·외곽선 */
+    --frame:#4a3b33;     /* 짙은 갈색 (간판 틀) */
+    --point:#e5733a;     /* 오데트 오렌지 */
+    --blue:#3546a8;      /* 오데트 블루 */
+    --green:#2e5a3d;     /* 오데트 딥그린 */
+    --sub:#e5733a;
+    --line:#ead9bd;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;overflow-x:hidden;color:var(--ink);font-family:"Gowun Dodum",system-ui,sans-serif;
+    background:var(--paper);
+    background-image:radial-gradient(#5a322010 1px,transparent 1px);background-size:7px 7px}
+  .wrap{max-width:440px;margin:0 auto;padding:22px 18px 44px}
+  .dh{font-family:"Jua",sans-serif;font-weight:400}
+  .hand{font-family:"Gaegu",cursive}
+  button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--sub);outline-offset:2px}
+
+  /* 테스트 모드 띠 */
+  .testbar{display:none;background:var(--frame);color:var(--card);text-align:center;font-size:12.5px;padding:6px 10px;border-radius:8px;margin-bottom:12px}
+
+  /* 상단 로고 */
+  header{text-align:center}
+  .logo{display:inline-block;position:relative}
+  .logo img{max-width:180px;max-height:90px;display:block;margin:0 auto}
+  .logo .txt{font-family:"Jua",sans-serif;font-size:46px;line-height:1;letter-spacing:1px;color:var(--ink)}
+  .logo .pill{display:inline-block;background:var(--point);color:#fff;font-family:"Jua",sans-serif;font-size:15px;padding:2px 12px;border-radius:999px;margin-bottom:6px}
+  .friends{display:flex;justify-content:center;gap:4px;margin-bottom:6px}
+  .friends{align-items:flex-end;gap:6px}
+  .friends svg{height:62px;width:auto}
+  .friends svg:nth-child(2){height:78px}
+  .logo .txt svg{display:block;width:230px;max-width:100%;height:auto;margin:2px auto 0}
+  .logo .tag{font-family:"Gaegu",cursive;font-size:17px;margin-top:4px;opacity:.75}
+
+  /* 할인 띠 */
+  .happy{display:none;margin:16px 0 4px;background:var(--blue);color:#fff;border-radius:12px;padding:10px 14px;text-align:center;font-size:15px;
+    box-shadow:0 3px 0 #0002}
+  .happy a{display:inline-block;margin-top:6px;color:#fff;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+  .happy b{font-family:"Jua",sans-serif;font-weight:400;font-size:19px;margin-right:6px}
+
+  .stock{margin:16px 0 0;background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:10px 14px;display:none;align-items:center;justify-content:space-between}
+  .stock .t{font-family:"Gaegu",cursive;font-size:19px}
+  .stock .n{font-family:"Jua",sans-serif;font-size:30px;color:var(--point)}
+  .stock .n small{font-size:18px;color:var(--ink)}
+  .stockEdit{background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:12px;margin:14px 0;display:flex;align-items:center;gap:8px}
+  .stockEdit .t{flex:1;font-weight:700;white-space:nowrap}
+  .stockEdit button{width:44px;height:44px;border-radius:10px;border:2px solid var(--ink);background:#fff;font-size:22px;cursor:pointer;color:var(--ink)}
+  .stockEdit input{width:60px;height:44px;text-align:center;font-size:22px;border:2px solid var(--ink);border-radius:10px;color:var(--ink);background:#fff}
+  .stockEdit .save{border-radius:999px;width:auto;padding:0 14px;background:var(--point);color:#fff;font-size:15px;font-weight:700}
+  /* 일력 (오늘 한 장 뜯기) */
+  .pad{position:relative;margin:22px auto 0;width:270px;max-width:100%;height:300px}
+  .pad .ring{position:absolute;top:-10px;width:16px;height:26px;border-radius:8px;background:var(--frame);border:3px solid var(--frame);z-index:4}
+  .pad .back{position:absolute;inset:0;background:var(--card);border:3px solid var(--frame);border-radius:10px}
+  .pad .back.b1{transform:translate(5px,6px)}
+  .pad .back.b2{transform:translate(10px,12px)}
+  .sheet{position:absolute;inset:0;background:var(--card);border:3px solid var(--frame);border-radius:10px;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;transform-origin:50% 0;z-index:3}
+  .sheet .top{width:100%;background:var(--point);color:#fff;text-align:center;padding:16px 0 10px;
+    border-bottom:3px dashed var(--frame)}
+  .sheet .top .m{font-family:"Jua",sans-serif;font-size:20px;letter-spacing:2px}
+  .sheet .day{font-family:"Jua",sans-serif;font-size:116px;line-height:1;margin-top:12px;color:var(--ink)}
+  .sheet .dow{font-family:"Gaegu",cursive;font-size:22px;margin-top:2px}
+  .sheet .q{position:absolute;bottom:14px;font-family:"Gaegu",cursive;font-size:18px;color:var(--point);animation:nudge 1.6s ease-in-out infinite}
+  @keyframes nudge{50%{transform:translateY(4px)}}
+  .sheet{touch-action:none;cursor:grab;will-change:transform}
+  .under > *{visibility:hidden}
+  .under.revealed > *{visibility:visible}
+  .rays{position:absolute;left:50%;top:50%;width:620px;height:620px;margin:-310px 0 0 -310px;border-radius:50%;z-index:0;
+    pointer-events:none;opacity:0;transition:opacity .4s;
+    background:repeating-conic-gradient(from 0deg,#ffc83d55 0 10deg,transparent 10deg 20deg);
+    -webkit-mask:radial-gradient(circle,#000 25%,transparent 68%);mask:radial-gradient(circle,#000 25%,transparent 68%);
+    animation:spin 9s linear infinite}
+  .rays.on{opacity:1}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .slam{animation:slam .45s cubic-bezier(.2,1.6,.4,1) both}
+  @keyframes slam{from{transform:scale(3.2) rotate(-18deg);opacity:0}60%{opacity:1}to{transform:scale(1) rotate(-4deg)}}
+  .pop{animation:pop .5s .15s cubic-bezier(.3,1.5,.5,1) both}
+  @keyframes pop{from{transform:scale(.5);opacity:0}}
+  .shake{animation:shake .5s}
+  @keyframes shake{10%,90%{transform:translate(-2px,1px)}20%,80%{transform:translate(4px,-2px)}30%,50%,70%{transform:translate(-7px,3px)}40%,60%{transform:translate(7px,-3px)}}
+  .sad{animation:sad 1s ease-in-out}
+  @keyframes sad{30%{transform:rotate(-3deg)}60%{transform:rotate(2deg)}}
+  /* 뜯은 뒤 이펙트 */
+  .who.jump svg{animation:jump .55s .25s ease-out 3}
+  @keyframes jump{0%,100%{transform:translateY(0)}40%{transform:translateY(-16px) scale(1.06,.94)}70%{transform:translateY(0) scale(.96,1.05)}}
+  .under .prize.ggwang{font-size:52px;color:#8a7a6e;animation:drop .7s cubic-bezier(.3,1.5,.5,1) both, wobble .9s .7s ease-in-out both}
+  @keyframes drop{from{transform:translateY(-140px) scaleY(1.3);opacity:0}55%{transform:translateY(8px) scale(1.2,.75);opacity:1}to{transform:none}}
+  @keyframes wobble{20%{transform:rotate(-9deg)}40%{transform:rotate(7deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(2deg)}to{transform:rotate(0)}}
+  .under .tier.mega{font-size:40px;padding:2px 22px;background:linear-gradient(180deg,#ffd75e,#f2a32b);color:var(--ink);border:3px solid var(--frame);
+    animation:megaIn .6s cubic-bezier(.2,1.6,.4,1) both, megaPulse 1.1s .6s ease-in-out infinite}
+  @keyframes megaIn{from{transform:scale(5) rotate(-25deg);opacity:0}60%{opacity:1}to{transform:scale(1) rotate(-4deg)}}
+  @keyframes megaPulse{50%{transform:scale(1.1) rotate(-4deg);box-shadow:0 0 22px 6px #ffc83d}to{transform:scale(1) rotate(-4deg)}}
+  .cheer{position:absolute;top:-34px;left:50%;transform:translateX(-50%);z-index:6;white-space:nowrap;font-family:"Jua",sans-serif;font-size:38px;color:var(--point);
+    -webkit-text-stroke:1px var(--frame);text-shadow:0 3px 0 var(--frame);pointer-events:none;animation:cheer 1.6s cubic-bezier(.2,1.5,.4,1) both}
+  @keyframes cheer{from{transform:translate(-50%,30px) scale(.3);opacity:0}25%{transform:translate(-50%,0) scale(1.15);opacity:1}80%{opacity:1}to{transform:translate(-50%,-14px) scale(1);opacity:0}}
+  .spark{position:absolute;left:50%;top:45%;z-index:5;font-size:22px;pointer-events:none;animation:spark .9s ease-out forwards}
+  @keyframes spark{from{transform:translate(-50%,-50%) scale(.2);opacity:1}to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.2) rotate(180deg);opacity:0}}
+  /* 긁는 칸 */
+  .under,.sheet{-webkit-user-select:none;user-select:none}
+  .scr{position:relative;display:inline-block;min-width:170px;padding:2px 12px;border-radius:10px;vertical-align:middle}
+  .scr .it{display:block;font-size:24px;line-height:1.3;white-space:nowrap}
+  .scr canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:10px;touch-action:none;cursor:grab;transition:opacity .4s}
+  .scr.done canvas{opacity:0;pointer-events:none}
+  .scr.done .it{animation:pop .5s cubic-bezier(.3,1.5,.5,1) both;color:var(--point)}
+  .prize .rest{display:block;font-size:24px;margin-top:2px}
+  .flash{position:fixed;inset:0;background:#fff;pointer-events:none;opacity:0;z-index:8}
+  .flash.go{animation:flash .5s}
+  @keyframes flash{15%{opacity:.85}to{opacity:0}}
+  /* 뜯고 나면 보이는 쿠폰 페이지 */
+  .under{position:absolute;inset:0;background:var(--card);border:3px solid var(--frame);border-radius:10px;z-index:2;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px}
+  .under .lbl{font-family:"Gaegu",cursive;font-size:20px;line-height:1.25}
+  .under .tier{font-family:"Jua",sans-serif;font-size:24px;color:#fff;background:var(--tc,var(--point));border-radius:999px;padding:1px 16px;margin:2px 0 6px}
+  .under .who{width:64px;height:64px;margin-bottom:2px}
+  .under .who svg{width:100%;height:100%}
+  .under .who.sad svg{filter:grayscale(1) brightness(1.15) contrast(.85);transform:rotate(-10deg) translateY(4px)}
+  .under .prize{font-family:"Jua",sans-serif;font-size:28px;line-height:1.2;word-break:keep-all;color:var(--ink)}
+  .under .code{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:2px;opacity:.6;margin-top:8px}
+  .under .stamp{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);
+    border:5px double var(--point);color:var(--point);font-family:"Jua",sans-serif;font-size:36px;padding:2px 14px;border-radius:10px;white-space:nowrap;background:#fffaf0e6;z-index:2}
+  .under.used .stamp{display:block}
+  /* 실시간 시계: 캡처한 화면이 아니라는 걸 직원이 바로 알 수 있게 */
+  .live{display:none;align-items:center;gap:6px;margin-top:10px;font-family:ui-monospace,Menlo,monospace;font-size:13px;opacity:.8}
+  .live.on{display:flex}
+  .live i{width:8px;height:8px;border-radius:50%;background:var(--point);animation:blink 1s steps(2,start) infinite}
+  @keyframes blink{to{visibility:hidden}}
+
+  button.big{display:block;width:100%;margin:34px 0 6px;padding:16px;border:3px solid var(--frame);border-radius:999px;background:var(--point);
+    font-family:"Jua",sans-serif;font-size:26px;color:#fff;box-shadow:0 5px 0 var(--frame);cursor:pointer}
+  button.big:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+  button.big:disabled{background:var(--line);color:#5a322088;box-shadow:0 5px 0 #5a322044;cursor:default}
+  .hint{text-align:center;font-family:"Gaegu",cursive;font-size:18px;margin:6px 0 0;opacity:.8}
+  .meta{text-align:center;font-size:13px;opacity:.7;line-height:1.6;margin-top:10px;display:none}
+  /* 직원 확인: 쿠폰 귀퉁이 도장 */
+  .stampBtn{display:none;position:absolute;right:-18px;bottom:-18px;z-index:5;width:74px;height:74px;border-radius:50%;cursor:pointer;
+    background:var(--card);border:3px solid var(--point);box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--point),0 4px 0 5px #5a322033;
+    color:var(--point);font-family:"Jua",sans-serif;font-size:15px;line-height:1.15;transform:rotate(-10deg);padding:0}
+  .stampBtn small{display:block;font-family:"Gowun Dodum",sans-serif;font-size:9.5px;opacity:.8;margin-top:2px}
+  .stampBtn:active{transform:rotate(-10deg) scale(.92)}
+  .under.used .stamp.hit{animation:stampIn .45s cubic-bezier(.2,1.7,.4,1) both}
+  @keyframes stampIn{from{transform:translate(-50%,-50%) rotate(-14deg) scale(3);opacity:0}55%{opacity:1}to{transform:translate(-50%,-50%) rotate(-14deg) scale(1)}}
+
+  /* 영수증 느낌 확률표 */
+  .receipt{margin-top:28px;background:var(--card);padding:18px 18px 22px;position:relative;font-size:14px;
+    -webkit-mask:radial-gradient(circle 6px at 50% 100%,#0000 98%,#000) 0 0/14px 100% repeat-x;
+            mask:radial-gradient(circle 6px at 50% 100%,#0000 98%,#000) 0 0/14px 100% repeat-x}
+  .receipt h3{margin:0 0 10px;text-align:center;font-family:"Jua",sans-serif;font-weight:400;font-size:20px;letter-spacing:2px}
+  .receipt .row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .receipt .row > span:first-child{min-width:0}
+  .receipt .row b{color:var(--tc,var(--point));font-family:"Jua",sans-serif;font-weight:400;font-size:16px;margin-right:4px}
+  .receipt .row .p{font-family:ui-monospace,Menlo,monospace;font-weight:700;font-variant-numeric:tabular-nums}
+  .receipt .note{margin:10px 0 0;font-size:12px;opacity:.65;line-height:1.6}
+
+  /* 가게 정보 */
+  .shop{margin-top:22px;background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:14px 16px;display:none}
+  .shop h3{margin:0 0 8px;font-family:"Jua",sans-serif;font-weight:400;font-size:20px}
+  .shop dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px}
+  .shop dt{font-weight:700;white-space:nowrap}
+  .shop dd{margin:0;min-width:0;word-break:keep-all}
+  .shop .open{display:inline-block;font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px;margin-left:6px;vertical-align:1px}
+  .shop .open.y{background:var(--green);color:#fff}
+  .shop .open.n{background:var(--line);color:var(--ink)}
+  .shop a.map{display:block;margin-top:12px;text-align:center;padding:10px;border-radius:999px;background:var(--ink);color:var(--card);text-decoration:none;font-weight:700}
+
+  .insta{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;padding:13px;border-radius:12px;
+    text-decoration:none;color:var(--ink);font-weight:700;border:2px solid var(--ink);background:var(--card)}
+  .insta svg{width:20px;height:20px}
+  footer{text-align:center;font-size:11px;opacity:.4;margin-top:22px}
+  footer a{color:inherit}
+
+  .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:9}
+  .confetti i{position:absolute;top:-20px;width:9px;height:14px;animation:fall 1.8s linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+  .modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+  .modal.show{display:flex}
+  .modal .box{background:var(--card);border:3px solid var(--ink);border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center}
+  .modal .row{display:flex;gap:10px;margin-top:16px}
+  .modal .row button{flex:1;padding:12px;border-radius:12px;border:2px solid var(--ink);font-weight:700;font-size:15px;background:#fff;color:var(--ink);cursor:pointer}
+  .modal .row button.ok{background:var(--point);color:#fff}
+  .modal input{width:100%;padding:12px;font-size:20px;text-align:center;border:2px solid var(--ink);border-radius:12px;margin-top:10px;letter-spacing:6px;color:var(--ink);background:#fff}
+
+  #admin{display:none}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  .stat{background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:12px}
+  .stat .n{font-family:"Jua",sans-serif;font-size:32px}
+  .stat .l{font-size:12px;opacity:.7}
+  .tbl{width:100%;background:var(--card);border-collapse:collapse;font-size:13.5px}
+  .tbl th,.tbl td{padding:9px 10px;border-bottom:1px dashed var(--line);text-align:left}
+  .tbl th{white-space:nowrap}
+  .tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+  .sec{margin:20px 0 8px;font-size:20px}
+  .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0}
+  .stat .n small{font-size:15px;opacity:.6;margin-left:4px}
+  .stat.hl{background:var(--point);color:#fff;border-color:var(--frame)}
+  .howto{font-size:12px;opacity:.65;line-height:1.5;margin:8px 2px 0}
+  .tblWrap{overflow-x:auto;border-radius:10px}
+  .copyBtn{display:block;width:100%;margin:18px 0 0;padding:13px;border-radius:999px;border:2px solid var(--frame);background:var(--card);color:var(--ink);font-weight:700;font-size:15px;cursor:pointer}
+  #copyArea{width:100%;height:120px;margin-top:8px;font-size:11px;font-family:ui-monospace,Menlo,monospace;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:10px}
+  .demo{background:#fbe2d2;border-radius:12px;padding:10px 12px;font-size:12.5px;margin:12px 0;line-height:1.5}
+
+  @media (prefers-reduced-motion: reduce){
+    .rays,.sheet .q,.live i{animation:none}
+    .shake,.sad,.slam,.pop,.flash.go,.who.jump svg,.under .prize.ggwang,.under .tier.mega,.cheer,.spark{animation:none}
+    .cheer,.spark{display:none}
+    .under.used .stamp.hit{animation:none}
+    .confetti{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="main">
+  <div class="testbar" id="testbar">테스트 모드 · 계속 뽑을 수 있어요 (오픈 전에 꺼야 해요)</div>
+  <header>
+    <div class="logo" id="logo">
+      <div class="friends" id="friends"></div>
+      <div class="txt" id="logoTxt" role="img" aria-label="오늘간식"></div>
+      <div class="tag">매장에서 QR 찍고 하루 한 번 뽑기</div>
+    </div>
+  </header>
+
+  <div class="happy" id="happy"></div>
+  <div class="stock" id="stock"><span class="t">오늘 남은 샌드위치</span><span class="n" id="stockN"></span></div>
+
+  <div class="pad" id="pad">
+    <div class="rays" id="rays"></div>
+    <div class="back b2"></div><div class="back b1"></div>
+    <div class="under" id="under">
+      <div class="who" id="cWho"></div>
+      <div class="tier" id="cTier"></div>
+      <div class="prize" id="cPrize"></div>
+      <div class="code" id="cCode"></div>
+      <div class="lbl" id="cNote" style="font-size:15px;margin-top:8px;opacity:.75"></div>
+      <div class="live" id="cLive"><i></i><span id="cClock"></span></div>
+      <div class="stamp" id="cStamp">사용완료</div>
+      <button class="stampBtn" id="staffBtn" aria-label="직원 확인, 직원이 눌러주세요">직원<br>확인<small>직원용</small></button>
+    </div>
+    <div class="sheet" id="sheet">
+      <div class="top"><div class="m" id="sMonth"></div></div>
+      <div class="day" id="sDay"></div>
+      <div class="dow" id="sDow"></div>
+      <div class="q">↓ 아래로 당겨서 뜯기</div>
+    </div>
+    <div class="ring" style="left:60px"></div><div class="ring" style="right:60px"></div>
+  </div>
+
+  <div class="meta" id="cMeta"></div>
+
+  <button class="big" id="drawBtn">오늘 장 뜯기!</button>
+  <p class="hint" id="hint">하루에 한 번</p>
+
+  <div class="receipt">
+    <h3>당첨 확률</h3>
+    <div id="odds"></div>
+    <p class="note">· 매장·포장 주문에서만 써요 (배달 주문은 안 돼요)<br>· 쿠폰은 뽑은 날 하루만 써요<br>· 1인 1일 1회 · 다른 할인과 같이 못 써요<br>· 계산할 때 이 화면을 보여주세요 (캡처한 화면은 안 돼요)</p>
+  </div>
+
+  <div class="shop" id="shop">
+    <h3>오늘간식 찾아오기</h3>
+    <dl id="shopInfo"></dl>
+    <a class="map" id="shopMap" href="#" target="_blank" rel="noopener">지도에서 보기</a>
+  </div>
+
+  <a class="insta" id="insta" href="#" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+    <span id="instaText">인스타그램</span>
+  </a>
+
+</section>
+
+<section id="admin">
+  <header><div class="logo"><div class="txt" style="font-size:32px">사장님 화면</div></div></header>
+  <div class="demo" id="demoNote" style="display:none">지금은 <b>미리보기 모드</b>예요. 이 폰에서 누른 기록만 보여요. 서버를 연결하면 모든 손님 기록이 여기 모여요.</div>
+  <div class="stockEdit">
+    <span class="t">샌드위치</span>
+    <button onclick="bump(-1)" aria-label="하나 빼기">−</button><input id="stockIn" type="number" inputmode="numeric" min="0" aria-label="남은 샌드위치 수"><button onclick="bump(1)" aria-label="하나 더하기">+</button>
+    <button class="save" id="stockSave">저장</button>
+  </div>
+  <h3 class="dh sec">오늘</h3>
+  <div class="stats" id="todayStats"></div>
+  <h3 class="dh sec">오픈부터 지금까지</h3>
+  <div class="stats" id="allStats"></div>
+  <p class="howto">방문·참여는 하루에 한 사람(폰)당 1번만 세요. 참여율 = 뽑은 사람 ÷ 방문. 사용률 = 직원 도장 찍힌 쿠폰 ÷ 당첨 쿠폰(꽝 제외)</p>
+  <h3 class="dh sec">경품별</h3>
+  <div class="tblWrap"><table class="tbl" id="prizeTbl"></table></div>
+  <h3 class="dh sec">날짜별</h3>
+  <div class="tblWrap"><table class="tbl" id="dayTbl"></table></div>
+  <button class="copyBtn" id="copyBtn">자료 복사 (엑셀·구글시트에 붙여넣기)</button>
+  <textarea id="copyArea" readonly hidden aria-label="복사할 자료"></textarea>
+  <button class="big" style="font-size:20px;background:var(--card);color:var(--ink)" onclick="location.hash='';">손님 화면으로</button>
+</section>
+
+</div>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <div id="mText"></div>
+    <input id="mInput" inputmode="numeric" maxlength="6" style="display:none" aria-label="PIN">
+    <div class="row"><button id="mNo">취소</button><button class="ok" id="mOk">확인</button></div>
+  </div>
+</div>
+<div class="confetti" id="confetti"></div>
+<div class="flash" id="flash"></div>
+
+<script>
+/* =====================================================================
+   여기만 고치면 돼요
+   ===================================================================== */
+const CONFIG = {
+  shopName: "오늘간식",
+  logo: "",                                          // 로고 이미지 (비우면 글자 로고)
+  instagramUrl: "https://www.instagram.com/wonju.todays.snack/",
+  instagramText: "인스타그램",
+  happyHour: 15,                                     // 할인 시작 (오후 3시)
+  // 가게 정보 (비워두면 '오시는 길' 칸이 안 보여요)
+  address: "",                                       // 예: "강원 원주시 ○○로 12, 1층"
+  where: "남부시장 근처",                             // 주소 대신 짧게 보여줄 위치
+  openDate: "12월 8일 (화) 오픈",                    // 오픈 전 안내 (오픈 후엔 "" 로)
+  openHour: 0, closeHour: 0,                         // 예: 9, 20 (둘 다 0이면 영업시간 안 보임)
+  closedDays: "",                                    // 예: "매주 일요일"
+  phone: "033-813-0440",
+  delivery: "포장·배달 돼요",
+  mapUrl: "",                                        // 네이버/카카오 지도 링크
+  happyText: "남은 샌드위치 할인 중",
+  // 서버(Supabase) 연결 정보. 비워두면 미리보기 모드로 돌아가요.
+  testMode: true,                                    // 테스트용: 하루 1번 제한 끔 (실제 오픈 때 false)
+  supabaseUrl: "https://ztxzqvnybiemgbhtrwiw.supabase.co",   // camtrip 프로젝트, 데이터는 snack 스키마
+  supabaseKey: "sb_publishable_RaScKFLELmXHL62XXB5MMg_06cXrYj7", // 공개용 키 (페이지에 들어가도 되는 키)
+};
+// 화면에 보여주는 확률표 (실제 뽑기는 서버에서 같은 확률로 돌아가요)
+// items가 있는 등수는 뽑힐 때 그 안에서 하나가 랜덤으로 정해져요
+const PRIZES = [
+  { tier:"1등", name:"핫도그 1개 무료",                 pct:1 },
+  { tier:"2등", name:"음료 1+1",                        pct:3, label:"음료 1+1 (같은 음료로)", note:"같은 음료로만 돼요" },
+  { tier:"3등", name:"샌드위치 사면 아메리카노 무료",   pct:8 },
+  { tier:"4등", name:"음료 1잔 500원 할인",             pct:15 },
+  // items가 있으면 뜯은 다음 한 번 더 긁어서 어떤 메뉴인지 확인해요
+  { tier:"5등", name:"{item} 500원 할인",               pct:33, label:"메뉴 하나 500원 할인 (긁어서 확인!)",
+    items:["고구마라떼 1잔","녹차라떼 1잔","딸기라떼 1잔","복숭아 아이스티 1잔","레모네이드 1잔",
+           "샌드위치","핫도그"] },
+  { tier:"꽝",  name:"꽝",                              pct:40, blank:true },
+];
+/* ===================================================================== */
+
+/* 간식 친구들: 간판 원본(벡터)에서 잘라낸 그대로예요 */
+const ART = {"coffee": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"610 860 700 900\" aria-hidden=\"true\"><path fill=\"none\" stroke-width=\"33.7\" stroke-linecap=\"round\" stroke-linejoin=\"miter\" stroke=\"#5a3220\" d=\"M 816.6 913.8 C 768.4 981.3 864.8 1019.9 816.6 1097.0 M 951.5 884.9 C 903.4 952.4 999.7 990.9 951.5 1068.0 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#fffdf7\" stroke-width=\"43.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"#5a3220\" d=\"M 681.7 1183.7 L 1231.0 1183.7 L 1173.2 1829.4 C 1170.0 1868.0 1149.1 1887.3 1110.6 1887.3 L 802.2 1887.3 C 763.6 1887.3 742.7 1868.0 739.5 1829.4 Z M 681.7 1183.7 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#e07b39\" stroke-width=\"28.9\" stroke-linecap=\"butt\" stroke-linejoin=\"round\" stroke=\"#5a3220\" d=\"M 715.4 1511.4 L 1197.3 1511.4 L 1178.0 1713.8 L 734.7 1713.8 Z M 715.4 1511.4 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#5a3220\" d=\"M 691.7 1096.8 L 1221.7 1096.8 C 1253.7 1096.8 1279.6 1122.7 1279.6 1154.6 C 1279.6 1186.6 1253.7 1212.5 1221.7 1212.5 L 691.7 1212.5 C 659.8 1212.5 633.9 1186.6 633.9 1154.6 C 633.9 1122.7 659.8 1096.8 691.7 1096.8 Z M 691.7 1096.8 \"/><path fill-rule=\"nonzero\" fill=\"#5a3220\" d=\"M 768.8 1048.6 L 1144.7 1048.6 C 1165.9 1048.6 1183.2 1065.9 1183.2 1087.2 C 1183.2 1108.5 1165.9 1125.7 1144.7 1125.7 L 768.8 1125.7 C 747.5 1125.7 730.3 1108.5 730.3 1087.2 C 730.3 1065.9 747.5 1048.6 768.8 1048.6 Z M 768.8 1048.6 \"/><path fill-rule=\"nonzero\" fill=\"#000000\" stroke-width=\"38.5\" stroke-linecap=\"round\" stroke-linejoin=\"miter\" stroke=\"#f1e6d6\" d=\"M 787.7 1280.1 L 773.2 1443.9 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#f49a86\" d=\"M 898.9 1376.3 C 898.9 1386.4 886.0 1394.6 870.0 1394.6 C 854.0 1394.6 841.1 1386.4 841.1 1376.3 C 841.1 1366.2 854.0 1358.0 870.0 1358.0 C 886.0 1358.0 898.9 1366.2 898.9 1376.3 Z M 898.9 1376.3 \"/><path fill-rule=\"nonzero\" fill=\"#f49a86\" d=\"M 1072.4 1376.3 C 1072.4 1386.4 1059.4 1394.6 1043.5 1394.6 C 1027.5 1394.6 1014.6 1386.4 1014.6 1376.3 C 1014.6 1366.2 1027.5 1358.0 1043.5 1358.0 C 1059.4 1358.0 1072.4 1366.2 1072.4 1376.3 Z M 1072.4 1376.3 \"/><path fill-rule=\"nonzero\" fill=\"#5a3220\" d=\"M 925.9 1337.7 C 925.9 1350.0 916.0 1359.9 903.7 1359.9 C 891.5 1359.9 881.6 1350.0 881.6 1337.7 C 881.6 1325.5 891.5 1315.6 903.7 1315.6 C 916.0 1315.6 925.9 1325.5 925.9 1337.7 Z M 925.9 1337.7 \"/><path fill-rule=\"nonzero\" fill=\"#5a3220\" d=\"M 1031.9 1337.7 C 1031.9 1350.0 1022.0 1359.9 1009.7 1359.9 C 997.5 1359.9 987.6 1350.0 987.6 1337.7 C 987.6 1325.5 997.5 1315.6 1009.7 1315.6 C 1022.0 1315.6 1031.9 1325.5 1031.9 1337.7 Z M 1031.9 1337.7 \"/><path fill-rule=\"nonzero\" fill=\"#ffffff\" d=\"M 918.7 1330.0 C 918.7 1334.0 915.4 1337.3 911.5 1337.3 C 907.5 1337.3 904.2 1334.0 904.2 1330.0 C 904.2 1326.0 907.5 1322.8 911.5 1322.8 C 915.4 1322.8 918.7 1326.0 918.7 1330.0 Z M 918.7 1330.0 \"/><path fill-rule=\"nonzero\" fill=\"#ffffff\" d=\"M 1024.7 1330.0 C 1024.7 1334.0 1021.4 1337.3 1017.5 1337.3 C 1013.5 1337.3 1010.2 1334.0 1010.2 1330.0 C 1010.2 1326.0 1013.5 1322.8 1017.5 1322.8 C 1021.4 1322.8 1024.7 1326.0 1024.7 1330.0 Z M 1024.7 1330.0 \"/><path fill=\"none\" stroke-width=\"20.2\" stroke-linecap=\"round\" stroke-linejoin=\"miter\" stroke=\"#5a3220\" d=\"M 922.6 1381.3 C 945.1 1407.0 967.6 1407.0 990.1 1381.3 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/></svg>", "hotdog": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"1360 735 420 1235\" aria-hidden=\"true\"><path fill=\"none\" stroke-width=\"53.0\" stroke-linecap=\"round\" stroke-linejoin=\"miter\" stroke=\"#5a3220\" d=\"M 1568.4 1723.4 L 1568.4 1945.1 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill=\"none\" stroke-width=\"19.2\" stroke-linecap=\"round\" stroke-linejoin=\"miter\" stroke=\"#e8c79a\" d=\"M 1568.4 1723.4 L 1568.4 1935.4 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#e9a84c\" stroke-width=\"43.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"#5a3220\" d=\"M 1568.4 759.6 C 1669.5 759.6 1751.5 841.6 1751.5 942.8 L 1751.5 1578.8 C 1751.5 1680.0 1669.5 1762.0 1568.4 1762.0 C 1467.2 1762.0 1385.2 1680.0 1385.2 1578.8 L 1385.2 942.8 C 1385.2 841.6 1467.2 759.6 1568.4 759.6 Z M 1568.4 759.6 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill=\"none\" stroke-width=\"33.7\" stroke-linecap=\"round\" stroke-linejoin=\"miter\" stroke=\"#f7d49a\" d=\"M 1452.7 875.3 C 1459.1 836.7 1478.4 811.0 1510.5 798.2 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#f49a86\" d=\"M 1510.8 1048.6 C 1510.8 1058.8 1497.9 1066.9 1481.9 1066.9 C 1466.0 1066.9 1453.0 1058.8 1453.0 1048.6 C 1453.0 1038.5 1466.0 1030.3 1481.9 1030.3 C 1497.9 1030.3 1510.8 1038.5 1510.8 1048.6 Z M 1510.8 1048.6 \"/><path fill-rule=\"nonzero\" fill=\"#f49a86\" d=\"M 1684.3 1048.6 C 1684.3 1058.8 1671.4 1066.9 1655.4 1066.9 C 1639.4 1066.9 1626.5 1058.8 1626.5 1048.6 C 1626.5 1038.5 1639.4 1030.3 1655.4 1030.3 C 1671.4 1030.3 1684.3 1038.5 1684.3 1048.6 Z M 1684.3 1048.6 \"/><path fill-rule=\"nonzero\" fill=\"#5a3220\" d=\"M 1537.8 1010.1 C 1537.8 1022.3 1527.9 1032.3 1515.7 1032.3 C 1503.4 1032.3 1493.5 1022.3 1493.5 1010.1 C 1493.5 997.8 1503.4 987.9 1515.7 987.9 C 1527.9 987.9 1537.8 997.8 1537.8 1010.1 Z M 1537.8 1010.1 \"/><path fill-rule=\"nonzero\" fill=\"#5a3220\" d=\"M 1643.8 1010.1 C 1643.8 1022.3 1633.9 1032.3 1621.7 1032.3 C 1609.4 1032.3 1599.5 1022.3 1599.5 1010.1 C 1599.5 997.8 1609.4 987.9 1621.7 987.9 C 1633.9 987.9 1643.8 997.8 1643.8 1010.1 Z M 1643.8 1010.1 \"/><path fill-rule=\"nonzero\" fill=\"#ffffff\" d=\"M 1530.6 1002.4 C 1530.6 1006.4 1527.4 1009.6 1523.4 1009.6 C 1519.4 1009.6 1516.1 1006.4 1516.1 1002.4 C 1516.1 998.4 1519.4 995.2 1523.4 995.2 C 1527.4 995.2 1530.6 998.4 1530.6 1002.4 Z M 1530.6 1002.4 \"/><path fill-rule=\"nonzero\" fill=\"#ffffff\" d=\"M 1636.6 1002.4 C 1636.6 1006.4 1633.4 1009.6 1629.4 1009.6 C 1625.4 1009.6 1622.1 1006.4 1622.1 1002.4 C 1622.1 998.4 1625.4 995.2 1629.4 995.2 C 1633.4 995.2 1636.6 998.4 1636.6 1002.4 Z M 1636.6 1002.4 \"/><path fill=\"none\" stroke-width=\"20.2\" stroke-linecap=\"round\" stroke-linejoin=\"miter\" stroke=\"#5a3220\" d=\"M 1534.6 1053.6 C 1557.1 1079.3 1579.6 1079.3 1602.1 1053.6 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill=\"none\" stroke-width=\"38.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"#d63a2b\" d=\"M 1481.6 1164.4 L 1655.1 1247.8 L 1481.6 1331.6 L 1655.1 1415.0 L 1481.6 1498.4 L 1655.1 1582.2 L 1481.6 1665.6 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill=\"none\" stroke-width=\"28.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"#f4c430\" d=\"M 1655.1 1164.4 L 1481.6 1247.8 L 1655.1 1331.6 L 1481.6 1415.0 L 1655.1 1498.4 L 1481.6 1582.2 L 1655.1 1665.6 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/></svg>", "tteok": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"1650 1055 820 945\" aria-hidden=\"true\"><path fill-rule=\"nonzero\" fill=\"#e04a2e\" stroke-width=\"43.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"#5a3220\" d=\"M 1726.4 1734.4 L 2138.5 1734.4 C 2167.6 1734.4 2191.3 1758.0 2191.3 1787.2 L 2191.3 1921.3 C 2191.3 1950.5 2167.7 1974.1 2138.5 1974.1 L 1726.4 1974.1 C 1697.3 1974.1 1673.7 1950.5 1673.7 1921.3 L 1673.7 1787.1 C 1673.7 1758.0 1697.3 1734.4 1726.4 1734.4 Z M 1726.4 1734.4 \" transform=\"matrix(0.999875, -0.105091, 0.105091, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#e04a2e\" stroke-width=\"43.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"#5a3220\" d=\"M 1977.7 1079.8 L 2390.6 1079.8 C 2419.7 1079.8 2443.4 1103.4 2443.4 1132.6 L 2443.4 1267.0 C 2443.4 1296.2 2419.7 1319.8 2390.6 1319.8 L 1977.7 1319.8 C 1948.5 1319.8 1924.9 1296.2 1924.9 1267.0 L 1924.9 1132.6 C 1924.9 1103.4 1948.6 1079.8 1977.7 1079.8 Z M 1977.7 1079.8 \" transform=\"matrix(0.999875, 0.0874778, -0.0874778, 0.999875, 0.499938, 0)\"/><path fill=\"none\" stroke-width=\"28.8\" stroke-linecap=\"round\" stroke-linejoin=\"miter\" stroke=\"#f59a80\" d=\"M 2011.3 1147.0 C 2036.9 1127.8 2068.9 1119.8 2107.3 1123.0 \" transform=\"matrix(0.999875, 0.0874778, -0.0874778, 0.999875, 0.499938, 0)\"/><path fill=\"none\" stroke-width=\"28.7\" stroke-linecap=\"round\" stroke-linejoin=\"miter\" stroke=\"#f59a80\" d=\"M 1769.5 1801.5 C 1795.1 1785.6 1823.8 1779.2 1855.8 1782.4 \" transform=\"matrix(0.999875, -0.105091, 0.105091, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#fff8ec\" stroke-width=\"6.259932\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"#5a3220\" d=\"M 2271.1 36.3 C 2271.1 41.4 2263.6 45.5 2254.4 45.5 C 2245.1 45.5 2237.7 41.4 2237.7 36.3 C 2237.7 31.2 2245.1 27.1 2254.4 27.1 C 2263.6 27.1 2271.1 31.2 2271.1 36.3 Z M 2271.1 36.3 \" transform=\"matrix(0.999875, 0.577278, -0.577278, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#fff8ec\" stroke-width=\"6.259932\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"#5a3220\" d=\"M 2241.7 419.5 C 2241.7 424.6 2234.2 428.7 2225.0 428.7 C 2215.8 428.7 2208.3 424.6 2208.3 419.5 C 2208.3 414.4 2215.8 410.3 2225.0 410.3 C 2234.2 410.3 2241.7 414.4 2241.7 419.5 Z M 2241.7 419.5 \" transform=\"matrix(0.999875, 0.577278, -0.577278, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#fff8ec\" stroke-width=\"6.259932\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"#5a3220\" d=\"M 2455.2 238.4 C 2455.2 243.5 2447.7 247.6 2438.5 247.6 C 2429.3 247.6 2421.8 243.5 2421.8 238.4 C 2421.8 233.3 2429.3 229.2 2438.5 229.2 C 2447.7 229.2 2455.2 233.3 2455.2 238.4 Z M 2455.2 238.4 \" transform=\"matrix(0.999875, 0.577278, -0.577278, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#f49a86\" d=\"M 2024.5 1412.9 C 2024.5 1422.5 2012.2 1430.3 1997.0 1430.3 C 1981.8 1430.3 1969.5 1422.5 1969.5 1412.9 C 1969.5 1403.3 1981.8 1395.5 1997.0 1395.5 C 2012.2 1395.5 2024.5 1403.3 2024.5 1412.9 Z M 2024.5 1412.9 \"/><path fill-rule=\"nonzero\" fill=\"#f49a86\" d=\"M 2189.3 1412.9 C 2189.3 1422.5 2177.0 1430.3 2161.8 1430.3 C 2146.6 1430.3 2134.3 1422.5 2134.3 1412.9 C 2134.3 1403.3 2146.6 1395.5 2161.8 1395.5 C 2177.0 1395.5 2189.3 1403.3 2189.3 1412.9 Z M 2189.3 1412.9 \"/><path fill-rule=\"nonzero\" fill=\"#5a3220\" d=\"M 2050.1 1376.3 C 2050.1 1387.9 2040.7 1397.3 2029.1 1397.3 C 2017.4 1397.3 2008.0 1387.9 2008.0 1376.3 C 2008.0 1364.7 2017.4 1355.2 2029.1 1355.2 C 2040.7 1355.2 2050.1 1364.7 2050.1 1376.3 Z M 2050.1 1376.3 \"/><path fill-rule=\"nonzero\" fill=\"#5a3220\" d=\"M 2150.8 1376.3 C 2150.8 1387.9 2141.4 1397.3 2129.8 1397.3 C 2118.1 1397.3 2108.7 1387.9 2108.7 1376.3 C 2108.7 1364.7 2118.1 1355.2 2129.8 1355.2 C 2141.4 1355.2 2150.8 1364.7 2150.8 1376.3 Z M 2150.8 1376.3 \"/><path fill-rule=\"nonzero\" fill=\"#ffffff\" d=\"M 2043.2 1369.0 C 2043.2 1372.8 2040.2 1375.8 2036.4 1375.8 C 2032.6 1375.8 2029.5 1372.8 2029.5 1369.0 C 2029.5 1365.2 2032.6 1362.1 2036.4 1362.1 C 2040.2 1362.1 2043.2 1365.2 2043.2 1369.0 Z M 2043.2 1369.0 \"/><path fill-rule=\"nonzero\" fill=\"#ffffff\" d=\"M 2143.9 1369.0 C 2143.9 1372.8 2140.9 1375.8 2137.1 1375.8 C 2133.3 1375.8 2130.2 1372.8 2130.2 1369.0 C 2130.2 1365.2 2133.3 1362.1 2137.1 1362.1 C 2140.9 1362.1 2143.9 1365.2 2143.9 1369.0 Z M 2143.9 1369.0 \"/><path fill=\"none\" stroke-width=\"19.2\" stroke-linecap=\"round\" stroke-linejoin=\"miter\" stroke=\"#5a3220\" d=\"M 2047.1 1417.7 C 2068.5 1442.1 2089.8 1442.1 2111.2 1417.7 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/></svg>", "tako": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"2460 1265 665 665\" aria-hidden=\"true\"><path fill-rule=\"nonzero\" fill=\"#c47a3e\" stroke-width=\"43.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"#5a3220\" d=\"M 3100.8 1598.1 C 3100.8 1768.5 2962.7 1906.5 2792.4 1906.5 C 2622.0 1906.5 2484.0 1768.5 2484.0 1598.1 C 2484.0 1427.8 2622.0 1289.7 2792.4 1289.7 C 2962.7 1289.7 3100.8 1427.8 3100.8 1598.1 Z M 3100.8 1598.1 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#6b3a1e\" stroke-width=\"28.9\" stroke-linecap=\"butt\" stroke-linejoin=\"round\" stroke=\"#5a3220\" d=\"M 2503.2 1511.4 C 2696.0 1331.5 2888.7 1331.5 3081.5 1511.4 C 3055.8 1569.2 3010.8 1585.3 2946.6 1559.6 C 2895.2 1604.5 2843.8 1604.5 2792.4 1559.6 C 2741.0 1604.5 2689.6 1604.5 2638.2 1559.6 C 2573.9 1585.3 2528.9 1569.2 2503.2 1511.4 Z M 2503.2 1511.4 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill=\"none\" stroke-width=\"26.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"#fff8ec\" d=\"M 2580.3 1443.9 L 2633.3 1395.7 L 2686.3 1443.9 L 2739.4 1395.7 L 2792.4 1443.9 L 2845.4 1395.7 L 2898.4 1443.9 L 2951.4 1395.7 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/><path fill-rule=\"nonzero\" fill=\"#5e8c3a\" d=\"M 2701.9 1366.6 C 2701.9 1375.2 2695.0 1382.1 2686.5 1382.1 C 2678.0 1382.1 2671.1 1375.2 2671.1 1366.6 C 2671.1 1358.1 2678.0 1351.2 2686.5 1351.2 C 2695.0 1351.2 2701.9 1358.1 2701.9 1366.6 Z M 2701.9 1366.6 \"/><path fill-rule=\"nonzero\" fill=\"#5e8c3a\" d=\"M 2923.6 1385.9 C 2923.6 1394.4 2916.7 1401.3 2908.1 1401.3 C 2899.6 1401.3 2892.7 1394.4 2892.7 1385.9 C 2892.7 1377.4 2899.6 1370.5 2908.1 1370.5 C 2916.7 1370.5 2923.6 1377.4 2923.6 1385.9 Z M 2923.6 1385.9 \"/><path fill-rule=\"nonzero\" fill=\"#5e8c3a\" d=\"M 2817.6 1337.7 C 2817.6 1346.3 2810.7 1353.2 2802.1 1353.2 C 2793.6 1353.2 2786.7 1346.3 2786.7 1337.7 C 2786.7 1329.2 2793.6 1322.3 2802.1 1322.3 C 2810.7 1322.3 2817.6 1329.2 2817.6 1337.7 Z M 2817.6 1337.7 \"/><path fill-rule=\"nonzero\" fill=\"#5e8c3a\" d=\"M 3000.7 1463.0 C 3000.7 1471.5 2993.8 1478.4 2985.2 1478.4 C 2976.7 1478.4 2969.8 1471.5 2969.8 1463.0 C 2969.8 1454.5 2976.7 1447.6 2985.2 1447.6 C 2993.8 1447.6 3000.7 1454.5 3000.7 1463.0 Z M 3000.7 1463.0 \"/><path fill-rule=\"nonzero\" fill=\"#f49a86\" d=\"M 2734.7 1742.5 C 2734.7 1752.6 2721.7 1760.8 2705.8 1760.8 C 2689.8 1760.8 2676.9 1752.6 2676.9 1742.5 C 2676.9 1732.4 2689.8 1724.2 2705.8 1724.2 C 2721.7 1724.2 2734.7 1732.4 2734.7 1742.5 Z M 2734.7 1742.5 \"/><path fill-rule=\"nonzero\" fill=\"#f49a86\" d=\"M 2908.1 1742.5 C 2908.1 1752.6 2895.2 1760.8 2879.2 1760.8 C 2863.3 1760.8 2850.3 1752.6 2850.3 1742.5 C 2850.3 1732.4 2863.3 1724.2 2879.2 1724.2 C 2895.2 1724.2 2908.1 1732.4 2908.1 1742.5 Z M 2908.1 1742.5 \"/><path fill-rule=\"nonzero\" fill=\"#5a3220\" d=\"M 2761.7 1703.9 C 2761.7 1716.2 2751.8 1726.1 2739.5 1726.1 C 2727.3 1726.1 2717.3 1716.2 2717.3 1703.9 C 2717.3 1691.7 2727.3 1681.8 2739.5 1681.8 C 2751.8 1681.8 2761.7 1691.7 2761.7 1703.9 Z M 2761.7 1703.9 \"/><path fill-rule=\"nonzero\" fill=\"#5a3220\" d=\"M 2867.7 1703.9 C 2867.7 1716.2 2857.8 1726.1 2845.5 1726.1 C 2833.3 1726.1 2823.3 1716.2 2823.3 1703.9 C 2823.3 1691.7 2833.3 1681.8 2845.5 1681.8 C 2857.8 1681.8 2867.7 1691.7 2867.7 1703.9 Z M 2867.7 1703.9 \"/><path fill-rule=\"nonzero\" fill=\"#ffffff\" d=\"M 2754.4 1696.2 C 2754.4 1700.2 2751.2 1703.4 2747.2 1703.4 C 2743.2 1703.4 2740.0 1700.2 2740.0 1696.2 C 2740.0 1692.2 2743.2 1689.0 2747.2 1689.0 C 2751.2 1689.0 2754.4 1692.2 2754.4 1696.2 Z M 2754.4 1696.2 \"/><path fill-rule=\"nonzero\" fill=\"#ffffff\" d=\"M 2860.4 1696.2 C 2860.4 1700.2 2857.2 1703.4 2853.2 1703.4 C 2849.2 1703.4 2846.0 1700.2 2846.0 1696.2 C 2846.0 1692.2 2849.2 1689.0 2853.2 1689.0 C 2857.2 1689.0 2860.4 1692.2 2860.4 1696.2 Z M 2860.4 1696.2 \"/><path fill=\"none\" stroke-width=\"20.2\" stroke-linecap=\"round\" stroke-linejoin=\"miter\" stroke=\"#5a3220\" d=\"M 2758.6 1747.5 C 2781.1 1773.2 2803.6 1773.2 2826.1 1747.5 \" transform=\"matrix(0.999875, 0, 0, 0.999875, 0.499938, 0)\"/></svg>", "logo": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"3600 700 4960 1180\" aria-hidden=\"true\"><path fill-rule=\"nonzero\" fill=\"#5a3220\" d=\"M 3983.1 1392.5 C 3916.5 1392.5 3857.8 1378.8 3807.1 1351.5 C 3756.4 1324.1 3717.1 1285.6 3689.2 1235.8 C 3661.4 1186.1 3647.5 1128.4 3647.5 1062.8 C 3647.5 998.2 3661.4 941.0 3689.2 891.3 C 3717.1 841.5 3756.4 803.0 3807.1 775.6 C 3857.8 748.3 3916.5 734.6 3983.1 734.6 L 4356.0 734.6 C 4422.7 734.6 4481.3 748.3 4532.1 775.6 C 4582.8 803.0 4622.1 841.5 4649.9 891.3 C 4677.8 941.0 4691.7 998.2 4691.7 1062.8 C 4691.7 1128.4 4677.8 1186.1 4649.9 1235.8 C 4622.1 1285.6 4582.8 1324.1 4532.1 1351.5 C 4481.3 1378.8 4422.7 1392.5 4356.0 1392.5 Z M 4033.8 959.9 C 4002.0 959.9 3976.4 969.3 3957.0 988.2 C 3937.6 1007.1 3927.9 1032.5 3927.9 1064.3 C 3927.9 1096.1 3937.6 1121.5 3957.0 1140.4 C 3976.4 1159.3 4002.0 1168.7 4033.8 1168.7 L 4305.3 1168.7 C 4337.1 1168.7 4362.7 1159.3 4382.1 1140.4 C 4401.5 1121.5 4411.2 1096.1 4411.2 1064.3 C 4411.2 1032.5 4401.5 1007.1 4382.1 988.2 C 4362.7 969.3 4337.1 959.9 4305.3 959.9 Z M 4311.3 1587.9 L 4706.6 1587.9 L 4706.6 1811.7 L 3632.5 1811.7 L 3632.5 1587.9 L 4027.8 1587.9 L 4027.8 1438.7 L 4311.3 1438.7 Z M 5240.6 839.0 L 5240.6 737.6 L 4945.3 737.6 L 4945.3 1018.1 L 5959.7 1018.1 L 5959.7 839.0 Z M 4915.4 1229.9 L 5989.5 1229.9 L 5989.5 1062.8 L 4915.4 1062.8 Z M 5959.7 1647.6 L 5959.7 1274.6 L 4945.3 1274.6 L 4945.3 1438.7 L 5680.7 1438.7 L 5680.7 1483.5 L 4945.3 1483.5 L 4945.3 1856.4 L 5974.6 1856.4 L 5974.6 1692.3 L 5210.8 1692.3 L 5210.8 1647.6 Z M 7257.5 722.7 L 6977.0 722.7 L 6977.0 1431.3 L 7257.5 1431.3 L 7257.5 1176.2 L 7369.4 1176.2 L 7369.4 950.9 L 7257.5 950.9 Z M 6213.3 1364.1 C 6353.5 1364.1 6469.3 1347.5 6560.8 1314.2 C 6652.3 1280.8 6723.4 1218.4 6774.1 1127 C 6824.9 1035.5 6850.2 905.7 6850.2 737.6 L 6213.3 737.6 L 6213.3 958.4 L 6544.4 958.4 C 6544.4 1015.1 6509.6 1059.6 6440.0 1091.9 C 6370.4 1124.2 6284.9 1140.4 6183.4 1140.4 Z M 6523.5 1632.6 L 6523.5 1431.3 L 6243.1 1431.3 L 6243.1 1856.4 L 7257.5 1856.4 L 7257.5 1632.6 Z M 8252.5 722.7 L 8532.9 722.7 L 8532.9 1364.1 L 8252.5 1364.1 Z M 7815.4 1240.3 C 7775.6 1280.1 7730.1 1310.7 7678.9 1332.1 C 7627.7 1353.4 7574.2 1364.1 7518.5 1364.1 L 7458.9 1140.4 C 7519.5 1140.4 7570.7 1118.2 7612.5 1074.0 C 7654.3 1029.7 7675.2 963.8 7675.2 876.3 L 7675.2 737.6 L 7954.1 737.6 L 7954.1 876.3 C 7954.1 963.8 7975.0 1029.7 8016.8 1074.0 C 8058.5 1118.2 8109.8 1140.4 8170.4 1140.4 L 8110.8 1364.1 C 8055.1 1364.1 8001.6 1353.4 7950.4 1332.1 C 7899.2 1310.7 7854.2 1280.1 7815.4 1240.3 Z M 7518.5 1655.0 L 7518.5 1431.3 L 8532.9 1431.3 L 8532.9 1856.4 L 8252.5 1856.4 L 8252.5 1655.0 Z M 7518.5 1655.0 \"/></svg>"};
+const CHAR = { coffee:()=>ART.coffee, hotdog:()=>ART.hotdog, tteok:()=>ART.tteok, tako:()=>ART.tako };
+// 등수별 캐릭터·색: 경품이 음료면 커피, 핫도그면 핫도그 (경품 바꾸면 여기도 같이)
+const TIER_LOOK = {
+  "1등":{c:"hotdog", col:"#3546a8"},   // 핫도그 무료 → 핫도그
+  "2등":{c:"coffee", col:"#2e5a3d"},   // 음료 1+1 → 커피
+  "3등":{c:"coffee", col:"#2e5a3d"},   // 아메리카노 무료 → 커피
+  "4등":{c:"coffee", col:"#e5733a"},   // 음료 할인 → 커피
+  "5등":{c:"tako",   col:"#b8763e"},   // 긁기 전엔 타코야끼, 긁으면 나온 메뉴 캐릭터로 바뀜
+  "꽝": {c:"tteok",  col:"#e5733a", sad:true},
+};
+
+const $ = id => document.getElementById(id);
+let LIVE = !!(CONFIG.supabaseUrl && CONFIG.supabaseKey);  // 서버에 못 붙으면 아래에서 미리보기 모드로 바뀌어요
+const store = {
+  get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+};
+function kstNow(){ return new Date(Date.now() + 9*3600e3); }
+function kstDate(){ return kstNow().toISOString().slice(0,10); }
+function kstHour(){ return kstNow().getUTCHours(); }
+const hasHours = () => !!(CONFIG.openHour || CONFIG.closeHour);
+const isOpen = () => !hasHours() || (kstHour() >= CONFIG.openHour && kstHour() < CONFIG.closeHour);
+
+let deviceId = store.get("gacha_device");
+if(!deviceId){
+  deviceId = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)+Date.now());
+  store.set("gacha_device", deviceId);
+}
+
+async function rpc(fn, args){
+  const r = await fetch(`${CONFIG.supabaseUrl}/rest/v1/rpc/${fn}`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", apikey:CONFIG.supabaseKey, Authorization:`Bearer ${CONFIG.supabaseKey}` },
+    body: JSON.stringify(args||{}),
+  });
+  const j = await r.json().catch(()=>null);
+  if(!r.ok) throw new Error((j && j.message) || "서버 오류");
+  return j;
+}
+
+/* 미리보기 모드 (서버 없을 때, 이 폰에만 저장) */
+const emptyDb = () => ({visits:{},draws:[]});
+const demo = {
+  log(src){ const d=store.get("demo_db")||emptyDb(); const k=kstDate()+"|"+deviceId; if(d.visits[k]!=="qr") d.visits[k]=src; store.set("demo_db",d); },
+  draw(){
+    const d=store.get("demo_db")||emptyDb();
+    const ex=d.draws.find(x=>x.device===deviceId && x.day===kstDate());
+    if(ex && !CONFIG.testMode) return {...ex, already:true};
+    let r=Math.random()*100, p=PRIZES[PRIZES.length-1];
+    for(const x of PRIZES){ if(r<x.pct){p=x;break;} r-=x.pct; }
+    const code=Array.from({length:6},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*32)]).join("");
+    const item = p.items ? p.items[Math.floor(Math.random()*p.items.length)] : "";
+    const row={device:deviceId, day:kstDate(), tier:p.tier, prize:p.name.replace("{item}",item), item, code, used:false};
+    d.draws.push(row); store.set("demo_db",d); return row;
+  },
+  getStock(){ return store.get("demo_stock"); },
+  setStock(n){ store.set("demo_stock",{n, day:kstDate()}); return {ok:true}; },
+  redeem(code){
+    const d=store.get("demo_db")||emptyDb(); const x=d.draws.find(x=>x.code===code);
+    if(!x) return {ok:false, reason:"쿠폰을 찾을 수 없어요"};
+    if(x.used) return {ok:false, reason:"이미 쓴 쿠폰이에요"};
+    if(x.day!==kstDate()) return {ok:false, reason:"오늘 뽑은 쿠폰만 쓸 수 있어요"};
+    x.used=true; store.set("demo_db",d); return {ok:true};
+  },
+  stats(){
+    const d=store.get("demo_db")||emptyDb();
+    const blank=t=>t==="꽝";
+    const days={}; const day=k=>days[k]=days[k]||{day:k,visitors:0,qr:0,players:0,draws:0,wins:0,used:0,_p:new Set()};
+    Object.entries(d.visits).forEach(([k,src])=>{const o=day(k.split("|")[0]); o.visitors++; if(src==="qr") o.qr++;});
+    d.draws.forEach(x=>{const o=day(x.day); o.draws++; o._p.add(x.device); if(!blank(x.tier)) o.wins++; if(x.used) o.used++;});
+    Object.values(days).forEach(o=>{o.players=o._p.size; delete o._p;});
+    const prizes=PRIZES.map(p=>({tier:p.tier,prize:p.label||p.name,drawn:d.draws.filter(x=>x.tier===p.tier).length,used:d.draws.filter(x=>x.tier===p.tier&&x.used).length}));
+    const all=Object.values(days);
+    const sum=f=>all.reduce((a,o)=>a+o[f],0);
+    return {total_visitors:new Set(Object.keys(d.visits).map(k=>k.split("|")[1])).size,
+      total:{visits:sum("visitors"),qr:sum("qr"),players:sum("players"),draws:sum("draws"),wins:sum("wins"),used:sum("used")},
+      days:all.sort((a,b)=>b.day.localeCompare(a.day)), prizes};
+  },
+};
+const api = {
+  log:    (src) => LIVE ? rpc("snack_log_visit",{p_device:deviceId, p_source:src}) : demo.log(src),
+  draw:   () => LIVE ? rpc("snack_draw",{p_device:deviceId}) : demo.draw(),
+  redeem: (code,pin) => LIVE ? rpc("snack_redeem",{p_code:code,p_pin:pin}) : demo.redeem(code),
+  getStock: () => LIVE ? rpc("snack_get_stock",{}) : demo.getStock(),
+  setStock: (n,pin) => LIVE ? rpc("snack_set_stock",{p_n:n,p_pin:pin}) : demo.setStock(n),
+  stats:  (pin) => LIVE ? rpc("snack_stats",{p_pin:pin}) : demo.stats(),
+};
+
+function ask(html, withInput){
+  return new Promise(res=>{
+    $("mText").innerHTML=html; $("mInput").value=""; $("mInput").style.display=withInput?"block":"none";
+    $("mNo").style.display = withInput ? "" : "none";
+    $("modal").classList.add("show"); setTimeout(()=>(withInput?$("mInput"):$("mOk")).focus(),50);
+    const done=v=>{$("modal").classList.remove("show"); $("mOk").onclick=$("mNo").onclick=$("mInput").onkeydown=null; res(v);};
+    $("mOk").onclick=()=>done(withInput?$("mInput").value:true);
+    $("mNo").onclick=()=>done(null);
+    $("mInput").onkeydown=e=>{ if(e.key==="Enter") done($("mInput").value); };
+  });
+}
+
+/* 손님 화면 */
+let stockLeft = null;
+function renderHappy(){
+  const on = kstHour() >= CONFIG.happyHour && isOpen() && stockLeft !== 0;
+  $("happy").style.display = on ? "block" : "none";
+}
+function renderStatic(){
+  document.title = CONFIG.shopName+" 뽑기";
+  $("testbar").style.display = CONFIG.testMode ? "block" : "none";
+  if(CONFIG.logo) $("logo").innerHTML = `<img src="${CONFIG.logo}" alt="${CONFIG.shopName}"><div class="tag">QR 찍고 하루 한 번 뽑기</div>`;
+  $("insta").href = CONFIG.instagramUrl; $("instaText").textContent = CONFIG.instagramText;
+  $("friends").innerHTML = ["coffee","hotdog","tteok","tako"].map(k=>CHAR[k]()).join("");
+  $("logoTxt").innerHTML = ART.logo;
+  $("odds").innerHTML = PRIZES.map(p=>`<div class="row" style="--tc:${(TIER_LOOK[p.tier]||{}).col||""}"><span><b>${p.tier}</b>${p.label||p.name}</span><span class="p">${p.pct}%</span></div>`).join("");
+  $("happy").innerHTML = `<b>지금 할인 시간!</b>${CONFIG.happyText}<br><a href="${CONFIG.instagramUrl}" target="_blank" rel="noopener">인스타로 보러가기 →</a>`;
+  renderHappy();
+  const n = kstNow();
+  $("sMonth").textContent = `${n.getUTCFullYear()} · ${n.getUTCMonth()+1}월`;
+  $("sDay").textContent = n.getUTCDate();
+  $("sDow").textContent = "일월화수목금토"[n.getUTCDay()]+"요일";
+  renderShop();
+}
+function renderShop(){
+  const rows=[];
+  if(CONFIG.openDate) rows.push(["오픈", CONFIG.openDate]);
+  if(CONFIG.address || CONFIG.where) rows.push(["위치", CONFIG.address || CONFIG.where]);
+  if(hasHours()){
+    const tag = isOpen() ? `<span class="open y">영업 중</span>` : `<span class="open n">준비 중</span>`;
+    rows.push(["영업", `${CONFIG.openHour}:00 – ${CONFIG.closeHour}:00 ${tag}`]);
+  }
+  if(CONFIG.closedDays) rows.push(["휴무", CONFIG.closedDays]);
+  if(CONFIG.phone) rows.push(["전화", CONFIG.phone + (CONFIG.delivery ? ` · ${CONFIG.delivery}` : "")]);
+  if(!rows.length && !CONFIG.mapUrl) return;
+  $("shop").style.display="block";
+  $("shopInfo").innerHTML = rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("");
+  if(CONFIG.mapUrl) $("shopMap").href = CONFIG.mapUrl; else $("shopMap").style.display="none";
+}
+
+async function loadStock(){
+  try{
+    const s = await api.getStock();
+    if(!s || s.day!==kstDate() || s.n==null) return;
+    stockLeft = s.n;
+    $("stock").style.display="flex";
+    $("stockN").innerHTML = s.n>0 ? `${s.n}<small>개</small>` : `<small>오늘 다 나갔어요</small>`;
+    if($("stockIn")) $("stockIn").value = s.n;
+    renderHappy();
+  }catch(e){}
+}
+function bump(d){ const i=$("stockIn"); i.value=Math.max(0,(parseInt(i.value)||0)+d); }
+$("stockSave").onclick = async ()=>{
+  const n=Math.max(0,parseInt($("stockIn").value)||0);
+  try{ await api.setStock(n, adminPin); $("stockSave").textContent="저장됨"; setTimeout(()=>$("stockSave").textContent="저장",1200); loadStock(); }
+  catch(e){ await ask("저장이 안 됐어요. 다시 눌러주세요"); }
+};
+
+/* 쿠폰 화면 실시간 시계 */
+let clockTimer=null;
+function startClock(){
+  const tick=()=>{ const n=kstNow(); $("cClock").textContent = n.toISOString().slice(11,19); };
+  tick(); clearInterval(clockTimer); clockTimer=setInterval(tick,1000);
+  $("cLive").classList.add("on");
+}
+function stopClock(){ clearInterval(clockTimer); $("cLive").classList.remove("on"); }
+
+function showCoupon(c, animate){
+  fillUnder(c);
+  const blank = c.tier==="꽝";
+  $("sheet").style.display = "none";
+  $("cMeta").style.display = blank ? "none" : "block";
+  $("cMeta").innerHTML = c.used ? `사용 완료된 쿠폰이에요` : `오늘(${c.day||kstDate()})만 · 매장·포장에서 계산할 때 보여주세요`;
+  $("staffBtn").style.display = (c.used||blank||needsScratch(c)) ? "none" : "block";
+  if(!blank && !c.used) startClock(); else stopClock();
+  $("drawBtn").disabled = true; $("drawBtn").textContent = c.used ? "오늘 쿠폰 사용 완료" : "오늘은 이미 뜯었어요";
+  $("hint").textContent = "내일 또 와서 뜯어주세요";
+  if(CONFIG.testMode){ $("drawBtn").disabled=false; $("drawBtn").textContent="새 장 붙이기 (테스트)"; $("hint").textContent="테스트 모드라 계속 뽑을 수 있어요"; }
+  store.set("gacha_last", {...c, day:c.day||kstDate()});
+  if(animate && c.tier==="1등") confetti(140, ["#e5733a","#3546a8","#2e5a3d","#ffc83d"]);
+}
+function fillUnder(c){
+  const P = PRIZES.find(x=>x.tier===c.tier) || {};
+  const blank = c.tier==="꽝";
+  $("cTier").textContent = c.tier;
+  const L = TIER_LOOK[c.tier] || TIER_LOOK["5등"];
+  const ic = (P.items && !needsScratch(c)) ? itemChar(itemOf(c)) : null;
+  $("cWho").innerHTML = CHAR[ic || L.c](); $("cWho").classList.toggle("sad", !!L.sad);
+  $("under").style.setProperty("--tc", L.col);
+  $("cTier").style.display = blank ? "none" : "";
+  $("cPrize").textContent = blank ? "꽝!" : c.prize; $("cPrize").classList.toggle("ggwangTxt", blank);
+  $("cCode").textContent = "No. " + c.code; $("cCode").hidden = blank;  // 작은 일련번호 (문의·연결 끊겼을 때 확인용)
+  $("cNote").textContent = blank ? "내일 또 뜯어보세요" : (P.note||"");
+  if(needsScratch(c)) setupScratch(c);
+  else if(P.items && !blank){ $("cPrize").innerHTML = `<span class="scr done"><span class="it">${itemOf(c)}</span></span><span class="rest">500원 할인</span>`; }
+  $("under").classList.toggle("used", !!c.used);
+}
+
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function confetti(n, cs){
+  if(reduceMotion) return;
+  const box=$("confetti");
+  for(let i=0;i<n;i++){ const e=document.createElement("i"); e.style.left=Math.random()*100+"vw"; e.style.background=cs[i%cs.length];
+    e.style.animationDuration=(1.4+Math.random()*1.2)+"s"; e.style.animationDelay=Math.random()*.5+"s"; box.appendChild(e); }
+  setTimeout(()=>box.innerHTML="",3200);
+}
+const BLANK_LINES = ["오늘은 그냥 간식 드세요","꽝! 그래도 간식은 맛있어요","내일의 나에게 맡기기","아깝다! 내일 또 뜯어봐요"];
+const GLOW = { gold:"#ffc83d", red:"#e5733a", white:"#ffffff" };
+function rarity(c){ const n=parseInt(c.tier); if(n<=2) return "gold"; if(n<=4) return "red"; return "white"; }
+function vibe(p){ try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} }
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+let pending=null, result=null, fake=false, busy=false, ripping=false, pull=0;
+
+function resetSheet(){
+  const sh=$("sheet");
+  sh.style.transition="none"; sh.style.transform=""; sh.style.opacity=""; sh.style.boxShadow=""; sh.style.display="";
+  $("under").classList.remove("revealed","used","sad"); $("rays").classList.remove("on");
+  $("cMeta").style.display="none"; $("staffBtn").style.display="none"; stopClock();
+  result=null; pending=null; pull=0; ripping=false;
+}
+
+function startDraw(){
+  if(pending) return true;
+  const btn=$("drawBtn"); if(btn.disabled && !busy) return false;
+  if(CONFIG.testMode && $("sheet").style.display==="none") resetSheet();
+  busy=true; btn.disabled=true; btn.textContent="두근두근...";
+  pending = Promise.resolve().then(()=>api.draw()).then(c=>{ result=c; fillUnder(c); return c; });
+  pending.catch(()=>{
+    busy=false; pending=null; setPull(0,true);
+    btn.disabled=false; btn.textContent="다시 뜯기";
+    $("hint").textContent="연결이 불안정해요. 잠시 후 다시 눌러주세요";
+  });
+  return true;
+}
+
+// p: 0~1 당긴 정도
+function setPull(p, spring){
+  pull=p;
+  const sh=$("sheet");
+  const ease=1-Math.pow(1-p,2.2);            // 갈수록 덜 움직임 = 종이가 버팀
+  const jit = p>0.55 ? (Math.random()-.5)*p*3 : 0;
+  sh.style.transition = spring ? "transform .35s cubic-bezier(.3,1.6,.5,1), box-shadow .35s" : "none";
+  sh.style.transform = `translateY(${ease*34}px) rotate(${ease*2.5+jit}deg)`;
+  // 뜯기 전엔 아무 힌트도 안 줘요 (빛·색 없음). 결과는 뜯은 뒤에만.
+}
+
+async function rip(){
+  if(ripping) return; ripping=true;
+  let c; try{ c = await pending; }catch(e){ ripping=false; return; }
+  setPull.final=true; setPull(1);
+  const sh=$("sheet");
+  // 한 박자 멈칫
+  sh.style.transition="transform .12s"; sh.style.transform += " scale(1.04)";
+  vibe(15);
+  await sleep(260);
+  // 착!
+  sh.style.transition="transform .38s cubic-bezier(.6,0,.95,.35), opacity .38s";
+  sh.style.transform="translate(36px,560px) rotate(26deg)"; sh.style.opacity="0";
+  await sleep(200);
+  reveal(c);
+  await sleep(200);
+  sh.style.display="none"; setPull.flashed=false; setPull.final=false;
+}
+
+function reveal(c){
+  const u=$("under"); u.classList.add("revealed");
+  const r = rarity(c), blank = c.tier==="꽝";
+  showCoupon(c, false);
+  if(c.already) $("cNote").textContent = "오늘 이미 뽑은 쿠폰이에요";
+  else if(blank) $("cNote").textContent = BLANK_LINES[Math.floor(Math.random()*BLANK_LINES.length)];
+  ["cTier","cPrize","cWho"].forEach(id=>{ const e=$(id); e.classList.remove("slam","pop","mega","ggwang","jump"); void e.offsetWidth; });
+  document.querySelectorAll(".cheer,.spark").forEach(e=>e.remove());
+  if(blank){
+    $("cPrize").classList.add("ggwang"); u.classList.add("sad"); vibe([30,60,30]);
+  } else if(c.tier==="1등"){
+    $("cTier").classList.add("mega"); $("cPrize").classList.add("pop"); $("cWho").classList.add("jump");
+    cheer("1등 당첨!!"); sparks(16, "★");
+    setTimeout(()=>{ sparks(12,"✦"); confetti(80, ["#e5733a","#3546a8","#2e5a3d","#ffc83d"]); }, 700);
+  } else {
+    $("cTier").classList.add("slam"); $("cPrize").classList.add("pop"); $("cWho").classList.add("jump");
+    if(r==="gold"){ cheer("대박!"); sparks(10,"★"); }
+  }
+  const wrap=$("main");
+  wrap.classList.remove("shake"); void wrap.offsetWidth;
+  if(r==="gold" && !blank){
+    $("rays").classList.add("on"); wrap.classList.add("shake");
+    $("flash").classList.remove("go"); void $("flash").offsetWidth; $("flash").classList.add("go");
+    confetti(140, ["#e5733a","#3546a8","#2e5a3d","#ffc83d","#fffaf0"]); vibe([80,50,80,50,200]);
+  } else if(r==="red"){
+    wrap.classList.add("shake"); confetti(40, ["#e5733a","#3546a8","#2e5a3d"]); vibe(70);
+  }
+  busy=false; pending=null;
+}
+
+/* 5등: 긁어서 메뉴 확인 */
+// 긁어서 나온 메뉴에 맞는 캐릭터 (샌드위치는 캐릭터가 없어서 타코야끼 그대로)
+function itemChar(it){ if(/핫도그/.test(it)) return "hotdog"; if(/샌드위치/.test(it)) return null; return "coffee"; }
+function itemOf(c){ return c.item || String(c.prize||"").replace(/ ?(1잔 )?500원 할인$/,""); }
+function needsScratch(c){ const P=PRIZES.find(x=>x.tier===c.tier)||{}; return !!(P.items && !c.scratched && !c.used); }
+function setupScratch(c){
+  $("cPrize").innerHTML = `<span class="scr" id="scr"><span class="it">${itemOf(c)}</span><canvas id="scrC"></canvas></span><span class="rest">500원 할인</span>`;
+  $("cNote").textContent = "메뉴 칸을 손가락으로 긁어보세요";
+  requestAnimationFrame(()=>{
+    const cv=$("scrC"); if(!cv) return; const r={width:cv.offsetWidth, height:cv.offsetHeight}; const dpr=window.devicePixelRatio||1;  // 애니메이션 중 크기 말고 실제 크기로
+    cv.width=Math.max(1,r.width*dpr); cv.height=Math.max(1,r.height*dpr);
+    const x=cv.getContext("2d"); x.scale(dpr,dpr);
+    const g=x.createLinearGradient(0,0,r.width,r.height); g.addColorStop(0,"#cbb89d"); g.addColorStop(.5,"#e8dcc6"); g.addColorStop(1,"#bda784");
+    x.fillStyle=g; x.fillRect(0,0,r.width,r.height);
+    x.fillStyle="#5a322055"; for(let i=0;i<60;i++){ x.fillRect(Math.random()*r.width,Math.random()*r.height,2,2); }
+    x.fillStyle="#5a3220"; x.textAlign="center"; x.textBaseline="middle";
+    let fs=18; do{ x.font=`bold ${fs}px "Gaegu", cursive`; fs--; }while(x.measureText("여기를 긁어보세요").width > r.width-16 && fs>10);
+    x.fillText("여기를 긁어보세요", r.width/2, r.height/2+1);
+    x.globalCompositeOperation="destination-out";
+    let down=false, last=null, moves=0;
+    const at=e=>{ const b=cv.getBoundingClientRect(); return [e.clientX-b.left, e.clientY-b.top]; };
+    const scratch=(p)=>{ x.lineWidth=26; x.lineCap="round"; x.beginPath(); x.moveTo(...(last||p)); x.lineTo(...p); x.stroke(); last=p;
+      if(++moves%6===0 && cleared()>0.5) finish(); };
+    const cleared=()=>{ const d=x.getImageData(0,0,cv.width,cv.height).data; let n=0,t=0; for(let i=3;i<d.length;i+=32){ t++; if(d[i]===0) n++; } return n/t; };
+    let finished=false;
+    const finish=()=>{ if(finished) return; finished=true; down=false; $("scr").classList.add("done");
+      $("cNote").textContent="오늘 이 메뉴 500원 할인!"; vibe(40);
+      const ic=itemChar(itemOf(c)); if(ic){ $("cWho").innerHTML=CHAR[ic](); $("cWho").classList.remove("jump"); void $("cWho").offsetWidth; $("cWho").classList.add("jump"); } confetti(30,["#e5733a","#3546a8","#2e5a3d"]);
+      const last=store.get("gacha_last"); if(last){ last.scratched=true; store.set("gacha_last",last); }
+      c.scratched=true; $("staffBtn").style.display="block"; };
+    cv.addEventListener("pointerdown",e=>{ down=true; last=null; cv.setPointerCapture(e.pointerId); scratch(at(e)); });
+    cv.addEventListener("pointermove",e=>{ if(down) scratch(at(e)); });
+    const up=()=>{ down=false; last=null; if(cleared()>0.5) finish(); };
+    cv.addEventListener("pointerup",up); cv.addEventListener("pointercancel",up);
+  });
+}
+
+function cheer(t){ const e=document.createElement("div"); e.className="cheer"; e.textContent=t; $("pad").appendChild(e); setTimeout(()=>e.remove(),1700); }
+function sparks(n, ch){
+  if(reduceMotion) return;
+  const cs=["#ffc83d","#e5733a","#3546a8","#2e5a3d"];
+  for(let i=0;i<n;i++){ const e=document.createElement("i"); e.className="spark"; e.textContent=ch;
+    const a=i/n*Math.PI*2, d=130+Math.random()*60;
+    e.style.setProperty("--dx", Math.cos(a)*d+"px"); e.style.setProperty("--dy", Math.sin(a)*d+"px");
+    e.style.color=cs[i%cs.length]; e.style.fontStyle="normal"; $("pad").appendChild(e); setTimeout(()=>e.remove(),1000); }
+}
+
+// 버튼으로 뽑기: 자동으로 당기다 멈칫 → 찢기
+async function autoPull(){
+  if(CONFIG.testMode && $("sheet").style.display==="none"){   // 테스트: 새 장만 붙이고 멈춤
+    resetSheet(); busy=false;
+    $("drawBtn").disabled=false; $("drawBtn").textContent="오늘 장 뜯기!";
+    $("hint").textContent="손으로 당기거나 버튼을 누르세요 (테스트)";
+    return;
+  }
+  if(!startDraw()) return;
+  const steps=[[0,.32,260],[.32,.32,280],[.32,.62,320],[.62,.62,380],[.62,.95,520]];
+  for(const [a,b,ms] of steps){
+    const t0=performance.now();
+    while(true){ const t=Math.min(1,(performance.now()-t0)/ms); setPull(a+(b-a)*t); if(t>=1) break; await sleep(16); }
+  }
+  rip();
+}
+$("drawBtn").onclick = autoPull;
+
+// 손가락으로 당기기
+(function(){
+  const sh=$("sheet"); let y0=null;
+  sh.addEventListener("pointerdown", e=>{
+    if(ripping) return;
+    if(!startDraw()) return;
+    y0=e.clientY; sh.setPointerCapture(e.pointerId);
+  });
+  sh.addEventListener("pointermove", e=>{
+    if(y0===null || ripping) return;
+    const p=Math.max(0,Math.min(1,(e.clientY-y0)/170));
+    setPull(p);
+    if(p>=1){ y0=null; rip(); }
+  });
+  const up=()=>{
+    if(y0===null) return; y0=null;
+    if(pull>=0.8) rip(); else { setPull(0,true); $("drawBtn").textContent="더 세게 당겨보세요!"; }
+  };
+  sh.addEventListener("pointerup", up); sh.addEventListener("pointercancel", up);
+})();
+
+$("staffBtn").onclick = async ()=>{
+  const last=store.get("gacha_last"); if(!last) return;
+  if(last.day!==kstDate()){ await ask("오늘 뽑은 쿠폰만 쓸 수 있어요"); return; }
+  const pin = await ask(`<b>직원 확인</b><br><span style="font-size:13px;opacity:.7">${last.tier} · ${last.prize}<br>직원 PIN을 넣으면 사용 처리돼요</span>`, true);
+  if(pin===null) return;
+  try{
+    const r = await api.redeem(last.code, pin);
+    if(r && r.ok===false){ await ask(r.reason||"처리할 수 없어요"); return; }
+    showCoupon({...last, used:true}, false);
+    const st=$("cStamp"); st.classList.remove("hit"); void st.offsetWidth; st.classList.add("hit");
+    const w=$("main"); w.classList.remove("shake"); void w.offsetWidth; w.classList.add("shake"); vibe(60);
+  }catch(e){ await ask("PIN이 틀렸거나 연결이 불안정해요"); }
+};
+
+/* 사장님 화면 */
+let adminPin=null;
+async function openAdmin(){
+  $("main").style.display="none"; $("admin").style.display="block";
+  $("demoNote").style.display = LIVE ? "none" : "block";
+  if(LIVE && !adminPin){
+    adminPin = await ask("<b>사장님 PIN</b>", true);
+    if(adminPin===null){ location.hash=""; return; }
+  }
+  try{
+    const s = await api.stats(adminPin);
+    loadStock();
+    const z={visitors:0,qr:0,players:0,draws:0,wins:0,used:0};
+    const t = {...z, ...(s.days.find(d=>d.day===kstDate())||{})};
+    const T = s.total || z;
+    const pct=(a,b)=> b ? Math.round(a/b*100)+"%" : "-";
+    const tile=(n,l,hl)=>`<div class="stat${hl?' hl':''}"><div class="n">${n}</div><div class="l">${l}</div></div>`;
+    $("todayStats").innerHTML =
+      tile(`${t.visitors}<small>QR ${t.qr}</small>`,"방문 (사람)") + tile(`${t.players}<small>${pct(t.players,t.visitors)}</small>`,"뽑은 사람 (참여율)") +
+      tile(`${t.used}<small>/ ${t.wins}</small>`,"쿠폰 사용 / 당첨") + tile(pct(t.used,t.wins),"사용률",true);
+    $("allStats").innerHTML =
+      tile(`${T.visits}<small>QR ${T.qr}</small>`,"방문 (날짜별 합)") + tile(`${T.players}<small>${pct(T.players,T.visits)}</small>`,"뽑은 사람 (참여율)") +
+      tile(`${T.used}<small>/ ${T.wins}</small>`,"쿠폰 사용 / 당첨") + tile(pct(T.used,T.wins),"사용률",true);
+    $("prizeTbl").innerHTML = `<tr><th>경품</th><th class="num">당첨</th><th class="num">사용</th><th class="num">사용률</th></tr>` +
+      s.prizes.map(p=>({...p, prize:(PRIZES.find(x=>x.tier===p.tier)||{}).label||(PRIZES.find(x=>x.tier===p.tier)||{}).name||p.prize})).map(p=>`<tr><td><b>${p.tier}</b> ${p.prize}</td><td class="num">${p.drawn}</td><td class="num">${p.tier==="꽝"?"-":p.used}</td><td class="num">${p.tier==="꽝"?"-":pct(p.used,p.drawn)}</td></tr>`).join("");
+    $("dayTbl").innerHTML = `<tr><th>날짜</th><th class="num">방문</th><th class="num">QR</th><th class="num">참여</th><th class="num">당첨</th><th class="num">사용</th><th class="num">사용률</th></tr>` +
+      (s.days.length ? s.days.slice(0,30).map(d=>`<tr><td>${d.day.slice(5)}</td><td class="num">${d.visitors}</td><td class="num">${d.qr||0}</td><td class="num">${d.players||0}</td><td class="num">${d.wins||0}</td><td class="num">${d.used}</td><td class="num">${pct(d.used,d.wins)}</td></tr>`).join("") : `<tr><td colspan="7" style="opacity:.6">아직 기록이 없어요</td></tr>`);
+    // 엑셀·시트에 붙여넣기 좋은 탭 구분 자료
+    const tsv = [["날짜","방문","QR방문","뽑은사람","참여율","당첨","사용","사용률"].join("\t"),
+      ...s.days.slice().reverse().map(d=>[d.day,d.visitors,d.qr||0,d.players||0,pct(d.players,d.visitors),d.wins||0,d.used,pct(d.used,d.wins)].join("\t")),
+      "", ["등수","경품","당첨","사용","사용률"].join("\t"),
+      ...s.prizes.map(p=>[p.tier,(PRIZES.find(x=>x.tier===p.tier)||{}).name||p.prize,p.drawn,p.used,pct(p.used,p.drawn)].join("\t"))].join("\n");
+    $("copyBtn").onclick = async ()=>{
+      try{ await navigator.clipboard.writeText(tsv); $("copyBtn").textContent="복사됐어요! 엑셀·시트에 붙여넣으세요"; }
+      catch(e){ const a=$("copyArea"); a.hidden=false; a.value=tsv; a.focus(); a.select(); $("copyBtn").textContent="아래 글자를 길게 눌러 복사하세요"; }
+      setTimeout(()=>$("copyBtn").textContent="자료 복사 (엑셀·구글시트에 붙여넣기)",2500);
+    };
+  }catch(e){ adminPin=null; await ask("PIN이 틀렸어요"); location.hash=""; }
+}
+function route(){
+  if(location.hash==="#admin") openAdmin();
+  else { $("admin").style.display="none"; $("main").style.display="block"; }
+}
+window.addEventListener("hashchange", route);
+
+renderStatic();
+const last = store.get("gacha_last");
+if(last && last.day===kstDate() && !CONFIG.testMode){ $("under").classList.add("revealed"); showCoupon(last, false); }
+// 매장 QR은 주소 끝에 #qr 을 붙여서 만들어요 → QR로 들어온 사람과 인스타 링크로 들어온 사람을 나눠 셀 수 있어요
+const SRC = location.hash==="#qr" ? "qr" : "link";
+async function boot(){
+  if(LIVE){
+    try{ await Promise.race([rpc("snack_get_stock",{}), sleep(6000).then(()=>{throw new Error("timeout")})]); }
+    catch(e){ LIVE=false; $("testbar").style.display="block"; $("testbar").textContent="서버에 연결이 안 돼서 미리보기 모드로 돌아가요 (이 폰에만 저장)"; }
+  }
+  if(location.hash!=="#admin") Promise.resolve(api.log(SRC)).catch(()=>{});
+  route();
+  loadStock();
+}
+boot();
+setInterval(renderHappy, 60e3);
+</script>
+</body>
+</html>
