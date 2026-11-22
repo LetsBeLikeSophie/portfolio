@@ -105,3 +105,19 @@ ssh -i <SSH 키 파일> ubuntu@<서버 IP> "cd /var/www/portfolio && ls index.ht
 
 `forever/index.html`은 와우 포에버 실시간 채팅 페이지입니다. `build.py`와 상관없는 독립 파일이라 직접 고칩니다.
 데이터는 Supabase(camtrip 프로젝트의 `wow` 스키마)에 있고, 캐릭터 조회는 Edge Function `wow-character`가 블리자드 API로 처리합니다.
+
+## 오늘간식 뽑기 (`snack.itssophie.dev`)
+
+`snack/index.html`은 가게(오늘간식) 매장 QR 뽑기 페이지입니다. `build.py`와 상관없는 독립 파일입니다.
+데이터는 Supabase(camtrip 프로젝트의 `snack` 스키마)에 있고, 페이지는 `public.snack_*` 함수로만 접근합니다.
+
+- 매장 QR 주소: `https://snack.itssophie.dev/#qr` (끝의 `#qr`로 QR 방문과 링크 방문을 나눠 셉니다)
+- 사장님 화면: `https://snack.itssophie.dev/#admin`
+- 오픈 전 테스트 모드: 페이지의 `CONFIG.testMode`와 서버의 `snack.settings.test_mode`를 둘 다 `false`로 바꾸면 하루 1번 제한이 걸립니다.
+
+서버에 올리는 방법은 위 회사별 페이지와 같고, 서브도메인이라 nginx 설정과 인증서가 한 번 필요합니다.
+
+```bash
+scp -i <SSH 키 파일> snack/index.html ubuntu@<서버 IP>:/tmp/snack-index.html
+ssh -i <SSH 키 파일> ubuntu@<서버 IP> "sudo install -d -o www-data -g www-data /var/www/snack && sudo install -o www-data -g www-data -m 644 /tmp/snack-index.html /var/www/snack/index.html && rm /tmp/snack-index.html"
+```
