@@ -1,4 +1,4 @@
--- 20261123_snack_admin_history  (camtrip 프로젝트 ztxzqvnybiemgbhtrwiw 에 적용됨)
+-- 20261123_snack_admin_history  (camtrip 프로젝트 ztxzqvnybiemgbhtrwiw 에 적용됨, 03 황금 다음)
 -- 사장님 화면: 기간별 뽑기 이력 + 확률표, 쿠폰 번호로 찾기 (사장님 PIN만)
 
 create function snack.gacha_history(p_pin text, p_from date, p_to date)

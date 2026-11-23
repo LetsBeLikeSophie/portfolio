@@ -77,7 +77,8 @@
 | 3등 | 샌드위치 사면 아메리카노 무료 | 8% | 커피 |
 | 4등 | 음료 1잔 500원 할인 | 15% | 커피 |
 | 5등 | 메뉴 하나 500원 할인 (긁어서 확인) | 33% | 긁기 전 타코야끼 → 음료면 커피, 핫도그면 핫도그, 샌드위치면 타코야끼 그대로 |
-| 꽝 | — | 40% | 회색 떡볶이 |
+| 황금 | 아무것도 없음 (재미용) | 1% | 황금 커피·핫도그·떡볶이·타코야끼 중 하나. 1등처럼 다 터지고 잠시 뒤 "…그뿐. 아무 일도 일어나지 않았어요" |
+| 꽝 | — | 39% | 회색 떡볶이 |
 
 5등 목록: 고구마라떼·녹차라떼·딸기라떼·복숭아 아이스티·레모네이드 1잔, 샌드위치, 핫도그.
 일부러 "있어도 안 쓸 것 같은" 결과도 섞음 (뽑는 재미용).
@@ -91,7 +92,7 @@
 - `snack.visits`: 하루·폰당 1줄, `source`가 `qr`/`link`
 - `snack.draws`: 뽑기 1번당 1줄 (등수·경품·메뉴·코드·사용 여부·사용 시각)
 - 테이블은 RLS on + 정책 없음 → 바깥에서 직접 못 읽음
-- 페이지는 `public.snack_*` 함수 8개로만 접근 (`snack_log_visit`, `snack_draw`, `snack_redeem`, `snack_get_stock`, `snack_set_stock`, `snack_stats`, `snack_history`, `snack_lookup`). history·lookup은 사장님 PIN만 (03_*.sql)
+- 페이지는 `public.snack_*` 함수 8개로만 접근 (`snack_log_visit`, `snack_draw`, `snack_redeem`, `snack_get_stock`, `snack_set_stock`, `snack_stats`, `snack_history`, `snack_lookup`). history·lookup은 사장님 PIN만 (04_*.sql)
   `snack` 스키마를 대시보드 Exposed schemas에 넣지 않으려고 public에 얇은 입구만 둠 (camtrip의 노출 목록을 안 건드리려고)
 - SQL 원본: `snack/sql/01_*.sql`, `02_*.sql` (PIN은 `<ADMIN_PIN>` 자리표시자로 가림), 운영용은 `snack/sql/ops.sql`
 - **PIN**: 사장님용 / 직원용 두 개. 값은 저장소에 안 적음 (사장님이 알고 있음). 사장님 PIN만 통계를 볼 수 있음
@@ -112,7 +113,7 @@
 ## 파일
 
 - `snack/index.html`: 배포용 완성 파일 (이것 하나만 서버에 올리면 됨)
-- `snack/assets/`: 간판 원본 PDF(3200×1000mm, 벡터)와 거기서 잘라낸 캐릭터·로고 SVG (페이지에는 인라인으로 들어가 있음)
+- `snack/assets/`: 간판 원본 PDF(3200×1000mm, 벡터)와 거기서 잘라낸 캐릭터·로고 SVG, 황금 버전(`*_gold.svg`, 색만 금색으로) (페이지에는 인라인으로 들어가 있음)
 - `snack/preview/`: 현재 화면 캡처 (첫 화면, 1등, 꽝, 5등 긁기 전, 도장 찍은 뒤, 사장님 화면)
 - `snack/sql/`: 위 설명
 
