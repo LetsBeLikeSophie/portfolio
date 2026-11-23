@@ -160,7 +160,7 @@
     font-family:"Jua",sans-serif;font-size:26px;color:#fff;box-shadow:0 5px 0 var(--frame);cursor:pointer}
   button.big:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
   button.big:disabled{background:var(--line);color:#5a322088;box-shadow:0 5px 0 #5a322044;cursor:default}
-  .hint{text-align:center;font-family:"Gaegu",cursive;font-size:18px;margin:6px 0 0;opacity:.8}
+  .hint{text-align:center;font-family:"Gaegu",cursive;font-size:17px;line-height:1.35;margin:6px 0 0;opacity:.8;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;max-width:100%}
   .meta{text-align:center;font-size:13px;opacity:.7;line-height:1.6;margin-top:10px;display:none}
   /* 직원 확인: 쿠폰 귀퉁이 도장 */
   .stampBtn{display:none;position:absolute;right:-18px;bottom:-18px;z-index:5;width:74px;height:74px;border-radius:50%;cursor:pointer;
@@ -744,7 +744,7 @@ async function autoPull(){
   if(CONFIG.testMode && $("sheet").style.display==="none"){   // 테스트: 새 장만 붙이고 멈춤
     resetSheet(); busy=false;
     $("drawBtn").disabled=false; $("drawBtn").textContent="오늘 장 뜯기!";
-    $("hint").textContent="손으로 당기거나 버튼을 누르세요 (테스트)";
+    $("hint").textContent="당기거나 버튼을 눌러요 (테스트)";
     return;
   }
   if(!startDraw()) return;
@@ -773,7 +773,7 @@ $("drawBtn").onclick = autoPull;
   });
   const up=()=>{
     if(y0===null) return; y0=null;
-    if(pull>=0.8) rip(); else { setPull(0,true); $("drawBtn").textContent="더 세게 당겨보세요!"; }
+    if(pull>=0.8) rip(); else { setPull(0,true); $("drawBtn").disabled=false; $("drawBtn").textContent="더 세게 당겨보세요!"; }
   };
   sh.addEventListener("pointerup", up); sh.addEventListener("pointercancel", up);
 })();
