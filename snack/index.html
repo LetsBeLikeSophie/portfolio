@@ -193,9 +193,24 @@
   .shop .open.n{background:var(--line);color:var(--ink)}
   .shop a.map{display:block;margin-top:12px;text-align:center;padding:10px;border-radius:999px;background:var(--ink);color:var(--card);text-decoration:none;font-weight:700}
 
-  .insta{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;padding:13px;border-radius:12px;
-    text-decoration:none;color:var(--ink);font-weight:700;border:2px solid var(--ink);background:var(--card)}
-  .insta svg{width:20px;height:20px}
+  /* 네이버·배민·인스타 */
+  .links{display:grid;grid-template-columns:1fr 1fr 52px;gap:8px;margin-top:22px}
+  .lk{display:flex;align-items:center;gap:8px;padding:10px 10px;border-radius:12px;text-decoration:none;color:var(--ink);
+    border:2px solid var(--ink);background:var(--card);min-width:0}
+  .lk .ic{flex:none;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-family:"Jua",sans-serif;font-size:16px;line-height:1}
+  .lk .tx{display:flex;flex-direction:column;min-width:0;line-height:1.2}
+  .lk .tx b{font-size:15px}
+  .lk .tx small{font-size:11px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lk.naver .ic{background:#03c75a}
+  .lk.baemin .ic{background:#2ac1bc;font-size:14px}
+  .lk.insta{justify-content:center;padding:0}
+  .lk.insta svg{width:24px;height:24px}
+  .lk:active{transform:scale(.97)}
+  .shopLine{text-align:center;font-size:12.5px;opacity:.7;margin:12px 0 0;word-break:keep-all;line-height:1.6}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--ink);color:var(--card);
+    padding:10px 18px;border-radius:999px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;z-index:11}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
   footer{text-align:center;font-size:11px;opacity:.4;margin-top:22px}
   footer a{color:inherit}
 
@@ -228,6 +243,25 @@
   .tblWrap{overflow-x:auto;border-radius:10px}
   .copyBtn{display:block;width:100%;margin:18px 0 0;padding:13px;border-radius:999px;border:2px solid var(--frame);background:var(--card);color:var(--ink);font-weight:700;font-size:15px;cursor:pointer}
   #copyArea{width:100%;height:120px;margin-top:8px;font-size:11px;font-family:ui-monospace,Menlo,monospace;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:10px}
+  .range{display:flex;gap:6px;margin:18px 0 0;overflow-x:auto}
+  .range button{flex:1 0 auto;padding:8px 12px;border-radius:999px;border:2px solid var(--ink);background:var(--card);color:var(--ink);font-weight:700;font-size:14px;cursor:pointer}
+  .range button.on{background:var(--ink);color:var(--card)}
+  .rangeDates{display:none;align-items:center;gap:6px;margin-top:8px}
+  .rangeDates.show{display:flex}
+  .rangeDates input{flex:1;min-width:0;padding:8px;border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);font-size:14px}
+  #rangeStats{margin-top:12px}
+  .hist{max-height:360px;overflow-y:auto}
+  #prizeTbl th,#prizeTbl td{padding:8px 6px}
+  #prizeTbl td:first-child{font-size:12.5px;min-width:110px}
+  .tbl .code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+  .tbl .ok{color:var(--green);font-weight:700}
+  .tbl td.dim{opacity:.45}
+  .find{display:flex;gap:8px}
+  .find input{flex:1;min-width:0;padding:11px;font-size:18px;letter-spacing:4px;text-transform:uppercase;text-align:center;border:2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink)}
+  .find button{padding:0 18px;border-radius:12px;border:2px solid var(--ink);background:var(--ink);color:var(--card);font-weight:700;font-size:15px;cursor:pointer}
+  .findOut{margin-top:10px}
+  .findOut .card{background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.6}
+  .findOut .card button{display:block;width:100%;margin-top:10px;padding:11px;border-radius:999px;border:0;background:var(--point);color:#fff;font-weight:700;font-size:15px;cursor:pointer}
   .demo{background:#fbe2d2;border-radius:12px;padding:10px 12px;font-size:12.5px;margin:12px 0;line-height:1.5}
 
   @media (prefers-reduced-motion: reduce){
@@ -284,21 +318,22 @@
   <p class="hint" id="hint">하루에 한 번</p>
 
   <div class="receipt">
-    <h3>당첨 확률</h3>
-    <div id="odds"></div>
+    <h3>쿠폰 안내</h3>
     <p class="note">· 매장·포장 주문에서만 써요 (배달 주문은 안 돼요)<br>· 쿠폰은 뽑은 날 하루만 써요<br>· 1인 1일 1회 · 다른 할인과 같이 못 써요<br>· 계산할 때 이 화면을 보여주세요 (캡처한 화면은 안 돼요)</p>
   </div>
 
-  <div class="shop" id="shop">
-    <h3>오늘간식 찾아오기</h3>
-    <dl id="shopInfo"></dl>
-    <a class="map" id="shopMap" href="#" target="_blank" rel="noopener">지도에서 보기</a>
+  <div class="links">
+    <a class="lk naver" id="lkNaver" href="#" target="_blank" rel="noopener">
+      <span class="ic">N</span><span class="tx"><b>메뉴·주문</b><small id="naverSub"></small></span>
+    </a>
+    <a class="lk baemin" id="lkBaemin" href="#" target="_blank" rel="noopener">
+      <span class="ic">배</span><span class="tx"><b>배달</b><small>배민</small></span>
+    </a>
+    <a class="lk insta" id="insta" href="#" target="_blank" rel="noopener" aria-label="인스타그램 (문의·남은 샌드위치)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+    </a>
   </div>
-
-  <a class="insta" id="insta" href="#" target="_blank" rel="noopener">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
-    <span id="instaText">인스타그램</span>
-  </a>
+  <p class="shopLine" id="shopLine"></p>
 
 </section>
 
@@ -310,15 +345,21 @@
     <button onclick="bump(-1)" aria-label="하나 빼기">−</button><input id="stockIn" type="number" inputmode="numeric" min="0" aria-label="남은 샌드위치 수"><button onclick="bump(1)" aria-label="하나 더하기">+</button>
     <button class="save" id="stockSave">저장</button>
   </div>
-  <h3 class="dh sec">오늘</h3>
-  <div class="stats" id="todayStats"></div>
-  <h3 class="dh sec">오픈부터 지금까지</h3>
-  <div class="stats" id="allStats"></div>
+  <div class="range" id="range">
+    <button data-r="today" class="on">오늘</button><button data-r="7d">7일</button><button data-r="month">이번 달</button><button data-r="all">전체</button><button data-r="custom">직접</button>
+  </div>
+  <div class="rangeDates" id="rangeDates"><input type="date" id="rFrom" aria-label="시작 날짜"><span>~</span><input type="date" id="rTo" aria-label="끝 날짜"></div>
+  <div class="stats" id="rangeStats"></div>
   <p class="howto">방문·참여는 하루에 한 사람(폰)당 1번만 세요. 참여율 = 뽑은 사람 ÷ 방문. 사용률 = 직원 도장 찍힌 쿠폰 ÷ 당첨 쿠폰(꽝·황금 제외)</p>
   <h3 class="dh sec">경품별</h3>
   <div class="tblWrap"><table class="tbl" id="prizeTbl"></table></div>
   <h3 class="dh sec">날짜별</h3>
   <div class="tblWrap"><table class="tbl" id="dayTbl"></table></div>
+  <h3 class="dh sec">이력</h3>
+  <div class="tblWrap hist"><table class="tbl" id="histTbl"></table></div>
+  <h3 class="dh sec">쿠폰 번호로 찾기</h3>
+  <div class="find"><input id="findIn" maxlength="6" autocapitalize="characters" autocomplete="off" placeholder="No. 6자리" aria-label="쿠폰 번호"><button id="findBtn">찾기</button></div>
+  <div class="findOut" id="findOut"></div>
   <button class="copyBtn" id="copyBtn">자료 복사 (엑셀·구글시트에 붙여넣기)</button>
   <textarea id="copyArea" readonly hidden aria-label="복사할 자료"></textarea>
   <button class="big" style="font-size:20px;background:var(--card);color:var(--ink)" onclick="location.hash='';">손님 화면으로</button>
@@ -343,8 +384,10 @@
 const CONFIG = {
   shopName: "오늘간식",
   logo: "",                                          // 로고 이미지 (비우면 글자 로고)
-  instagramUrl: "https://www.instagram.com/wonju.todays.snack/",
-  instagramText: "인스타그램",
+  instagramUrl: "https://www.instagram.com/wonju.todays.snack/",   // 문의·남은 샌드위치 확인용
+  naverUrl: "",                                      // 네이버 플레이스 (메뉴·미리 주문). 비우면 누를 때 '준비중' 토스트
+  naverSub: "미리 주문 할인",                    // 네이버 버튼 작은 글씨
+  baeminUrl: "",                                     // 배민 가게 링크. 비우면 누를 때 '준비중' 토스트
   happyHour: 15,                                     // 할인 시작 (오후 3시)
   // 가게 정보 (비워두면 '오시는 길' 칸이 안 보여요)
   address: "",                                       // 예: "강원 원주시 ○○로 12, 1층"
@@ -353,8 +396,6 @@ const CONFIG = {
   openHour: 0, closeHour: 0,                         // 예: 9, 20 (둘 다 0이면 영업시간 안 보임)
   closedDays: "",                                    // 예: "매주 일요일"
   phone: "033-813-0440",
-  delivery: "포장·배달 돼요",
-  mapUrl: "",                                        // 네이버/카카오 지도 링크
   happyText: "남은 샌드위치 할인 중",
   // 서버(Supabase) 연결 정보. 비워두면 미리보기 모드로 돌아가요.
   testMode: true,                                    // 테스트용: 하루 1번 제한 끔 (실제 오픈 때 false)
@@ -434,7 +475,7 @@ const demo = {
     for(const x of PRIZES){ if(r<x.pct){p=x;break;} r-=x.pct; }
     const code=Array.from({length:6},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*32)]).join("");
     const item = p.items ? p.items[Math.floor(Math.random()*p.items.length)] : "";
-    const row={device:deviceId, day:kstDate(), tier:p.tier, prize:p.name.replace("{item}",item), item, code, used:false};
+    const row={device:deviceId, day:kstDate(), tier:p.tier, prize:p.name.replace("{item}",item), item, code, used:false, created_at:new Date().toISOString()};
     d.draws.push(row); store.set("demo_db",d); return row;
   },
   getStock(){ return store.get("demo_stock"); },
@@ -444,7 +485,16 @@ const demo = {
     if(!x) return {ok:false, reason:"쿠폰을 찾을 수 없어요"};
     if(x.used) return {ok:false, reason:"이미 쓴 쿠폰이에요"};
     if(x.day!==kstDate()) return {ok:false, reason:"오늘 뽑은 쿠폰만 쓸 수 있어요"};
-    x.used=true; store.set("demo_db",d); return {ok:true};
+    x.used=true; x.used_at=new Date().toISOString(); store.set("demo_db",d); return {ok:true};
+  },
+  history(from,to){
+    const d=store.get("demo_db")||emptyDb();
+    const rows=d.draws.filter(x=>(!from||x.day>=from)&&(!to||x.day<=to)).slice().reverse();
+    return {prizes:PRIZES.map(p=>({tier:p.tier,name:p.name,pct:p.pct})), rows};
+  },
+  lookup(code){
+    const d=store.get("demo_db")||emptyDb(); const x=d.draws.find(x=>x.code===code.trim().toUpperCase());
+    return x ? {found:true, ...x, today:x.day===kstDate()} : {found:false};
   },
   stats(){
     const d=store.get("demo_db")||emptyDb();
@@ -468,6 +518,8 @@ const api = {
   getStock: () => LIVE ? rpc("snack_get_stock",{}) : demo.getStock(),
   setStock: (n,pin) => LIVE ? rpc("snack_set_stock",{p_n:n,p_pin:pin}) : demo.setStock(n),
   stats:  (pin) => LIVE ? rpc("snack_stats",{p_pin:pin}) : demo.stats(),
+  history:(pin,from,to) => LIVE ? rpc("snack_history",{p_pin:pin,p_from:from||null,p_to:to||null}) : demo.history(from,to),
+  lookup: (code,pin) => LIVE ? rpc("snack_lookup",{p_code:code,p_pin:pin}) : demo.lookup(code),
 };
 
 function ask(html, withInput){
@@ -492,10 +544,14 @@ function renderStatic(){
   document.title = CONFIG.shopName+" 뽑기";
   $("testbar").style.display = CONFIG.testMode ? "block" : "none";
   if(CONFIG.logo) $("logo").innerHTML = `<img src="${CONFIG.logo}" alt="${CONFIG.shopName}"><div class="tag">QR 찍고 하루 한 번 뽑기</div>`;
-  $("insta").href = CONFIG.instagramUrl; $("instaText").textContent = CONFIG.instagramText;
+  $("insta").href = CONFIG.instagramUrl;
+  $("naverSub").textContent = CONFIG.naverSub;
+  [["lkNaver",CONFIG.naverUrl],["lkBaemin",CONFIG.baeminUrl]].forEach(([id,url])=>{
+    if(url) $(id).href = url;
+    else $(id).onclick = e=>{ e.preventDefault(); toast("준비중이에요"); };
+  });
   $("friends").innerHTML = ["coffee","hotdog","tteok","tako"].map(k=>CHAR[k]()).join("");
   $("logoTxt").innerHTML = ART.logo;
-  $("odds").innerHTML = PRIZES.map(p=>`<div class="row" style="--tc:${(TIER_LOOK[p.tier]||{}).col||""}"><span><b>${p.tier}</b>${p.label||p.name}</span><span class="p">${p.pct}%</span></div>`).join("");
   $("happy").innerHTML = `<b>지금 할인 시간!</b>${CONFIG.happyText}<br><a href="${CONFIG.instagramUrl}" target="_blank" rel="noopener">인스타로 보러가기 →</a>`;
   renderHappy();
   const n = kstNow();
@@ -504,20 +560,20 @@ function renderStatic(){
   $("sDow").textContent = "일월화수목금토"[n.getUTCDay()]+"요일";
   renderShop();
 }
+// 가게 정보는 한 줄로 (자세한 건 네이버)
 function renderShop(){
-  const rows=[];
-  if(CONFIG.openDate) rows.push(["오픈", CONFIG.openDate]);
-  if(CONFIG.address || CONFIG.where) rows.push(["위치", CONFIG.address || CONFIG.where]);
-  if(hasHours()){
-    const tag = isOpen() ? `<span class="open y">영업 중</span>` : `<span class="open n">준비 중</span>`;
-    rows.push(["영업", `${CONFIG.openHour}:00 – ${CONFIG.closeHour}:00 ${tag}`]);
-  }
-  if(CONFIG.closedDays) rows.push(["휴무", CONFIG.closedDays]);
-  if(CONFIG.phone) rows.push(["전화", CONFIG.phone + (CONFIG.delivery ? ` · ${CONFIG.delivery}` : "")]);
-  if(!rows.length && !CONFIG.mapUrl) return;
-  $("shop").style.display="block";
-  $("shopInfo").innerHTML = rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("");
-  if(CONFIG.mapUrl) $("shopMap").href = CONFIG.mapUrl; else $("shopMap").style.display="none";
+  const parts=[];
+  if(CONFIG.openDate) parts.push(`<b>${CONFIG.openDate}</b>`);
+  if(CONFIG.address || CONFIG.where) parts.push(CONFIG.address || CONFIG.where);
+  if(hasHours()) parts.push(`${CONFIG.openHour}:00–${CONFIG.closeHour}:00` + (isOpen() ? "" : " (준비 중)"));
+  if(CONFIG.closedDays) parts.push(CONFIG.closedDays+" 휴무");
+  if(CONFIG.phone) parts.push(`<a href="tel:${CONFIG.phone}" style="color:inherit">${CONFIG.phone}</a>`);
+  $("shopLine").innerHTML = parts.join(" · ");
+}
+let toastT=null;
+function toast(msg){
+  let t=$("toast"); if(!t){ t=document.createElement("div"); t.id="toast"; t.className="toast"; t.setAttribute("role","status"); document.body.appendChild(t); }
+  t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1600);
 }
 
 async function loadStock(){
@@ -801,36 +857,98 @@ async function openAdmin(){
     adminPin = await ask("<b>사장님 PIN</b>", true);
     if(adminPin===null){ location.hash=""; return; }
   }
-  try{
-    const s = await api.stats(adminPin);
-    loadStock();
-    const z={visitors:0,qr:0,players:0,draws:0,wins:0,used:0};
-    const t = {...z, ...(s.days.find(d=>d.day===kstDate())||{})};
-    const T = s.total || z;
-    const pct=(a,b)=> b ? Math.round(a/b*100)+"%" : "-";
-    const tile=(n,l,hl)=>`<div class="stat${hl?' hl':''}"><div class="n">${n}</div><div class="l">${l}</div></div>`;
-    $("todayStats").innerHTML =
-      tile(`${t.visitors}<small>QR ${t.qr}</small>`,"방문 (사람)") + tile(`${t.players}<small>${pct(t.players,t.visitors)}</small>`,"뽑은 사람 (참여율)") +
-      tile(`${t.used}<small>/ ${t.wins}</small>`,"쿠폰 사용 / 당첨") + tile(pct(t.used,t.wins),"사용률",true);
-    $("allStats").innerHTML =
-      tile(`${T.visits}<small>QR ${T.qr}</small>`,"방문 (날짜별 합)") + tile(`${T.players}<small>${pct(T.players,T.visits)}</small>`,"뽑은 사람 (참여율)") +
-      tile(`${T.used}<small>/ ${T.wins}</small>`,"쿠폰 사용 / 당첨") + tile(pct(T.used,T.wins),"사용률",true);
-    $("prizeTbl").innerHTML = `<tr><th>경품</th><th class="num">당첨</th><th class="num">사용</th><th class="num">사용률</th></tr>` +
-      s.prizes.map(p=>({...p, prize:(PRIZES.find(x=>x.tier===p.tier)||{}).label||(PRIZES.find(x=>x.tier===p.tier)||{}).name||p.prize})).map(p=>`<tr><td><b>${p.tier}</b> ${p.prize}</td><td class="num">${p.drawn}</td><td class="num">${isBlank(p.tier)?"-":p.used}</td><td class="num">${isBlank(p.tier)?"-":pct(p.used,p.drawn)}</td></tr>`).join("");
-    $("dayTbl").innerHTML = `<tr><th>날짜</th><th class="num">방문</th><th class="num">QR</th><th class="num">참여</th><th class="num">당첨</th><th class="num">사용</th><th class="num">사용률</th></tr>` +
-      (s.days.length ? s.days.slice(0,30).map(d=>`<tr><td>${d.day.slice(5)}</td><td class="num">${d.visitors}</td><td class="num">${d.qr||0}</td><td class="num">${d.players||0}</td><td class="num">${d.wins||0}</td><td class="num">${d.used}</td><td class="num">${pct(d.used,d.wins)}</td></tr>`).join("") : `<tr><td colspan="7" style="opacity:.6">아직 기록이 없어요</td></tr>`);
-    // 엑셀·시트에 붙여넣기 좋은 탭 구분 자료
-    const tsv = [["날짜","방문","QR방문","뽑은사람","참여율","당첨","사용","사용률"].join("\t"),
-      ...s.days.slice().reverse().map(d=>[d.day,d.visitors,d.qr||0,d.players||0,pct(d.players,d.visitors),d.wins||0,d.used,pct(d.used,d.wins)].join("\t")),
-      "", ["등수","경품","당첨","사용","사용률"].join("\t"),
-      ...s.prizes.map(p=>[p.tier,(PRIZES.find(x=>x.tier===p.tier)||{}).name||p.prize,p.drawn,p.used,pct(p.used,p.drawn)].join("\t"))].join("\n");
-    $("copyBtn").onclick = async ()=>{
-      try{ await navigator.clipboard.writeText(tsv); $("copyBtn").textContent="복사됐어요! 엑셀·시트에 붙여넣으세요"; }
-      catch(e){ const a=$("copyArea"); a.hidden=false; a.value=tsv; a.focus(); a.select(); $("copyBtn").textContent="아래 글자를 길게 눌러 복사하세요"; }
-      setTimeout(()=>$("copyBtn").textContent="자료 복사 (엑셀·구글시트에 붙여넣기)",2500);
-    };
-  }catch(e){ adminPin=null; await ask("PIN이 틀렸어요"); location.hash=""; }
+  try{ await loadAdmin(); loadStock(); }
+  catch(e){ adminPin=null; await ask("PIN이 틀렸어요"); location.hash=""; }
 }
+
+/* 기간 필터 */
+let rangeKey="today";
+const addDays=(ymd,n)=>{ const d=new Date(ymd+"T00:00:00Z"); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
+function rangeDates(){
+  const t=kstDate();
+  if(rangeKey==="today") return [t,t];
+  if(rangeKey==="7d") return [addDays(t,-6),t];
+  if(rangeKey==="month") return [t.slice(0,8)+"01",t];
+  if(rangeKey==="custom") return [$("rFrom").value||null, $("rTo").value||null];
+  return [null,null];
+}
+document.querySelectorAll("#range button").forEach(b=>b.onclick=()=>{
+  rangeKey=b.dataset.r;
+  document.querySelectorAll("#range button").forEach(x=>x.classList.toggle("on",x===b));
+  $("rangeDates").classList.toggle("show", rangeKey==="custom");
+  if(rangeKey==="custom" && !$("rFrom").value){ $("rFrom").value=addDays(kstDate(),-6); $("rTo").value=kstDate(); }
+  loadAdmin().catch(()=>toast("불러오지 못했어요"));
+});
+["rFrom","rTo"].forEach(id=>$(id).onchange=()=>loadAdmin().catch(()=>toast("불러오지 못했어요")));
+
+const kstTime = ts => ts ? new Date(new Date(ts).getTime()+9*3600e3).toISOString().slice(5,16).replace("T"," ") : "";
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+async function loadAdmin(){
+  const [from,to]=rangeDates();
+  const [s,h] = await Promise.all([api.stats(adminPin), api.history(adminPin,from,to)]);
+  const pct=(a,b)=> b ? Math.round(a/b*100)+"%" : "-";
+  const tile=(n,l,hl)=>`<div class="stat${hl?' hl':''}"><div class="n">${n}</div><div class="l">${l}</div></div>`;
+  const days = s.days.filter(d=>(!from||d.day>=from)&&(!to||d.day<=to));
+  const sum=f=>days.reduce((a,d)=>a+(d[f]||0),0);
+  const T={visits:sum("visitors"),qr:sum("qr"),players:sum("players"),wins:sum("wins"),used:sum("used")};
+  $("rangeStats").innerHTML =
+    tile(`${T.visits}<small>QR ${T.qr}</small>`,"방문 (사람)") + tile(`${T.players}<small>${pct(T.players,T.visits)}</small>`,"뽑은 사람 (참여율)") +
+    tile(`${T.used}<small>/ ${T.wins}</small>`,"쿠폰 사용 / 당첨") + tile(pct(T.used,T.wins),"사용률",true);
+
+  // 경품별: 확률(서버 실제 값) + 기간 안 당첨·사용
+  const rows=h.rows||[];
+  const prizes=(h.prizes||[]).map(p=>{
+    const r=rows.filter(x=>x.tier===p.tier);
+    const look=PRIZES.find(x=>x.tier===p.tier)||{};
+    return {...p, label:look.label||p.name.replace("{item}","메뉴 하나"), drawn:r.length, used:r.filter(x=>x.used).length};
+  });
+  const n=rows.length;
+  $("prizeTbl").innerHTML = `<tr><th>경품</th><th class="num">확률</th><th class="num">뽑힘</th><th class="num">실제</th><th class="num">사용</th><th class="num">사용률</th></tr>` +
+    prizes.map(p=>`<tr><td><b>${esc(p.tier)}</b> ${esc(p.label)}</td><td class="num">${p.pct}%</td><td class="num">${p.drawn}</td><td class="num">${n?Math.round(p.drawn/n*100)+"%":"-"}</td><td class="num">${isBlank(p.tier)?"-":p.used}</td><td class="num">${isBlank(p.tier)?"-":pct(p.used,p.drawn)}</td></tr>`).join("");
+
+  $("dayTbl").innerHTML = `<tr><th>날짜</th><th class="num">방문</th><th class="num">QR</th><th class="num">참여</th><th class="num">당첨</th><th class="num">사용</th><th class="num">사용률</th></tr>` +
+    (days.length ? days.map(d=>`<tr><td>${d.day.slice(5)}</td><td class="num">${d.visitors}</td><td class="num">${d.qr||0}</td><td class="num">${d.players||0}</td><td class="num">${d.wins||0}</td><td class="num">${d.used}</td><td class="num">${pct(d.used,d.wins)}</td></tr>`).join("") : `<tr><td colspan="7" style="opacity:.6">기록이 없어요</td></tr>`);
+
+  $("histTbl").innerHTML = `<tr><th>시간</th><th>경품</th><th>No.</th><th>사용</th></tr>` +
+    (rows.length ? rows.map(x=>`<tr><td>${kstTime(x.created_at)}</td><td${isBlank(x.tier)?' class="dim"':''}><b>${esc(x.tier)}</b> ${isBlank(x.tier)?"":esc(x.prize)}</td><td class="code">${esc(x.code)}</td><td>${x.used?`<span class="ok">✓</span> ${kstTime(x.used_at).slice(6)}`:""}</td></tr>`).join("") : `<tr><td colspan="4" style="opacity:.6">기록이 없어요</td></tr>`);
+
+  // 엑셀·시트에 붙여넣기 좋은 탭 구분 자료 (지금 고른 기간)
+  const tsv = [["날짜","방문","QR방문","뽑은사람","참여율","당첨","사용","사용률"].join("\t"),
+    ...days.slice().reverse().map(d=>[d.day,d.visitors,d.qr||0,d.players||0,pct(d.players,d.visitors),d.wins||0,d.used,pct(d.used,d.wins)].join("\t")),
+    "", ["등수","경품","확률","당첨","사용","사용률"].join("\t"),
+    ...prizes.map(p=>[p.tier,p.label,p.pct+"%",p.drawn,p.used,pct(p.used,p.drawn)].join("\t")),
+    "", ["시간","등수","경품","번호","사용","사용시각"].join("\t"),
+    ...rows.map(x=>[kstTime(x.created_at),x.tier,x.prize,x.code,x.used?"사용":"",kstTime(x.used_at)].join("\t"))].join("\n");
+  $("copyBtn").onclick = async ()=>{
+    try{ await navigator.clipboard.writeText(tsv); $("copyBtn").textContent="복사됐어요! 엑셀·시트에 붙여넣으세요"; }
+    catch(e){ const a=$("copyArea"); a.hidden=false; a.value=tsv; a.focus(); a.select(); $("copyBtn").textContent="아래 글자를 길게 눌러 복사하세요"; }
+    setTimeout(()=>$("copyBtn").textContent="자료 복사 (엑셀·구글시트에 붙여넣기)",2500);
+  };
+}
+
+/* 쿠폰 번호로 찾기 (손님 폰이 꺼졌을 때 등) */
+async function findCoupon(){
+  const code=$("findIn").value.trim().toUpperCase(); if(!code) return;
+  $("findOut").innerHTML="";
+  let c; try{ c=await api.lookup(code, adminPin); }catch(e){ toast("찾지 못했어요"); return; }
+  if(!c || !c.found){ $("findOut").innerHTML=`<div class="card">없는 번호예요</div>`; return; }
+  const state = c.used ? `<span class="ok">✓ 사용완료</span> ${kstTime(c.used_at)}`
+    : isBlank(c.tier) ? "쿠폰 없는 결과" : !c.today ? "지난 쿠폰 (못 써요)" : "아직 안 씀";
+  const can = !c.used && c.today && !isBlank(c.tier);
+  $("findOut").innerHTML = `<div class="card"><b>${esc(c.tier)}</b> ${isBlank(c.tier)?"":esc(c.prize)}<br>
+    <span class="code">No. ${esc(c.code)}</span> · ${kstTime(c.created_at)}<br>${state}
+    ${can?`<button id="findUse">사용 처리</button>`:""}</div>`;
+  if(can) $("findUse").onclick = async ()=>{
+    try{
+      const r=await api.redeem(c.code, adminPin);
+      if(r && r.ok===false){ toast(r.reason||"처리할 수 없어요"); return; }
+      toast("사용 처리했어요"); findCoupon(); loadAdmin().catch(()=>{});
+    }catch(e){ toast("연결이 불안정해요"); }
+  };
+}
+$("findBtn").onclick=findCoupon;
+$("findIn").onkeydown=e=>{ if(e.key==="Enter") findCoupon(); };
 function route(){
   if(location.hash==="#admin") openAdmin();
   else { $("admin").style.display="none"; $("main").style.display="block"; }
