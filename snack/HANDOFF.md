@@ -91,7 +91,7 @@
 - `snack.visits`: 하루·폰당 1줄, `source`가 `qr`/`link`
 - `snack.draws`: 뽑기 1번당 1줄 (등수·경품·메뉴·코드·사용 여부·사용 시각)
 - 테이블은 RLS on + 정책 없음 → 바깥에서 직접 못 읽음
-- 페이지는 `public.snack_*` 함수 6개로만 접근 (`snack_log_visit`, `snack_draw`, `snack_redeem`, `snack_get_stock`, `snack_set_stock`, `snack_stats`).
+- 페이지는 `public.snack_*` 함수 8개로만 접근 (`snack_log_visit`, `snack_draw`, `snack_redeem`, `snack_get_stock`, `snack_set_stock`, `snack_stats`, `snack_history`, `snack_lookup`). history·lookup은 사장님 PIN만 (03_*.sql)
   `snack` 스키마를 대시보드 Exposed schemas에 넣지 않으려고 public에 얇은 입구만 둠 (camtrip의 노출 목록을 안 건드리려고)
 - SQL 원본: `snack/sql/01_*.sql`, `02_*.sql` (PIN은 `<ADMIN_PIN>` 자리표시자로 가림), 운영용은 `snack/sql/ops.sql`
 - **PIN**: 사장님용 / 직원용 두 개. 값은 저장소에 안 적음 (사장님이 알고 있음). 사장님 PIN만 통계를 볼 수 있음
@@ -115,3 +115,9 @@
 - `snack/assets/`: 간판 원본 PDF(3200×1000mm, 벡터)와 거기서 잘라낸 캐릭터·로고 SVG (페이지에는 인라인으로 들어가 있음)
 - `snack/preview/`: 현재 화면 캡처 (첫 화면, 1등, 꽝, 5등 긁기 전, 도장 찍은 뒤, 사장님 화면)
 - `snack/sql/`: 위 설명
+
+## 11-23 바뀐 것
+
+- 손님 화면: 당첨 확률 뺌 (사장님 화면 경품별 표에 확률·실제 비율), 가게 정보는 한 줄, 네이버(메뉴·주문)·배민·인스타 아이콘 버튼
+- 링크: `CONFIG.naverUrl`, `CONFIG.baeminUrl` — 비어 있으면 누를 때 "준비중이에요" 토스트. 링크 생기면 채우기만
+- 사장님 화면: 기간 필터(오늘/7일/이번 달/전체/직접), 이력 목록, 쿠폰 번호로 찾아 사용 처리, 복사에 이력 포함
