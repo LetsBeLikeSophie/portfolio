@@ -149,5 +149,7 @@ ssh -i <SSH 키 파일> ubuntu@<서버 IP> "sudo rm -rf /var/www/portfolio/qr &&
 
 nginx(`itssophie.dev` 설정)에서 `/qr/`은 `no-cache`, `/qr/ocr/`은 30일 캐시이고, `.gz` 학습 데이터는 다시 압축하지 않습니다(2026-11-24).
 `qr/ocr/` 안의 파일을 바꿀 때는 30일 캐시 때문에 파일 이름을 바꿔야 바로 반영됩니다.
-`/qr/`에는 CSP가 걸려 있어서 페이지는 자기 서버(`'self'`)와 구글 폰트 말고는 아무 데도 연결하지 못합니다.
+`/qr/`에는 CSP가 걸려 있어서 페이지는 자기 서버(`'self'`) 말고는 아무 데도 연결하지 못합니다.
+글꼴도 방문자 IP가 구글로 가지 않게 Google Fonts(SIL OFL)를 `qr/fonts/`에 옮겨 두고 씁니다(`fonts.css` + 글자 범위별 woff2, 1년 캐시).
+글꼴을 바꾸려면 Google Fonts CSS를 크롬 User-Agent로 받아 woff2를 내려받고 주소를 상대 경로로 바꿔 `fonts.css`를 다시 만듭니다.
 바깥 스크립트·API를 새로 쓰려면 nginx의 `Content-Security-Policy`에 그 주소를 먼저 넣어야 합니다.
