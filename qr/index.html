@@ -75,6 +75,19 @@
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
   }
+  /* 맨 아래 브랜드 (sophie apps 로고 파일 그대로, 높이 32px, 다크 화면엔 -dark 로고) */
+  .made { display: flex; justify-content: center; margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .made a { display: inline-flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 12px;
+    color: var(--dim); text-decoration: none; font-size: 12px; }
+  .made a:hover span, .made a:focus-visible span { text-decoration: underline; }
+  .made img { display: block; height: 32px; width: auto; }
+  .made .logo-d { display: none; }
+  :root[data-theme="dark"] .made .logo-l { display: none; }
+  :root[data-theme="dark"] .made .logo-d { display: block; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .made .logo-l { display: none; }
+    :root:not([data-theme="light"]) .made .logo-d { display: block; }
+  }
   .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
   .brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
   h1 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: clamp(28px, 5vw, 38px); letter-spacing: -0.01em; line-height: 1.1; }
@@ -505,6 +518,13 @@
       </div>
     </section>
   </div>
+  <footer class="made">
+    <a id="madeBy" href="https://www.threads.com/@itssophie.dev" target="_blank" rel="noopener" aria-label="만든 곳 sophie apps 스레드 열기">
+      <span>만든 곳</span>
+      <img class="logo-l" src="brand/sophie-apps-logo.svg" alt="sophie apps" width="146" height="32">
+      <img class="logo-d" src="brand/sophie-apps-logo-dark.svg" alt="sophie apps" width="146" height="32">
+    </a>
+  </footer>
 </div>
 <div class="toast" id="toast" role="status"></div>
 
