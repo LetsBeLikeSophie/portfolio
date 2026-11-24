@@ -246,6 +246,11 @@
   .crop i::after { content: ""; position: absolute; inset: -12px; } /* 손가락으로 잡기 쉽게 */
   .scan-box.reading .crop, .scan-box.done .crop { pointer-events: none; }
   .scan-box.done .crop i { display: none; }
+  .scan-box.qr .crop { display: none; }
+  .qr-val { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; padding: 10px 12px; border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--line); font-size: 14px; }
+  .qr-val dt { color: var(--dim); }
+  .qr-val dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; font-family: ui-monospace, Menlo, Consolas, monospace; }
   .read-btn { width: 100%; height: 46px; }
   .scan-side { display: grid; gap: 8px; min-width: 0; }
   .scan-status { font-size: 14px; font-weight: 600; }
@@ -352,6 +357,7 @@
             <div class="scan-status" id="scanStatus" role="status"></div>
             <div class="bar" id="scanBarWrap" hidden><i id="scanBar"></i></div>
             <div class="cands" id="nameCands" hidden></div>
+            <dl class="qr-val" id="qrVal" hidden><dt>이름</dt><dd id="qrSsid"></dd><dt>비밀번호</dt><dd id="qrPass"></dd></dl>
             <div class="cands" id="passCands" hidden></div>
             <div class="scan-tools">
               <button class="chip" type="button" id="rotL" aria-label="왼쪽으로 돌리기">↺ 돌리기</button>
@@ -1234,20 +1240,26 @@
   })();
 
   // 화면 상태: edit(네모 맞추는 중) → reading(읽는 중) → done(결과)
+  // qrfind(QR 찾는 중) → qr(QR에서 읽음) 또는 edit
   function setScanState(s) {
     scan.state = s;
-    var box = $('scanBox');
-    box.classList.toggle('reading', s === 'reading');
+    var box = $('scanBox'), isQR = s === 'qrfind' || s === 'qr';
+    box.classList.toggle('reading', s === 'reading' || s === 'qrfind');
     box.classList.toggle('done', s === 'done');
-    $('readBtn').hidden = s === 'done';
+    box.classList.toggle('qr', isQR);
+    $('readBtn').hidden = s === 'done' || isQR;
     $('readBtn').disabled = s === 'reading';
     $('readBtn').textContent = s === 'reading' ? '읽는 중…' : '이 부분 읽기';
-    $('rotL').hidden = $('rotR').hidden = s === 'done';
-    $('recrop').hidden = s !== 'done';
+    $('rotL').hidden = $('rotR').hidden = s === 'done' || isQR;
+    $('recrop').hidden = s === 'edit' || s === 'reading';
+    $('recrop').textContent = isQR ? '글자로 읽기' : '다시 맞추기';
     $('scanBarWrap').hidden = s !== 'reading';
+    $('qrVal').hidden = s !== 'qr';
+    if (s !== 'qr' && s !== 'done') $('nameCands').hidden = $('passCands').hidden = true;
+    if (s === 'qrfind') scanStatus('라벨에 QR이 있는지 찾는 중… (몇 초 걸려요)', false, 0);
     if (s === 'edit') {
-      $('nameCands').hidden = $('passCands').hidden = true;
       scanStatus('사진을 바로 세우고, 이름·비밀번호가 적힌 부분만 네모 안에 오게 맞춰주세요', false, 0);
+      getWorker().catch(function () {}); // 맞추는 동안 글자 읽기 엔진을 미리 받아둠
     }
   }
   function rotate(dir) {
@@ -1314,6 +1326,87 @@
     });
   }
 
+  // ---- 라벨에 인쇄된 와이파이 QR 읽기: 글자를 짐작하는 게 아니라 들어 있는 값 그대로라 정확함 ----
+  // 'WIFI:T:WPA;S:이름;P:비번;H:false;;' (\ 로 ; , : \ " 를 이스케이프)
+  function parseWifi(s) {
+    if (!/^WIFI:/i.test(s || '')) return null;
+    var body = s.slice(5), parts = [], cur = '', i, o = {};
+    for (i = 0; i < body.length; i++) {
+      var ch = body[i];
+      if (ch === '\\' && i + 1 < body.length) { cur += body[++i]; continue; }
+      if (ch === ';') { parts.push(cur); cur = ''; continue; }
+      cur += ch;
+    }
+    if (cur) parts.push(cur);
+    parts.forEach(function (p) { var k = p.indexOf(':'); if (k > 0) o[p.slice(0, k).toUpperCase()] = p.slice(k + 1); });
+    if (!o.S) return null;
+    var t = (o.T || '').toUpperCase();
+    var sec = t === 'WEP' ? 'WEP' : (t === 'NOPASS' || (!t && !o.P)) ? 'nopass' : 'WPA';
+    return { ssid: o.S, pass: sec === 'nopass' ? '' : (o.P || ''), sec: sec, hidden: /^true$/i.test(o.H || '') };
+  }
+  var qrWorker = null;
+  function decodeQR(img, maxSide) {
+    var k = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+    var w = Math.round(img.naturalWidth * k), h = Math.round(img.naturalHeight * k);
+    var c = document.createElement('canvas'); c.width = w; c.height = h;
+    var g = c.getContext('2d'); g.drawImage(img, 0, 0, w, h);
+    var buf = g.getImageData(0, 0, w, h).data.buffer;
+    // 앞 사진을 아직 훑는 중이면 그 일꾼은 버리고 새로 (늦게 온 앞 사진 결과가 섞이지 않게)
+    if (qrWorker && qrWorker.busy) { qrWorker.terminate(); qrWorker = null; }
+    if (!qrWorker) qrWorker = new Worker(new URL('qrscan.js', location.href).href);
+    var wk = qrWorker; wk.busy = true;
+    return new Promise(function (res) {
+      var t = setTimeout(function () { wk.terminate(); if (qrWorker === wk) qrWorker = null; res([]); }, 30000);
+      wk.onmessage = function (e) { clearTimeout(t); wk.busy = false; res(e.data || []); };
+      wk.onerror = function () { clearTimeout(t); wk.terminate(); if (qrWorker === wk) qrWorker = null; res([]); };
+      wk.postMessage({ buf: buf, w: w, h: h }, [buf]);
+    });
+  }
+  function findQR(img) {
+    var hasWifi = function (list) { return list.some(function (c) { return parseWifi(c.text); }); };
+    // 폰(안드로이드 크롬 등)에 있는 QR 읽기 기능을 먼저, 없거나 못 찾으면 jsQR로
+    var native = Promise.resolve([]);
+    if ('BarcodeDetector' in window) native = BarcodeDetector.getSupportedFormats().then(function (f) {
+      if (f.indexOf('qr_code') < 0) return [];
+      return new BarcodeDetector({ formats: ['qr_code'] }).detect(img).then(function (r) {
+        var W = img.naturalWidth, H = img.naturalHeight;
+        return r.map(function (b) { var bb = b.boundingBox; return { text: b.rawValue, box: { x: bb.x / W, y: bb.y / H, w: bb.width / W, h: bb.height / H } }; });
+      });
+    }).catch(function () { return []; });
+    return native.then(function (a) {
+      if (hasWifi(a)) return a;
+      return decodeQR(img, 1200).then(function (b) { return a.concat(b); });
+    }).catch(function () { return []; });
+  }
+  function markQR(box) {
+    thumb(0);
+    var cv = $('scanCv'), g = cv.getContext('2d'), p = 6;
+    g.setTransform(1, 0, 0, 1, 0, 0); // thumb()가 옮겨둔 기준점을 되돌림
+    g.lineWidth = Math.max(4, cv.width / 120); g.strokeStyle = '#3ddc84';
+    g.strokeRect(box.x * cv.width - p, box.y * cv.height - p, box.w * cv.width + p * 2, box.h * cv.height + p * 2);
+  }
+  function applyNet(n) {
+    st.f.ssid = n.ssid; $('ssid').value = n.ssid; $('sample').hidden = true;
+    st.f.sec = n.sec; st.f.hidden = n.hidden; $('hiddenNet').checked = n.hidden;
+    pass = n.pass; $('pass').value = n.pass;
+    if (n.sec !== 'WPA' || n.hidden) $('wifiMore').open = true;
+    $('qrSsid').textContent = n.ssid;
+    $('qrPass').textContent = n.sec === 'nopass' ? '(없음)' : n.pass;
+    if (n.box) markQR(n.box);
+    syncUI(); schedule();
+  }
+  function showNets(nets) {
+    setScanState('qr');
+    setManual(true);
+    applyNet(nets[0]);
+    if (nets.length > 1) {
+      showCands('nameCands', '네트워크 고르기', nets.map(function (n) { return n.ssid; }), function () { return st.f.ssid; },
+        function (v) { applyNet(nets.filter(function (n) { return n.ssid === v; })[0]); });
+    }
+    scanStatus((nets.length > 1 ? '공유기 QR ' + nets.length + '개를 읽었어요. 쓸 네트워크를 골라주세요. ' : '공유기 QR을 읽었어요. ') +
+      'QR에 든 값을 그대로 가져와서 글자 읽기처럼 틀리지 않아요.', false, 1);
+  }
+
   function startScan(file) {
     if (!file || !/^image\//.test(file.type)) return;
     var img = new Image();
@@ -1321,10 +1414,21 @@
       scan.run++; scan.busy = false;
       scan.img = img; scan.rot = 0; scan.crop = { x: 0.06, y: 0.06, w: 0.88, h: 0.88 };
       $('scanBox').hidden = false;
-      setScanState('edit');
+      setScanState('qrfind');
       thumb(0);
       $('scanBox').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      getWorker().catch(function () {}); // 맞추는 동안 글자 읽기 엔진을 미리 받아둠
+      var my = scan.run;
+      findQR(img).then(function (codes) {
+        if (my !== scan.run) return;
+        var nets = [];
+        codes.forEach(function (c) {
+          var n = parseWifi(c.text);
+          if (n && !nets.some(function (x) { return x.ssid === n.ssid; })) { n.box = c.box; nets.push(n); }
+        });
+        if (nets.length) return showNets(nets);
+        setScanState('edit');
+        if (codes.length) scanStatus('QR은 있는데 와이파이 QR이 아니에요. 글자로 읽을게요 — 이름·비밀번호 부분만 네모 안에 맞춰주세요', false, 0);
+      });
     };
     img.onerror = function () { toast('이 사진은 열 수 없어요. 다른 사진을 골라주세요'); };
     img.src = URL.createObjectURL(file);
@@ -1336,7 +1440,10 @@
   $('rotL').onclick = function () { rotate(-1); };
   $('rotR').onclick = function () { rotate(1); };
   $('readBtn').onclick = function () { if (scan.img && !scan.busy) readLabel(); };
-  $('recrop').onclick = function () { setScanState('edit'); };
+  $('recrop').onclick = function () {
+    if (scan.state === 'qrfind') scan.run++; // QR 찾기를 기다리지 않고 바로 글자로
+    thumb(scan.rot); setScanState('edit');
+  };
   // PC: 와이파이 화면에서 사진을 붙여넣거나 끌어다 놓아도 읽기
   document.addEventListener('paste', function (e) {
     if (st.mode !== 'wifi' || !e.clipboardData) return;
