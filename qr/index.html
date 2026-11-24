@@ -238,6 +238,61 @@
   .scan-box summary { cursor: pointer; }
   .scan-box pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 10px; border-radius: 10px; background: var(--surface);
     border: 1px solid var(--line); max-height: 180px; overflow: auto; font-size: 12px; color: var(--ink); }
+  /* 글 모드: i 버튼과 "찍으면 이렇게 보여요" 창 */
+  .h-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .info-btn { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--dim); background: none; color: var(--dim);
+    font: italic 700 13px/1 Georgia, serif; padding: 0; display: grid; place-items: center; }
+  .info-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .text-link { border: 0; background: none; padding: 0; color: var(--accent); font-size: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  dialog.info {
+    width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow: auto; border: 1px solid var(--line); border-radius: 18px;
+    background: var(--surface); color: var(--ink); padding: 18px; box-shadow: 0 24px 60px rgba(0,0,0,.25);
+  }
+  dialog.info::backdrop { background: rgba(10, 16, 13, .5); }
+  .info-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .info-head h3 { margin: 0; font-size: 17px; }
+  .info-lead { margin: 8px 0 14px; font-size: 14px; color: var(--dim); }
+  .info-list { margin: 14px 0 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13px; color: var(--dim); }
+  .info-list b { color: var(--ink); margin-right: 4px; }
+  .demo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .demo figure { margin: 0; display: grid; justify-items: center; gap: 8px; }
+  .demo figcaption { font-size: 12px; color: var(--dim); text-align: center; }
+  .demo figcaption b { display: block; color: var(--ink); font-size: 13px; }
+  /* 와이어프레임 폰 */
+  .phone { --d: 5s; width: min(100%, 150px); aspect-ratio: 9 / 17; border: 2px solid var(--ink); border-radius: 22px; position: relative; overflow: hidden;
+    background: repeating-linear-gradient(135deg, transparent 0 9px, color-mix(in srgb, var(--line) 55%, transparent) 9px 10px), var(--bg); }
+  .phone::before { content: ""; position: absolute; top: 7px; left: 50%; width: 34%; height: 6px; border-radius: 6px; background: var(--ink); transform: translateX(-50%); opacity: .8; }
+  .vf { position: absolute; left: 50%; top: 48%; width: 54%; aspect-ratio: 1; transform: translate(-50%, -50%); }
+  .vf::before { content: ""; position: absolute; inset: 0; border-radius: 6px;
+    background:
+      linear-gradient(var(--accent) 0 0) 0 0 / 22% 3px, linear-gradient(var(--accent) 0 0) 0 0 / 3px 22%,
+      linear-gradient(var(--accent) 0 0) 100% 0 / 22% 3px, linear-gradient(var(--accent) 0 0) 100% 0 / 3px 22%,
+      linear-gradient(var(--accent) 0 0) 0 100% / 22% 3px, linear-gradient(var(--accent) 0 0) 0 100% / 3px 22%,
+      linear-gradient(var(--accent) 0 0) 100% 100% / 22% 3px, linear-gradient(var(--accent) 0 0) 100% 100% / 3px 22%;
+    background-repeat: no-repeat; }
+  .mini-qr { position: absolute; inset: 16%; background: var(--surface); border: 1.5px solid var(--ink); border-radius: 3px;
+    background-image: linear-gradient(var(--ink) 0 0), linear-gradient(var(--ink) 0 0), linear-gradient(var(--ink) 0 0),
+      repeating-linear-gradient(90deg, var(--ink) 0 3px, transparent 3px 7px);
+    background-size: 28% 28%, 28% 28%, 28% 28%, 36% 36%; background-repeat: no-repeat; background-position: 8% 8%, 92% 8%, 8% 92%, 80% 80%; }
+  .scanline { position: absolute; left: 10%; right: 10%; height: 2px; background: var(--accent); box-shadow: 0 0 8px var(--accent);
+    animation: scan var(--d) ease-in-out infinite; }
+  .sheet, .banner { position: absolute; left: 6px; right: 6px; background: var(--surface); border: 1.5px solid var(--ink); border-radius: 12px;
+    padding: 8px 9px; display: grid; gap: 4px; font-size: 10px; line-height: 1.35; }
+  .sheet b, .banner b { font-size: 10px; color: var(--dim); font-weight: 600; }
+  .demo-text { color: var(--ink); font-size: 11px; font-weight: 600; word-break: break-all;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .sheet { bottom: 6px; animation: up var(--d) ease-out infinite; }
+  .sheet em { font-style: normal; justify-self: end; font-size: 10px; font-weight: 600; color: var(--accent-ink); background: var(--accent); border-radius: 999px; padding: 2px 9px; }
+  .banner { top: 18px; animation: down var(--d) ease-out infinite; }
+  .banner .demo-text { -webkit-line-clamp: 1; font-weight: 500; }
+  @keyframes scan { 0% { top: 12%; opacity: 1; } 18% { top: 86%; } 36% { top: 12%; opacity: 1; } 40%, 100% { top: 12%; opacity: 0; } }
+  @keyframes up { 0%, 38% { transform: translateY(120%); opacity: 0; } 46%, 90% { transform: none; opacity: 1; } 100% { transform: none; opacity: 0; } }
+  @keyframes down { 0%, 38% { transform: translateY(-140%); opacity: 0; } 46%, 90% { transform: none; opacity: 1; } 100% { transform: none; opacity: 0; } }
+  @media (max-width: 380px) { .demo { gap: 8px; } }
+  @media (prefers-reduced-motion: reduce) {
+    .scanline { animation: none; opacity: 0; }
+    .sheet, .banner { animation: none; transform: none; opacity: 1; }
+  }
   @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
   @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
 </style>
@@ -255,7 +310,7 @@
   <div class="layout">
     <section class="panel form" aria-label="내용">
       <div class="modes" id="modes" role="group" aria-label="용도"></div>
-      <div class="panel-h"><h2 id="formTitle">와이파이 정보</h2><span class="sample" id="sample" hidden>예시로 채워뒀어요</span></div>
+      <div class="panel-h"><div class="h-left"><h2 id="formTitle">와이파이 정보</h2><button class="info-btn" id="textInfoBtn" type="button" aria-label="글 QR은 찍으면 어떻게 보이는지 보기" hidden>i</button></div><span class="sample" id="sample" hidden>예시로 채워뒀어요</span></div>
 
       <div class="fields" data-for="wifi">
         <button class="scan-btn" id="scanBtn" type="button">
@@ -330,10 +385,47 @@
 
       <div class="fields" data-for="text" hidden>
         <label class="field"><span>보여줄 글</span><textarea class="inp" id="txt" spellcheck="false" placeholder="찍으면 이 글이 그대로 보여요"></textarea></label>
+        <p class="note">찍으면 어디로 이동하지 않고 글만 보여요. 폰마다 보이는 모습이 달라서, <button class="text-link" type="button" id="textInfoLink">찍었을 때 모습</button>을 먼저 보세요.</p>
       </div>
     </section>
 
-    <section class="stage" aria-label="미리보기">
+    <dialog class="info" id="textInfo" aria-labelledby="textInfoTitle">
+    <div class="info-head">
+      <h3 id="textInfoTitle">글 QR은 찍으면 이렇게 보여요</h3>
+      <button class="icon-btn" type="button" id="textInfoClose" aria-label="닫기">✕</button>
+    </div>
+    <p class="info-lead">링크처럼 어디로 이동하지 않고, 적은 글이 화면에 떠요. 그런데 폰 카메라마다 보여주는 방식이 달라요.</p>
+    <div class="demo" aria-hidden="true">
+      <figure>
+        <div class="phone">
+          <div class="vf"><i class="mini-qr"></i><i class="scanline"></i></div>
+          <div class="sheet">
+            <b>글</b>
+            <span class="demo-text" data-demo-text></span>
+            <em>복사</em>
+          </div>
+        </div>
+        <figcaption><b>안드로이드</b>글이 바로 보이고 복사할 수 있어요</figcaption>
+      </figure>
+      <figure>
+        <div class="phone">
+          <div class="vf"><i class="mini-qr"></i><i class="scanline"></i></div>
+          <div class="banner">
+            <b>⌕ 웹에서 검색</b>
+            <span class="demo-text" data-demo-text></span>
+          </div>
+        </div>
+        <figcaption><b>아이폰 기본 카메라</b>글 대신 "웹에서 검색"으로 떠요. 누르면 검색 결과로 가요</figcaption>
+      </figure>
+    </div>
+    <ul class="info-list">
+      <li><b>잘 맞는 곳</b> 쿠폰 번호, 짧은 안내 문구, 이벤트 정답처럼 보기만 하면 되는 글</li>
+      <li><b>안 맞는 곳</b> 손님 대부분이 아이폰이면 검색으로 넘어가서 헷갈릴 수 있어요. 이럴 땐 <b>링크</b>로 글이 적힌 페이지를 여는 게 나아요</li>
+      <li>기종·카메라 앱·버전마다 조금씩 달라요. 만든 다음 손님이 쓰는 폰으로 한 번 찍어보세요</li>
+    </ul>
+  </dialog>
+
+  <section class="stage" aria-label="미리보기">
       <div class="mat">
         <div class="card-out" id="out"><div class="empty">내용을 적으면 카드가 생겨요</div></div>
         <div class="mat-foot"><span id="dims">—</span><span id="scanInfo"></span></div>
@@ -834,6 +926,23 @@
   if (st.f.sec !== 'WPA' || st.f.hidden) $('wifiMore').open = true;
   $('manualBtn').onclick = function () { setManual(true); $('ssid').focus(); };
 
+  // 글 모드: 찍었을 때 모습 보여주는 창 (적은 글이 있으면 그 글로 보여줌)
+  function openTextInfo() {
+    var t = (st.f.txt || '').trim() || '오늘의 쿠폰 번호는 7231이에요';
+    document.querySelectorAll('[data-demo-text]').forEach(function (el) { el.textContent = t; });
+    var d = $('textInfo');
+    if (d.showModal) d.showModal(); else d.setAttribute('open', '');
+  }
+  $('textInfoBtn').onclick = openTextInfo;
+  $('textInfoLink').onclick = openTextInfo;
+  $('textInfoClose').onclick = function () { var d = $('textInfo'); if (d.close) d.close(); else d.removeAttribute('open'); };
+  // 창 바깥(어두운 곳)을 누르면 닫기
+  $('textInfo').addEventListener('click', function (e) {
+    if (e.target !== this) return;
+    var r = this.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) this.close();
+  });
+
   function bindSeg(elId, set) {
     $(elId).querySelectorAll('[data-v]').forEach(function (b) {
       b.addEventListener('click', function () { if (set(b.dataset.v) !== false) { syncUI(); schedule(); } });
@@ -894,6 +1003,7 @@
     modesEl.querySelectorAll('.mode').forEach(function (b) { press(b, b.dataset.v === st.mode); });
     document.querySelectorAll('[data-for]').forEach(function (s) { s.hidden = s.dataset.for !== st.mode; });
     $('formTitle').textContent = MODES.filter(function (m) { return m.id === st.mode; })[0].head;
+    $('textInfoBtn').hidden = st.mode !== 'text';
     $('sec').querySelectorAll('[data-v]').forEach(function (b) { press(b, b.dataset.v === st.f.sec); });
     $('pass').disabled = st.f.sec === 'nopass';
     $('shapes').querySelectorAll('[data-v]').forEach(function (b) { press(b, b.dataset.v === st.shape); });
