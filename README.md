@@ -142,3 +142,6 @@ QR 생성은 같은 폴더의 `qr/qrcode.js`([qrcode-generator](https://github.c
 scp -i <SSH 키 파일> -r qr ubuntu@<서버 IP>:/tmp/portfolio-qr
 ssh -i <SSH 키 파일> ubuntu@<서버 IP> "sudo rm -rf /var/www/portfolio/qr && sudo cp -r /tmp/portfolio-qr /var/www/portfolio/qr && sudo chown -R www-data:www-data /var/www/portfolio/qr && rm -rf /tmp/portfolio-qr"
 ```
+
+nginx(`itssophie.dev` 설정)에서 `/qr/`은 `no-cache`, `/qr/ocr/`은 30일 캐시이고, `.gz` 학습 데이터는 다시 압축하지 않습니다(2026-11-24).
+`qr/ocr/` 안의 파일을 바꿀 때는 30일 캐시 때문에 파일 이름을 바꿔야 바로 반영됩니다.
