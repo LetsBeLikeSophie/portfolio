@@ -184,6 +184,15 @@
   .mat-foot { width: 100%; display: flex; justify-content: space-between; gap: 8px; color: var(--mat-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
   .warn { margin: 10px 0 0; font-size: 13px; color: var(--warn); }
 
+  /* 미리보기 바로 아래: 카드째 저장할지 QR만 저장할지 */
+  .view-opts { display: grid; gap: 10px; margin-top: 12px; }
+  .switch { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); }
+  .switch button { border: 0; border-radius: 10px; background: transparent; padding: 8px 6px; display: grid; gap: 1px; justify-items: center; color: var(--ink); }
+  .switch button b { font-size: 14px; }
+  .switch button small { font-size: 11px; color: var(--dim); }
+  .switch button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .switch button[aria-pressed="true"] small { color: inherit; opacity: .75; }
+  .view-opts .check { justify-self: center; }
   .actions { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; margin-top: 12px; }
   .btn { height: 50px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 15px; }
   .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
@@ -425,6 +434,13 @@
         <div class="card-out" id="out"><div class="empty">내용을 적으면 카드가 생겨요</div></div>
         <div class="mat-foot"><span id="dims">—</span><span id="scanInfo"></span></div>
       </div>
+      <div class="view-opts">
+        <div class="switch" id="layouts" role="group" aria-label="저장할 모양">
+          <button type="button" data-v="card"><b>카드 통째로</b><small>제목·설명까지 같이</small></button>
+          <button type="button" data-v="qr"><b>QR만</b><small>네모난 QR 그림만</small></button>
+        </div>
+        <label class="check" id="secretWrap"><input type="checkbox" id="showSecret"> <span id="secretLabel">카드에 비밀번호도 적기</span></label>
+      </div>
       <p class="warn" id="warn" hidden></p>
       <div class="actions">
         <button class="btn primary" id="save" type="button" disabled>그림으로 저장</button>
@@ -455,13 +471,6 @@
           </div>
         </div>
         <label class="field"><span>카드 제목</span><input class="inp" id="title" maxlength="20" autocomplete="off" placeholder="비우면 기본 제목"></label>
-        <div class="deco-row"><span>저장할 모양</span>
-          <div class="seg" id="layouts">
-            <button class="chip" type="button" data-v="card">카드</button>
-            <button class="chip" type="button" data-v="qr">QR만</button>
-          </div>
-        </div>
-        <label class="check" id="secretWrap"><input type="checkbox" id="showSecret"> <span id="secretLabel">카드에 비밀번호도 적기</span></label>
       </div>
     </section>
   </div>
