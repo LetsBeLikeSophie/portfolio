@@ -953,8 +953,8 @@
     var base = new URL('ocr/', location.href).href;
     scan.worker = loadScript(base + 'tesseract.min.js').then(function () {
       return Tesseract.createWorker(['eng', 'kor'], 1, {
-        workerPath: base + 'worker.min.js', corePath: base + 'core', langPath: base + 'lang',
-        workerBlobURL: false, gzip: true,
+        workerPath: base + 'worker.js', corePath: base + 'core', langPath: base + 'lang',
+        workerBlobURL: false, gzip: true, cacheMethod: 'none',
         logger: function (m) {
           if (m.status === 'recognizing text') scanStatus(loadingLabel, false, 0.3 + m.progress * 0.7);
           else if (/loading|initializ/.test(m.status)) scanStatus('글자 읽는 준비 중 (처음 한 번만 조금 걸려요)', false, Math.min(0.3, (m.progress || 0) * 0.3));
