@@ -217,10 +217,10 @@
   .more[open] summary { padding-bottom: 8px; }
   .more-body { display: grid; gap: 12px; padding-bottom: 14px; }
   .scan-btn small { display: block; font-size: 12px; color: var(--dim); }
-  .scan-box { display: grid; gap: 12px; grid-template-columns: 120px minmax(0, 1fr); align-items: start;
+  /* 올린 사진은 위에 크게, 읽은 결과는 그 아래 */
+  .scan-box { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr);
     border: 1px solid var(--line); border-radius: 14px; padding: 12px; background: var(--bg); }
-  @media (max-width: 420px) { .scan-box { grid-template-columns: 96px minmax(0, 1fr); } }
-  .scan-img { border-radius: 10px; overflow: hidden; background: #000; display: grid; place-items: center; aspect-ratio: 1; max-width: 100%; }
+  .scan-img { border-radius: 10px; overflow: hidden; background: #000; display: grid; place-items: center; height: min(62vw, 340px); }
   .scan-img canvas { max-width: 100%; max-height: 100%; display: block; }
   .scan-side { display: grid; gap: 8px; min-width: 0; }
   .scan-status { font-size: 14px; font-weight: 600; }
@@ -234,10 +234,6 @@
   .cand[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .scan-tools { display: flex; flex-wrap: wrap; gap: 6px; }
   .scan-tools .chip { height: 32px; font-size: 13px; padding: 0 11px; }
-  .scan-box details { grid-column: 1 / -1; font-size: 12px; color: var(--dim); }
-  .scan-box summary { cursor: pointer; }
-  .scan-box pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 10px; border-radius: 10px; background: var(--surface);
-    border: 1px solid var(--line); max-height: 180px; overflow: auto; font-size: 12px; color: var(--ink); }
   /* 글 모드: i 버튼과 "찍으면 이렇게 보여요" 창 */
   .h-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .info-btn { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--dim); background: none; color: var(--dim);
@@ -332,7 +328,6 @@
               <button class="chip" type="button" id="scanClose">닫기</button>
             </div>
           </div>
-          <details><summary>읽은 글자 전체 보기</summary><pre id="scanRaw"></pre></details>
         </div>
         <button class="manual-link" id="manualBtn" type="button">사진 없이 직접 입력할게요</button>
         <div class="manual" id="wifiManual" hidden>
@@ -1124,7 +1119,7 @@
     return c;
   }
   function thumb(rot) {
-    var cv = $('scanCv'), img = scan.img, S = 240;
+    var cv = $('scanCv'), img = scan.img, S = 1000;
     var side = rot % 180 !== 0, w = side ? img.naturalHeight : img.naturalWidth, h = side ? img.naturalWidth : img.naturalHeight;
     var k = S / Math.max(w, h);
     cv.width = Math.round(w * k); cv.height = Math.round(h * k);
@@ -1179,7 +1174,6 @@
       scan.busy = false;
       setManual(true);
       scan.rot = best.rot; thumb(scan.rot);
-      $('scanRaw').textContent = best.text.trim() || '(읽은 글자가 없어요)';
       var f = best.found;
       if (f.names[0]) setSsid(f.names[0]);
       if (f.passes[0]) setPass(f.passes[0]);
@@ -1205,7 +1199,7 @@
     var img = new Image();
     img.onload = function () {
       scan.img = img; scan.rot = 0;
-      $('scanBox').hidden = false; $('scanRaw').textContent = '';
+      $('scanBox').hidden = false;
       thumb(0);
       readLabel([0, 90, 270, 180]);
     };
