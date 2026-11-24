@@ -203,6 +203,19 @@
   }
   .scan-btn svg { width: 28px; height: 28px; flex: none; color: var(--accent); }
   .scan-btn b { display: block; font-size: 15px; }
+  /* 입력칸이 닫혀 있을 땐 사진 버튼을 크게 */
+  .scan-btn.big { flex-direction: column; justify-content: center; text-align: center; gap: 10px; padding: 30px 16px; }
+  .scan-btn.big svg { width: 44px; height: 44px; }
+  .scan-btn.big b { font-size: 18px; }
+  .scan-btn.big small { font-size: 13px; margin-top: 2px; }
+  .manual-link { justify-self: center; border: 0; background: none; padding: 6px 8px; font-size: 14px; color: var(--dim);
+    text-decoration: underline; text-underline-offset: 3px; }
+  .manual { display: grid; gap: 12px; }
+  .manual[hidden] { display: none; }
+  .more { border: 1px solid var(--line); border-radius: 12px; padding: 0 14px; }
+  .more summary { cursor: pointer; font-size: 13px; color: var(--dim); font-weight: 500; padding: 12px 0; }
+  .more[open] summary { padding-bottom: 8px; }
+  .more-body { display: grid; gap: 12px; padding-bottom: 14px; }
   .scan-btn small { display: block; font-size: 12px; color: var(--dim); }
   .scan-box { display: grid; gap: 12px; grid-template-columns: 120px minmax(0, 1fr); align-items: start;
     border: 1px solid var(--line); border-radius: 14px; padding: 12px; background: var(--bg); }
@@ -266,19 +279,26 @@
           </div>
           <details><summary>읽은 글자 전체 보기</summary><pre id="scanRaw"></pre></details>
         </div>
-        <label class="field"><span>와이파이 이름</span><input class="inp" id="ssid" autocomplete="off" spellcheck="false" placeholder="예) SK_WiFiGIGA1234"></label>
-        <div class="field"><span>비밀번호</span>
-          <div class="pw"><input class="inp" id="pass" type="password" autocomplete="new-password" spellcheck="false" placeholder="비밀번호"><button type="button" id="peek">보기</button></div>
-        </div>
-        <div class="field"><span>보안 방식</span>
-          <div class="seg" id="sec">
-            <button class="chip" type="button" data-v="WPA">WPA/WPA2/WPA3</button>
-            <button class="chip" type="button" data-v="WEP">WEP</button>
-            <button class="chip" type="button" data-v="nopass">비밀번호 없음</button>
+        <button class="manual-link" id="manualBtn" type="button">사진 없이 직접 입력할게요</button>
+        <div class="manual" id="wifiManual" hidden>
+          <label class="field"><span>와이파이 이름</span><input class="inp" id="ssid" autocomplete="off" spellcheck="false" placeholder="예) SK_WiFiGIGA1234"></label>
+          <div class="field"><span>비밀번호</span>
+            <div class="pw"><input class="inp" id="pass" type="password" autocomplete="new-password" spellcheck="false" placeholder="비밀번호"><button type="button" id="peek">보기</button></div>
           </div>
+          <details class="more" id="wifiMore">
+            <summary>보안 방식 · 숨겨진 네트워크</summary>
+            <div class="more-body">
+              <div class="seg" id="sec">
+                <button class="chip" type="button" data-v="WPA">WPA/WPA2/WPA3</button>
+                <button class="chip" type="button" data-v="WEP">WEP</button>
+                <button class="chip" type="button" data-v="nopass">비밀번호 없음</button>
+              </div>
+              <label class="check"><input type="checkbox" id="hiddenNet"> 숨겨진 네트워크예요</label>
+              <p class="note">잘 모르겠으면 WPA 그대로 두세요. 공유기 대부분이 이거예요.</p>
+            </div>
+          </details>
         </div>
-        <label class="check"><input type="checkbox" id="hiddenNet"> 숨겨진 네트워크예요</label>
-        <p class="note">잘 모르겠으면 WPA 그대로 두세요. 공유기 대부분이 이거예요. 사진과 비밀번호는 이 기기 밖으로 나가지 않고, 비밀번호는 저장하지도 않아요.</p>
+        <p class="note">사진과 비밀번호는 이 기기 밖으로 나가지 않고, 비밀번호는 저장하지도 않아요.</p>
       </div>
 
       <div class="fields" data-for="link" hidden>
@@ -804,6 +824,16 @@
   $('hiddenNet').onchange = function () { st.f.hidden = this.checked; schedule(); };
   $('sample').hidden = !firstVisit;
 
+  // 와이파이: 처음엔 사진 버튼만 크게, 입력칸은 "직접 입력" 누르거나 사진을 읽고 나면 펼침
+  function setManual(on) {
+    $('wifiManual').hidden = !on;
+    $('manualBtn').hidden = on;
+    $('scanBtn').classList.toggle('big', !on);
+  }
+  setManual(!firstVisit && !!st.f.ssid);
+  if (st.f.sec !== 'WPA' || st.f.hidden) $('wifiMore').open = true;
+  $('manualBtn').onclick = function () { setManual(true); $('ssid').focus(); };
+
   function bindSeg(elId, set) {
     $(elId).querySelectorAll('[data-v]').forEach(function (b) {
       b.addEventListener('click', function () { if (set(b.dataset.v) !== false) { syncUI(); schedule(); } });
@@ -1037,6 +1067,7 @@
     }).then(function (best) {
       if (!best || my !== scan.run) return;
       scan.busy = false;
+      setManual(true);
       scan.rot = best.rot; thumb(scan.rot);
       $('scanRaw').textContent = best.text.trim() || '(읽은 글자가 없어요)';
       var f = best.found;
@@ -1054,7 +1085,8 @@
     }).catch(function () {
       if (my !== scan.run) return;
       scan.busy = false;
-      scanStatus('글자 읽기를 시작하지 못했어요. 인터넷 연결을 확인하고 다시 해보세요.', true, 0);
+      setManual(true);
+      scanStatus('글자 읽기를 시작하지 못했어요. 인터넷 연결을 확인하고 다시 해보거나 아래에 직접 입력해주세요.', true, 0);
     });
   }
 
