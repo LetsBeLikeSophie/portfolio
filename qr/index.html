@@ -179,7 +179,11 @@
     filter: drop-shadow(0 14px 24px rgba(0,0,0,.28)) drop-shadow(0 2px 4px rgba(0,0,0,.2));
     -webkit-touch-callout: default;
   }
-  .card-out.qr-only { width: min(100%, 300px); }
+  /* 카드/QR만을 오가도 아래가 들썩이지 않게 칸 크기는 고정, 그림은 그 안에 맞춰 넣음 */
+  .card-out { aspect-ratio: 5 / 8; min-height: 0; }
+  .mat { touch-action: pan-y; }
+  .card-out img { width: 100%; height: 100%; object-fit: contain; }
+  .card-out.qr-only img { width: 84%; height: 84%; }
   .empty { color: var(--mat-ink); text-align: center; font-size: 14px; padding: 40px 10px; }
   .mat-foot { width: 100%; display: flex; justify-content: space-between; gap: 8px; color: var(--mat-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
   .warn { margin: 10px 0 0; font-size: 13px; color: var(--warn); }
@@ -937,6 +941,21 @@
     var d = $('textInfo');
     if (d.showModal) d.showModal(); else d.setAttribute('open', '');
   }
+  // 미리보기를 옆으로 밀면 카드 통째로 ↔ QR만
+  (function () {
+    var mat = document.querySelector('.mat'), sx = 0, sy = 0, on = false;
+    mat.addEventListener('pointerdown', function (e) { if (e.pointerType === 'mouse') return; on = true; sx = e.clientX; sy = e.clientY; });
+    mat.addEventListener('pointerup', function (e) {
+      if (!on) return; on = false;
+      var dx = e.clientX - sx, dy = e.clientY - sy;
+      if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      var next = dx < 0 ? 'qr' : 'card';
+      if (next === st.layout) return;
+      st.layout = next; syncUI(); schedule();
+    });
+    mat.addEventListener('pointercancel', function () { on = false; });
+  })();
+
   $('textInfoBtn').onclick = openTextInfo;
   $('textInfoLink').onclick = openTextInfo;
   $('textInfoClose').onclick = function () { var d = $('textInfo'); if (d.close) d.close(); else d.removeAttribute('open'); };
@@ -1025,7 +1044,9 @@
     });
     colorsEl.querySelectorAll('.sw[data-v]').forEach(function (b) { press(b, b.dataset.v === st.color); });
     press(pick, COLORS.indexOf(st.color) < 0);
-    $('secretWrap').hidden = !(st.layout === 'card' && (st.mode === 'wifi' || st.mode === 'link'));
+    // QR만일 땐 자리는 남겨두고 안 보이게만 (아래 버튼이 위로 딸려 올라오지 않게)
+    $('secretWrap').hidden = !(st.mode === 'wifi' || st.mode === 'link');
+    $('secretWrap').style.visibility = st.layout === 'card' ? '' : 'hidden';
     $('secretLabel').textContent = st.mode === 'link' ? '카드에 주소도 적기' : '카드에 비밀번호도 적기';
     $('showSecret').checked = st.mode === 'link' ? st.showUrl : st.showSecret;
     $('title').disabled = st.layout === 'qr';
