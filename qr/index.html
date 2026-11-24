@@ -233,8 +233,20 @@
   /* 올린 사진은 위에 크게, 읽은 결과는 그 아래 */
   .scan-box { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr);
     border: 1px solid var(--line); border-radius: 14px; padding: 12px; background: var(--bg); }
-  .scan-img { border-radius: 10px; overflow: hidden; background: #000; display: grid; place-items: center; height: min(62vw, 340px); }
-  .scan-img canvas { max-width: 100%; max-height: 100%; display: block; }
+  .scan-img { border-radius: 10px; overflow: hidden; background: #000; display: grid; place-items: center; height: min(78vw, 400px); }
+  .crop-stage { position: relative; touch-action: none; }
+  .crop-stage canvas { display: block; }
+  /* 읽을 부분 네모: 바깥은 어둡게, 모서리를 끌어서 크기, 안쪽을 끌어서 이동 */
+  .crop { position: absolute; border: 2px solid #fff; box-shadow: 0 0 0 9999px rgba(0,0,0,.55); cursor: move; }
+  .crop i { position: absolute; width: 26px; height: 26px; border: 4px solid var(--accent); background: transparent; }
+  .crop i[data-h="nw"] { left: -5px; top: -5px; border-right: 0; border-bottom: 0; cursor: nwse-resize; }
+  .crop i[data-h="ne"] { right: -5px; top: -5px; border-left: 0; border-bottom: 0; cursor: nesw-resize; }
+  .crop i[data-h="sw"] { left: -5px; bottom: -5px; border-right: 0; border-top: 0; cursor: nesw-resize; }
+  .crop i[data-h="se"] { right: -5px; bottom: -5px; border-left: 0; border-top: 0; cursor: nwse-resize; }
+  .crop i::after { content: ""; position: absolute; inset: -12px; } /* 손가락으로 잡기 쉽게 */
+  .scan-box.reading .crop, .scan-box.done .crop { pointer-events: none; }
+  .scan-box.done .crop i { display: none; }
+  .read-btn { width: 100%; height: 46px; }
   .scan-side { display: grid; gap: 8px; min-width: 0; }
   .scan-status { font-size: 14px; font-weight: 600; }
   .scan-status.err { color: var(--warn); }
@@ -328,18 +340,27 @@
         </button>
         <input type="file" id="scanFile" accept="image/*" hidden>
         <div class="scan-box" id="scanBox" hidden>
-          <div class="scan-img"><canvas id="scanCv" width="120" height="120"></canvas></div>
+          <div class="scan-img" id="scanImg">
+            <div class="crop-stage" id="cropStage">
+              <canvas id="scanCv" width="120" height="120"></canvas>
+              <div class="crop" id="crop" aria-label="읽을 부분">
+                <i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i>
+              </div>
+            </div>
+          </div>
           <div class="scan-side">
-            <div class="scan-status" id="scanStatus" role="status">읽는 중</div>
-            <div class="bar"><i id="scanBar"></i></div>
+            <div class="scan-status" id="scanStatus" role="status"></div>
+            <div class="bar" id="scanBarWrap" hidden><i id="scanBar"></i></div>
             <div class="cands" id="nameCands" hidden></div>
             <div class="cands" id="passCands" hidden></div>
             <div class="scan-tools">
-              <button class="chip" type="button" id="rotL" aria-label="왼쪽으로 돌려서 다시 읽기">↺ 돌리기</button>
-              <button class="chip" type="button" id="rotR" aria-label="오른쪽으로 돌려서 다시 읽기">↻ 돌리기</button>
+              <button class="chip" type="button" id="rotL" aria-label="왼쪽으로 돌리기">↺ 돌리기</button>
+              <button class="chip" type="button" id="rotR" aria-label="오른쪽으로 돌리기">↻ 돌리기</button>
+              <button class="chip" type="button" id="recrop" hidden>다시 맞추기</button>
               <button class="chip" type="button" id="scanAgain">다른 사진</button>
               <button class="chip" type="button" id="scanClose">닫기</button>
             </div>
+            <button class="btn primary read-btn" type="button" id="readBtn">이 부분 읽기</button>
           </div>
         </div>
         <button class="manual-link" id="manualBtn" type="button">사진 없이 직접 입력할게요</button>
@@ -1101,7 +1122,7 @@
     return { names: names.slice(0, 4), passes: passes.slice(0, 4) };
   }
 
-  var scan = { img: null, rot: 0, busy: false, worker: null, run: 0 };
+  var scan = { img: null, rot: 0, busy: false, worker: null, run: 0, crop: { x: 0.06, y: 0.06, w: 0.88, h: 0.88 }, state: 'edit' };
   function loadScript(src) {
     return new Promise(function (res, rej) {
       if (window.Tesseract) return res();
@@ -1121,6 +1142,7 @@
         workerPath: base + 'worker.js', corePath: base + 'core', langPath: base + 'lang',
         workerBlobURL: false, gzip: true, cacheMethod: 'none',
         logger: function (m) {
+          if (scan.state !== 'reading') return; // 네모 맞추는 동안 미리 받을 때는 안내 문구를 건드리지 않음
           if (m.status === 'recognizing text') scanStatus(loadingLabel, false, 0.3 + m.progress * 0.7);
           else if (/loading|initializ/.test(m.status)) scanStatus('글자 읽는 준비 중 (처음 한 번만 조금 걸려요)', false, Math.min(0.3, (m.progress || 0) * 0.3));
         }
@@ -1130,17 +1152,20 @@
     return scan.worker;
   }
 
-  // 사진을 돌리고, 너무 크면 줄이고, 흑백으로 대비를 올림
-  function prepare(img, rot) {
-    var w = img.naturalWidth, h = img.naturalHeight;
-    var k = Math.min(1, 2200 / Math.max(w, h));
-    if (Math.max(w, h) < 1000) k = 1000 / Math.max(w, h);
-    var sw = Math.round(w * k), sh = Math.round(h * k);
+  // 돌린 사진에서 고른 네모 부분만 잘라, 글자가 작으면 키우고, 흑백으로 대비를 올림
+  // crop은 돌린 사진 기준 비율(0~1) {x, y, w, h}
+  function prepare(img, rot, crop) {
     var side = rot % 180 !== 0;
-    var c = document.createElement('canvas'); c.width = side ? sh : sw; c.height = side ? sw : sh;
+    var RW = side ? img.naturalHeight : img.naturalWidth, RH = side ? img.naturalWidth : img.naturalHeight;
+    var cx = crop.x * RW, cy = crop.y * RH, cw = crop.w * RW, ch = crop.h * RH;
+    var big = Math.max(cw, ch);
+    var k = Math.min(2200 / big, Math.max(1, 1400 / big));
+    var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(cw * k)); c.height = Math.max(1, Math.round(ch * k));
     var g = c.getContext('2d');
-    g.translate(c.width / 2, c.height / 2); g.rotate(rot * Math.PI / 180);
-    g.drawImage(img, -sw / 2, -sh / 2, sw, sh);
+    g.imageSmoothingQuality = 'high';
+    g.scale(k, k); g.translate(-cx, -cy);
+    g.translate(RW / 2, RH / 2); g.rotate(rot * Math.PI / 180);
+    g.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
     var d = g.getImageData(0, 0, c.width, c.height), a = d.data, lo = 255, hi = 0, i, v;
     for (i = 0; i < a.length; i += 4) { v = a[i] * 0.299 + a[i + 1] * 0.587 + a[i + 2] * 0.114; a[i] = v; if (v < lo) lo = v; if (v > hi) hi = v; }
     var span = Math.max(1, hi - lo);
@@ -1157,6 +1182,81 @@
     g.translate(cv.width / 2, cv.height / 2); g.rotate(rot * Math.PI / 180);
     var dw = img.naturalWidth * k, dh = img.naturalHeight * k;
     g.drawImage(img, -dw / 2, -dh / 2, dw, dh);
+    fitStage();
+  }
+
+  // 사진을 상자 안에 맞춰 보여주고, 그 위에 읽을 부분 네모를 올림
+  function fitStage() {
+    var cv = $('scanCv'), box = $('scanImg');
+    if (!cv.width || box.clientWidth === 0) return;
+    var s = Math.min(box.clientWidth / cv.width, box.clientHeight / cv.height);
+    var w = Math.round(cv.width * s), h = Math.round(cv.height * s);
+    cv.style.width = w + 'px'; cv.style.height = h + 'px';
+    $('cropStage').style.width = w + 'px'; $('cropStage').style.height = h + 'px';
+    drawCrop();
+  }
+  function drawCrop() {
+    var c = scan.crop, el = $('crop');
+    el.style.left = c.x * 100 + '%'; el.style.top = c.y * 100 + '%';
+    el.style.width = c.w * 100 + '%'; el.style.height = c.h * 100 + '%';
+  }
+  window.addEventListener('resize', function () { if (!$('scanBox').hidden) fitStage(); });
+
+  (function () {
+    var drag = null, MIN = 0.08;
+    var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+    $('crop').addEventListener('pointerdown', function (e) {
+      if (scan.busy || scan.state !== 'edit') return;
+      e.preventDefault();
+      var r = $('cropStage').getBoundingClientRect();
+      drag = { h: e.target.dataset.h || 'move', x: e.clientX, y: e.clientY, w: r.width, hh: r.height, c: Object.assign({}, scan.crop), id: e.pointerId };
+      try { this.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    $('crop').addEventListener('pointermove', function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var dx = (e.clientX - drag.x) / drag.w, dy = (e.clientY - drag.y) / drag.hh, o = drag.c;
+      var x1 = o.x, y1 = o.y, x2 = o.x + o.w, y2 = o.y + o.h;
+      if (drag.h === 'move') {
+        var nx = clamp(o.x + dx, 0, 1 - o.w), ny = clamp(o.y + dy, 0, 1 - o.h);
+        scan.crop = { x: nx, y: ny, w: o.w, h: o.h };
+      } else {
+        if (drag.h.indexOf('w') >= 0) x1 = clamp(o.x + dx, 0, x2 - MIN);
+        if (drag.h.indexOf('e') >= 0) x2 = clamp(x2 + dx, x1 + MIN, 1);
+        if (drag.h.indexOf('n') >= 0) y1 = clamp(o.y + dy, 0, y2 - MIN);
+        if (drag.h.indexOf('s') >= 0) y2 = clamp(y2 + dy, y1 + MIN, 1);
+        scan.crop = { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+      }
+      drawCrop();
+    });
+    var end = function () { drag = null; };
+    $('crop').addEventListener('pointerup', end);
+    $('crop').addEventListener('pointercancel', end);
+  })();
+
+  // 화면 상태: edit(네모 맞추는 중) → reading(읽는 중) → done(결과)
+  function setScanState(s) {
+    scan.state = s;
+    var box = $('scanBox');
+    box.classList.toggle('reading', s === 'reading');
+    box.classList.toggle('done', s === 'done');
+    $('readBtn').hidden = s === 'done';
+    $('readBtn').disabled = s === 'reading';
+    $('readBtn').textContent = s === 'reading' ? '읽는 중…' : '이 부분 읽기';
+    $('rotL').hidden = $('rotR').hidden = s === 'done';
+    $('recrop').hidden = s !== 'done';
+    $('scanBarWrap').hidden = s !== 'reading';
+    if (s === 'edit') {
+      $('nameCands').hidden = $('passCands').hidden = true;
+      scanStatus('사진을 바로 세우고, 이름·비밀번호가 적힌 부분만 네모 안에 오게 맞춰주세요', false, 0);
+    }
+  }
+  function rotate(dir) {
+    if (!scan.img || scan.busy) return;
+    var c = scan.crop;
+    // 네모도 사진과 같이 돌림
+    scan.crop = dir > 0 ? { x: 1 - (c.y + c.h), y: c.x, w: c.h, h: c.w } : { x: c.y, y: 1 - (c.x + c.w), w: c.h, h: c.w };
+    scan.rot = (scan.rot + (dir > 0 ? 90 : 270)) % 360;
+    thumb(scan.rot);
   }
 
   function showCands(elId, label, list, current, pick) {
@@ -1176,34 +1276,23 @@
   function setSsid(v) { st.f.ssid = v; $('ssid').value = v; $('sample').hidden = true; schedule(); }
   function setPass(v) { pass = v; $('pass').value = v; if (st.f.sec === 'nopass') { st.f.sec = 'WPA'; syncUI(); } schedule(); }
 
-  // rots: 차례로 시도할 각도. 이름이나 비밀번호가 나오면 멈춤
-  function readLabel(rots) {
+  // 사용자가 돌리고 맞춘 그대로 한 번 읽음
+  function readLabel() {
     var my = ++scan.run;
     scan.busy = true;
-    $('nameCands').hidden = $('passCands').hidden = true;
+    setScanState('reading');
     scanStatus('글자 읽는 준비 중', false, 0.02);
+    loadingLabel = '고른 부분 읽는 중';
     return getWorker().then(function (worker) {
-      var best = null;
-      var step = function (i) {
-        if (my !== scan.run) return null;
-        if (i >= rots.length) return best;
-        scan.rot = rots[i]; thumb(scan.rot);
-        loadingLabel = i === 0 ? '라벨 읽는 중' : '사진이 누워 있는 것 같아서 돌려서 읽는 중';
-        return worker.recognize(prepare(scan.img, scan.rot)).then(function (r) {
-          var text = r.data.text || '';
-          var found = parseLabel(text);
-          var score = found.names.length * 2 + found.passes.length * 2 + (r.data.confidence || 0) / 100;
-          if (!best || score > best.score) best = { rot: scan.rot, text: text, found: found, score: score };
-          if (found.names.length && found.passes.length) return best;
-          return step(i + 1);
-        });
-      };
-      return step(0);
+      if (my !== scan.run) return null;
+      return worker.recognize(prepare(scan.img, scan.rot, scan.crop)).then(function (r) {
+        return { found: parseLabel(r.data.text || '') };
+      });
     }).then(function (best) {
       if (!best || my !== scan.run) return;
       scan.busy = false;
+      setScanState('done');
       setManual(true);
-      scan.rot = best.rot; thumb(scan.rot);
       var f = best.found;
       if (f.names[0]) setSsid(f.names[0]);
       if (f.passes[0]) setPass(f.passes[0]);
@@ -1214,11 +1303,12 @@
         var miss = !f.names.length ? ' 이름은 못 찾았어요.' : !f.passes.length ? ' 비밀번호는 못 찾았어요.' : '';
         scanStatus('채웠어요. 0·O, 1·l처럼 헷갈리는 글자가 맞는지 확인하세요.' + miss, false, 1);
       } else {
-        scanStatus('이름과 비밀번호를 못 찾았어요. 라벨만 가깝게 다시 찍거나 돌리기를 눌러보세요.', true, 1);
+        scanStatus('이름과 비밀번호를 못 찾았어요. "다시 맞추기"로 사진을 바로 세우고 글자 부분만 더 좁게 잡아보세요.', true, 1);
       }
     }).catch(function () {
       if (my !== scan.run) return;
       scan.busy = false;
+      setScanState('edit');
       setManual(true);
       scanStatus('글자 읽기를 시작하지 못했어요. 인터넷 연결을 확인하고 다시 해보거나 아래에 직접 입력해주세요.', true, 0);
     });
@@ -1228,10 +1318,13 @@
     if (!file || !/^image\//.test(file.type)) return;
     var img = new Image();
     img.onload = function () {
-      scan.img = img; scan.rot = 0;
+      scan.run++; scan.busy = false;
+      scan.img = img; scan.rot = 0; scan.crop = { x: 0.06, y: 0.06, w: 0.88, h: 0.88 };
       $('scanBox').hidden = false;
+      setScanState('edit');
       thumb(0);
-      readLabel([0, 90, 270, 180]);
+      $('scanBox').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      getWorker().catch(function () {}); // 맞추는 동안 글자 읽기 엔진을 미리 받아둠
     };
     img.onerror = function () { toast('이 사진은 열 수 없어요. 다른 사진을 골라주세요'); };
     img.src = URL.createObjectURL(file);
@@ -1240,8 +1333,10 @@
   $('scanAgain').onclick = function () { $('scanFile').click(); };
   $('scanFile').onchange = function () { var f = this.files && this.files[0]; this.value = ''; startScan(f); };
   $('scanClose').onclick = function () { scan.run++; scan.busy = false; $('scanBox').hidden = true; };
-  $('rotL').onclick = function () { if (scan.img) readLabel([(scan.rot + 270) % 360]); };
-  $('rotR').onclick = function () { if (scan.img) readLabel([(scan.rot + 90) % 360]); };
+  $('rotL').onclick = function () { rotate(-1); };
+  $('rotR').onclick = function () { rotate(1); };
+  $('readBtn').onclick = function () { if (scan.img && !scan.busy) readLabel(); };
+  $('recrop').onclick = function () { setScanState('edit'); };
   // PC: 와이파이 화면에서 사진을 붙여넣거나 끌어다 놓아도 읽기
   document.addEventListener('paste', function (e) {
     if (st.mode !== 'wifi' || !e.clipboardData) return;
