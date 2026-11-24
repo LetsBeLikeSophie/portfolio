@@ -116,8 +116,13 @@ QR 생성은 같은 폴더의 `qr/qrcode.js`([qrcode-generator](https://github.c
 - 가운데를 채우면 오류 정정을 H로 올리고, 내용이 길어 안 들어가면 가운데를 빼고 만듭니다
 - "카드" 또는 "QR만"으로 저장·복사·공유. 아이폰은 저장 버튼이 공유 시트를 띄워서 사진첩에 바로 넣을 수 있습니다
 - 입력 내용과 꾸미기 설정은 `localStorage`에 남지만 와이파이 비밀번호는 저장하지 않습니다
+- 와이파이 모드의 "공유기 사진으로 채우기": 공유기 뒷면 라벨 사진에서 와이파이 이름과 비밀번호를 읽어 채웁니다.
+  글자 인식은 `qr/ocr/`에 같이 둔 [tesseract.js](https://github.com/naptha/tesseract.js) 5.1.1(Apache-2.0)과
+  영어·한국어 학습 데이터(`4.0.0_best_int`)로 브라우저 안에서 하고, 사진은 서버로 보내지 않습니다.
+  0°로 못 찾으면 90°·270°·180°로 돌려서 다시 읽고, 돌리기 버튼으로 직접 돌릴 수도 있습니다.
+  처음 사진을 고를 때만 엔진과 학습 데이터(약 10MB)를 받습니다. PC에서는 사진을 붙여넣거나 끌어다 놓아도 됩니다.
 
 ```bash
-scp -i <SSH 키 파일> qr/index.html qr/qrcode.js ubuntu@<서버 IP>:/tmp/
-ssh -i <SSH 키 파일> ubuntu@<서버 IP> "sudo install -d -o www-data -g www-data /var/www/portfolio/qr && sudo install -o www-data -g www-data -m 644 /tmp/index.html /tmp/qrcode.js /var/www/portfolio/qr/ && rm /tmp/index.html /tmp/qrcode.js"
+scp -i <SSH 키 파일> -r qr ubuntu@<서버 IP>:/tmp/portfolio-qr
+ssh -i <SSH 키 파일> ubuntu@<서버 IP> "sudo rm -rf /var/www/portfolio/qr && sudo cp -r /tmp/portfolio-qr /var/www/portfolio/qr && sudo chown -R www-data:www-data /var/www/portfolio/qr && rm -rf /tmp/portfolio-qr"
 ```

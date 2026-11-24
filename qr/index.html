@@ -196,7 +196,37 @@
     opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 20; max-width: calc(100% - 32px); text-align: center;
   }
   .toast.on { opacity: 1; transform: translate(-50%, 0); }
+  /* 공유기 사진 읽기 */
+  .scan-btn {
+    width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px 14px;
+    border-radius: 14px; border: 1.5px dashed var(--accent); background: var(--soft); color: var(--ink);
+  }
+  .scan-btn svg { width: 28px; height: 28px; flex: none; color: var(--accent); }
+  .scan-btn b { display: block; font-size: 15px; }
+  .scan-btn small { display: block; font-size: 12px; color: var(--dim); }
+  .scan-box { display: grid; gap: 12px; grid-template-columns: 120px minmax(0, 1fr); align-items: start;
+    border: 1px solid var(--line); border-radius: 14px; padding: 12px; background: var(--bg); }
+  @media (max-width: 420px) { .scan-box { grid-template-columns: 96px minmax(0, 1fr); } }
+  .scan-img { border-radius: 10px; overflow: hidden; background: #000; display: grid; place-items: center; aspect-ratio: 1; max-width: 100%; }
+  .scan-img canvas { max-width: 100%; max-height: 100%; display: block; }
+  .scan-side { display: grid; gap: 8px; min-width: 0; }
+  .scan-status { font-size: 14px; font-weight: 600; }
+  .scan-status.err { color: var(--warn); }
+  .bar { height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+  .cands { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; }
+  .cands > span { font-size: 12px; color: var(--dim); width: 100%; }
+  .cand { max-width: 100%; height: 32px; padding: 0 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+    font-size: 13px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cand[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .scan-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+  .scan-tools .chip { height: 32px; font-size: 13px; padding: 0 11px; }
+  .scan-box details { grid-column: 1 / -1; font-size: 12px; color: var(--dim); }
+  .scan-box summary { cursor: pointer; }
+  .scan-box pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 10px; border-radius: 10px; background: var(--surface);
+    border: 1px solid var(--line); max-height: 180px; overflow: auto; font-size: 12px; color: var(--ink); }
   @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
 </style>
 </head>
 <body>
@@ -215,6 +245,27 @@
       <div class="panel-h"><h2 id="formTitle">와이파이 정보</h2><span class="sample" id="sample" hidden>예시로 채워뒀어요</span></div>
 
       <div class="fields" data-for="wifi">
+        <button class="scan-btn" id="scanBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8V6a2 2 0 0 1 2-2h2"/><path d="M17 4h2a2 2 0 0 1 2 2v2"/><path d="M21 16v2a2 2 0 0 1-2 2h-2"/><path d="M7 20H5a2 2 0 0 1-2-2v-2"/><path d="M7 9h10"/><path d="M7 12h6"/><path d="M7 15h8"/></svg>
+          <span><b>공유기 사진으로 채우기</b><small>뒷면 라벨을 찍으면 이름과 비밀번호를 읽어와요</small></span>
+        </button>
+        <input type="file" id="scanFile" accept="image/*" hidden>
+        <div class="scan-box" id="scanBox" hidden>
+          <div class="scan-img"><canvas id="scanCv" width="120" height="120"></canvas></div>
+          <div class="scan-side">
+            <div class="scan-status" id="scanStatus" role="status">읽는 중</div>
+            <div class="bar"><i id="scanBar"></i></div>
+            <div class="cands" id="nameCands" hidden></div>
+            <div class="cands" id="passCands" hidden></div>
+            <div class="scan-tools">
+              <button class="chip" type="button" id="rotL" aria-label="왼쪽으로 돌려서 다시 읽기">↺ 돌리기</button>
+              <button class="chip" type="button" id="rotR" aria-label="오른쪽으로 돌려서 다시 읽기">↻ 돌리기</button>
+              <button class="chip" type="button" id="scanAgain">다른 사진</button>
+              <button class="chip" type="button" id="scanClose">닫기</button>
+            </div>
+          </div>
+          <details><summary>읽은 글자 전체 보기</summary><pre id="scanRaw"></pre></details>
+        </div>
         <label class="field"><span>와이파이 이름</span><input class="inp" id="ssid" autocomplete="off" spellcheck="false" placeholder="예) SK_WiFiGIGA1234"></label>
         <div class="field"><span>비밀번호</span>
           <div class="pw"><input class="inp" id="pass" type="password" autocomplete="new-password" spellcheck="false" placeholder="비밀번호"><button type="button" id="peek">보기</button></div>
@@ -227,7 +278,7 @@
           </div>
         </div>
         <label class="check"><input type="checkbox" id="hiddenNet"> 숨겨진 네트워크예요</label>
-        <p class="note">잘 모르겠으면 WPA 그대로 두세요. 공유기 대부분이 이거예요. 비밀번호는 이 기기에도 저장하지 않아요.</p>
+        <p class="note">잘 모르겠으면 WPA 그대로 두세요. 공유기 대부분이 이거예요. 사진과 비밀번호는 이 기기 밖으로 나가지 않고, 비밀번호는 저장하지도 않아요.</p>
       </div>
 
       <div class="fields" data-for="link" hidden>
@@ -835,6 +886,209 @@
     $('showSecret').checked = st.mode === 'link' ? st.showUrl : st.showSecret;
     $('title').disabled = st.layout === 'qr';
   }
+
+  // ---------- 공유기 라벨 사진 읽기 (글자 인식은 이 기기 안에서) ----------
+  var NAME_KEY = /(ssid|s5id|5sid|network\s*name|wi-?fi\s*name|wlan\s*name|무선\s*(?:네트워크|랜)?\s*이름|네트워크\s*이름|와이파이\s*이름|무선\s*네트워크)/i;
+  var PASS_KEY = /(password|passwd|pass\s*word|pass\s*phrase|security\s*key|network\s*key|wi-?fi\s*key|wpa\d?(?:-?psk)?\s*key|\bkey\b|\bpw\b|\bpwd\b|\bpin\b|비밀\s*번호|비번|암호|보안\s*키|패스\s*워드)/i;
+  var BRAND = /\b(KT_GiGA[\w-]*|KT_WLAN[\w-]*|olleh_[\w-]*|SK_WiFi[\w-]*|SK_[\w-]*WiFi[\w-]*|U\+Net[\w-]*|U\+zone[\w-]*|LGU\+[\w-]*|iptime[\w-]*|TP-?Link_[\w-]*|NETGEAR[\w-]*|ASUS_[\w-]*|Tenda_[\w-]*|Xiaomi_[\w-]*|HUAWEI-[\w-]*|Wi-?Fi_[\w-]*)/gi;
+
+  function cleanValue(v, isPass) {
+    // 'SSID : 값', '비밀번호 2.4G : 값'처럼 키 뒤에 짧은 설명과 구분자가 오면 구분자 뒤만
+    var sep = v.match(/^[^:：=]{0,14}[:：=]/);
+    if (sep) v = v.slice(sep[0].length);
+    v = v.replace(/^[\s)\]\(:：=\-–|>.·*]+/, '').replace(/[\s|]+$/, '');
+    if (isPass) v = v.split(/\s+/)[0] || '';
+    else v = v.split(/\s{2,}|\s+\|\s*/)[0];
+    v = v.replace(/[|]+$/, '');
+    if (!v || v.length > 63 || NAME_KEY.test(v) || PASS_KEY.test(v)) return '';
+    if (isPass && v.length < 4) return '';
+    return v;
+  }
+
+  function parseLabel(text) {
+    var lines = text.split(/\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+    var names = [], passes = [];
+    var add = function (arr, v) { if (v && arr.indexOf(v) < 0) arr.push(v); };
+    lines.forEach(function (line, i) {
+      [[NAME_KEY, names, false], [PASS_KEY, passes, true]].forEach(function (k) {
+        var m = line.match(k[0]);
+        if (!m) return;
+        var rest = line.slice(m.index + m[0].length);
+        // 키 뒤 괄호 설명 (WPA2-PSK) 같은 것 건너뛰기
+        rest = rest.replace(/^\s*[\(\[][^\)\]]*[\)\]]/, '');
+        var v = cleanValue(rest, k[2]);
+        if (!v && lines[i + 1] && !NAME_KEY.test(lines[i + 1]) && !PASS_KEY.test(lines[i + 1])) v = cleanValue(lines[i + 1], k[2]);
+        add(k[1], v);
+      });
+    });
+    var mm; BRAND.lastIndex = 0;
+    while ((mm = BRAND.exec(text))) add(names, mm[1]);
+    // 한글 키를 잘못 읽었어도 '(WPA2) : 값'처럼 보안 방식 뒤에 값이 오면 비밀번호로
+    if (!passes.length) lines.forEach(function (line) {
+      var w = line.match(/(?:wpa|psk|wep)[^:：=]{0,12}[:：=]\s*(\S+)/i);
+      if (w && !/^(wpa|wep|psk|aes|tkip|open|none)/i.test(w[1])) add(passes, cleanValue(w[1], true));
+    });
+    // 통신사 이름을 흔히 헷갈려 읽는 것 바로잡기
+    names = names.map(function (n) { return n.replace(/^KT_G[Il1|i]{1,2}GA/i, 'KT_GiGA').replace(/^SK_W[il1I]F[il1I]/i, 'SK_WiFi'); })
+      .filter(function (n, i, arr) { return arr.indexOf(n) === i; });
+    // 비밀번호 후보에 이름이 섞이면 빼기
+    passes = passes.filter(function (p) { return names.indexOf(p) < 0; });
+    return { names: names.slice(0, 4), passes: passes.slice(0, 4) };
+  }
+
+  var scan = { img: null, rot: 0, busy: false, worker: null, run: 0 };
+  function loadScript(src) {
+    return new Promise(function (res, rej) {
+      if (window.Tesseract) return res();
+      var el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = rej; document.head.appendChild(el);
+    });
+  }
+  function scanStatus(msg, err, prog) {
+    $('scanStatus').textContent = msg; $('scanStatus').classList.toggle('err', !!err);
+    if (prog != null) $('scanBar').style.width = Math.round(prog * 100) + '%';
+  }
+  var loadingLabel = '';
+  function getWorker() {
+    if (scan.worker) return scan.worker;
+    var base = new URL('ocr/', location.href).href;
+    scan.worker = loadScript(base + 'tesseract.min.js').then(function () {
+      return Tesseract.createWorker(['eng', 'kor'], 1, {
+        workerPath: base + 'worker.min.js', corePath: base + 'core', langPath: base + 'lang',
+        workerBlobURL: false, gzip: true,
+        logger: function (m) {
+          if (m.status === 'recognizing text') scanStatus(loadingLabel, false, 0.3 + m.progress * 0.7);
+          else if (/loading|initializ/.test(m.status)) scanStatus('글자 읽는 준비 중 (처음 한 번만 조금 걸려요)', false, Math.min(0.3, (m.progress || 0) * 0.3));
+        }
+      });
+    });
+    scan.worker.catch(function () { scan.worker = null; });
+    return scan.worker;
+  }
+
+  // 사진을 돌리고, 너무 크면 줄이고, 흑백으로 대비를 올림
+  function prepare(img, rot) {
+    var w = img.naturalWidth, h = img.naturalHeight;
+    var k = Math.min(1, 2200 / Math.max(w, h));
+    if (Math.max(w, h) < 1000) k = 1000 / Math.max(w, h);
+    var sw = Math.round(w * k), sh = Math.round(h * k);
+    var side = rot % 180 !== 0;
+    var c = document.createElement('canvas'); c.width = side ? sh : sw; c.height = side ? sw : sh;
+    var g = c.getContext('2d');
+    g.translate(c.width / 2, c.height / 2); g.rotate(rot * Math.PI / 180);
+    g.drawImage(img, -sw / 2, -sh / 2, sw, sh);
+    var d = g.getImageData(0, 0, c.width, c.height), a = d.data, lo = 255, hi = 0, i, v;
+    for (i = 0; i < a.length; i += 4) { v = a[i] * 0.299 + a[i + 1] * 0.587 + a[i + 2] * 0.114; a[i] = v; if (v < lo) lo = v; if (v > hi) hi = v; }
+    var span = Math.max(1, hi - lo);
+    for (i = 0; i < a.length; i += 4) { v = (a[i] - lo) * 255 / span; a[i] = a[i + 1] = a[i + 2] = v; }
+    g.setTransform(1, 0, 0, 1, 0, 0); g.putImageData(d, 0, 0);
+    return c;
+  }
+  function thumb(rot) {
+    var cv = $('scanCv'), img = scan.img, S = 240;
+    var side = rot % 180 !== 0, w = side ? img.naturalHeight : img.naturalWidth, h = side ? img.naturalWidth : img.naturalHeight;
+    var k = S / Math.max(w, h);
+    cv.width = Math.round(w * k); cv.height = Math.round(h * k);
+    var g = cv.getContext('2d');
+    g.translate(cv.width / 2, cv.height / 2); g.rotate(rot * Math.PI / 180);
+    var dw = img.naturalWidth * k, dh = img.naturalHeight * k;
+    g.drawImage(img, -dw / 2, -dh / 2, dw, dh);
+  }
+
+  function showCands(elId, label, list, current, pick) {
+    var el = $(elId);
+    el.innerHTML = '';
+    el.hidden = !list.length;
+    if (!list.length) return;
+    var sp = document.createElement('span'); sp.textContent = label; el.appendChild(sp);
+    list.forEach(function (v) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'cand'; b.textContent = v; b.title = v;
+      b.setAttribute('aria-pressed', v === current() ? 'true' : 'false');
+      b.onclick = function () { pick(v); el.querySelectorAll('.cand').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); };
+      el.appendChild(b);
+    });
+  }
+  function setSsid(v) { st.f.ssid = v; $('ssid').value = v; $('sample').hidden = true; schedule(); }
+  function setPass(v) { pass = v; $('pass').value = v; if (st.f.sec === 'nopass') { st.f.sec = 'WPA'; syncUI(); } schedule(); }
+
+  // rots: 차례로 시도할 각도. 이름이나 비밀번호가 나오면 멈춤
+  function readLabel(rots) {
+    var my = ++scan.run;
+    scan.busy = true;
+    $('nameCands').hidden = $('passCands').hidden = true;
+    scanStatus('글자 읽는 준비 중', false, 0.02);
+    return getWorker().then(function (worker) {
+      var best = null;
+      var step = function (i) {
+        if (my !== scan.run) return null;
+        if (i >= rots.length) return best;
+        scan.rot = rots[i]; thumb(scan.rot);
+        loadingLabel = i === 0 ? '라벨 읽는 중' : '사진이 누워 있는 것 같아서 돌려서 읽는 중';
+        return worker.recognize(prepare(scan.img, scan.rot)).then(function (r) {
+          var text = r.data.text || '';
+          var found = parseLabel(text);
+          var score = found.names.length * 2 + found.passes.length * 2 + (r.data.confidence || 0) / 100;
+          if (!best || score > best.score) best = { rot: scan.rot, text: text, found: found, score: score };
+          if (found.names.length && found.passes.length) return best;
+          return step(i + 1);
+        });
+      };
+      return step(0);
+    }).then(function (best) {
+      if (!best || my !== scan.run) return;
+      scan.busy = false;
+      scan.rot = best.rot; thumb(scan.rot);
+      $('scanRaw').textContent = best.text.trim() || '(읽은 글자가 없어요)';
+      var f = best.found;
+      if (f.names[0]) setSsid(f.names[0]);
+      if (f.passes[0]) setPass(f.passes[0]);
+      else if (f.names[0]) setPass('');
+      showCands('nameCands', '와이파이 이름 후보', f.names, function () { return st.f.ssid; }, setSsid);
+      showCands('passCands', '비밀번호 후보', f.passes, function () { return pass; }, setPass);
+      if (f.names.length || f.passes.length) {
+        var miss = !f.names.length ? ' 이름은 못 찾았어요.' : !f.passes.length ? ' 비밀번호는 못 찾았어요.' : '';
+        scanStatus('채웠어요. 0·O, 1·l처럼 헷갈리는 글자가 맞는지 확인하세요.' + miss, false, 1);
+      } else {
+        scanStatus('이름과 비밀번호를 못 찾았어요. 라벨만 가깝게 다시 찍거나 돌리기를 눌러보세요.', true, 1);
+      }
+    }).catch(function () {
+      if (my !== scan.run) return;
+      scan.busy = false;
+      scanStatus('글자 읽기를 시작하지 못했어요. 인터넷 연결을 확인하고 다시 해보세요.', true, 0);
+    });
+  }
+
+  function startScan(file) {
+    if (!file || !/^image\//.test(file.type)) return;
+    var img = new Image();
+    img.onload = function () {
+      scan.img = img; scan.rot = 0;
+      $('scanBox').hidden = false; $('scanRaw').textContent = '';
+      thumb(0);
+      readLabel([0, 90, 270, 180]);
+    };
+    img.onerror = function () { toast('이 사진은 열 수 없어요. 다른 사진을 골라주세요'); };
+    img.src = URL.createObjectURL(file);
+  }
+  $('scanBtn').onclick = function () { $('scanFile').click(); };
+  $('scanAgain').onclick = function () { $('scanFile').click(); };
+  $('scanFile').onchange = function () { var f = this.files && this.files[0]; this.value = ''; startScan(f); };
+  $('scanClose').onclick = function () { scan.run++; scan.busy = false; $('scanBox').hidden = true; };
+  $('rotL').onclick = function () { if (scan.img) readLabel([(scan.rot + 270) % 360]); };
+  $('rotR').onclick = function () { if (scan.img) readLabel([(scan.rot + 90) % 360]); };
+  // PC: 와이파이 화면에서 사진을 붙여넣거나 끌어다 놓아도 읽기
+  document.addEventListener('paste', function (e) {
+    if (st.mode !== 'wifi' || !e.clipboardData) return;
+    var it = [].slice.call(e.clipboardData.items || []).filter(function (x) { return /^image\//.test(x.type); })[0];
+    if (it) { e.preventDefault(); startScan(it.getAsFile()); }
+  });
+  var formEl = document.querySelector('.form');
+  formEl.addEventListener('dragover', function (e) { if (st.mode === 'wifi') e.preventDefault(); });
+  formEl.addEventListener('drop', function (e) {
+    if (st.mode !== 'wifi') return;
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f && /^image\//.test(f.type)) { e.preventDefault(); startScan(f); }
+  });
 
   // ---------- 저장 / 복사 / 공유 ----------
   function toast(msg) {
